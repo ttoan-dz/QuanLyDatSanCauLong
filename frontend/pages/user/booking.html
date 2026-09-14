@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đặt Sân Cầu Lông — Quản Lý Đặt Sân</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body data-require-role="CUSTOMER">
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/index.html" class="brand">
+      <span>🏸</span> Đặt Sân Cầu Lông
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
+      <li><a href="/pages/user/courts.html" class="nav-link">Danh sách sân</a></li>
+      <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
+      <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
+    </ul>
+    <div class="user-info">
+      <span class="user-name">Xin chào, <strong id="user-display-name">Khách hàng</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Đặt sân cầu lông</h1>
+      <p class="page-subtitle">Chọn ngày, khung giờ chơi và phương thức thanh toán</p>
+    </div>
+
+    <!-- Wizard Steps Indicator -->
+    <div class="wizard-steps">
+      <div id="step-indicator-1" class="wizard-step active">
+        <span class="wizard-step-num">1</span>
+        <span>Chọn ngày & giờ</span>
+      </div>
+      <div class="wizard-step-line"></div>
+      <div id="step-indicator-2" class="wizard-step">
+        <span class="wizard-step-num">2</span>
+        <span>Xác nhận & Thanh toán</span>
+      </div>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div id="booking-app-container">
+      
+      <!-- ======================== BƯỚC 1 ======================== -->
+      <div id="step-section-1">
+        <div class="two-col-layout">
+          
+          <!-- Cột Trái: Thông tin sân đã chọn -->
+          <aside class="section-box">
+            <div class="section-header">
+              <h2 class="section-title">🏸 Thông tin sân</h2>
+            </div>
+            <div id="step1-court-info">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Đang tải thông tin sân...</p>
+            </div>
+          </aside>
+
+          <!-- Cột Phải: Form chọn ngày & giờ -->
+          <section class="section-box">
+            <div class="section-header">
+              <h2 class="section-title">📅 Biểu mẫu đặt sân</h2>
+            </div>
+
+            <form onsubmit="event.preventDefault(); proceedToStep2();">
+              
+              <!-- Ngày chơi -->
+              <div class="form-group">
+                <label for="input-ngayChoi">Ngày chơi (*)</label>
+                <input type="date" id="input-ngayChoi" class="form-control" required>
+              </div>
+
+              <!-- Hiển thị giờ bắt đầu & kết thúc -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label for="display-gioBatDau">Giờ bắt đầu</label>
+                  <input type="text" id="display-gioBatDau" class="form-control" placeholder="Chọn từ lưới bên dưới" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="display-gioKetThuc">Giờ kết thúc</label>
+                  <input type="text" id="display-gioKetThuc" class="form-control" placeholder="Chọn từ lưới bên dưới" readonly>
+                </div>
+              </div>
+
+              <!-- Lưới chọn khung giờ -->
+              <div class="time-slots-container">
+                <div class="time-slots-label">
+                  Khung giờ khả dụng (Click 1 lần chọn giờ bắt đầu, Click lần 2 chọn giờ kết thúc):
+                </div>
+                <div id="time-slots-grid" class="time-slots-grid">
+                  <p style="color: var(--text-muted); font-size: 0.85rem;">Đang tải khung giờ...</p>
+                </div>
+              </div>
+
+              <!-- Ghi chú -->
+              <div class="form-group" style="margin-top: 1rem;">
+                <label for="input-ghiChu">Ghi chú (tuỳ chọn)</label>
+                <textarea id="input-ghiChu" class="form-control" rows="2" placeholder="Ví dụ: Cần mượn thêm vợt, khởi động sớm..."></textarea>
+              </div>
+
+              <!-- Nút tiếp tục -->
+              <div style="margin-top: 1.5rem;">
+                <button type="submit" id="btn-step1-next" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.75rem;" disabled>
+                  Tiếp tục thanh toán →
+                </button>
+              </div>
+
+            </form>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ======================== BƯỚC 2 ======================== -->
+      <div id="step-section-2" style="display: none;">
+        <div class="two-col-layout">
+          
+          <!-- Cột Trái: Tóm tắt đơn đặt & Tổng tiền -->
+          <aside class="section-box">
+            <div class="section-header">
+              <h2 class="section-title">📋 Thông tin đặt sân</h2>
+            </div>
+            <div id="step2-booking-info">
+              <!-- Dynamic content -->
+            </div>
+          </aside>
+
+          <!-- Cột Phải: Chọn phương thức thanh toán -->
+          <section class="section-box">
+            <div class="section-header">
+              <h2 class="section-title">💳 Phương thức thanh toán</h2>
+            </div>
+
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Vui lòng chọn một trong hai phương thức thanh toán bên dưới:
+            </p>
+
+            <div class="payment-options-grid">
+              
+              <!-- Option 1: Tiền mặt -->
+              <div id="card-pay-cash" class="payment-option-card active" onclick="selectPaymentMethod('TienMat')">
+                <input type="radio" id="pay-cash" name="paymentMethod" value="TienMat" checked>
+                <span class="payment-option-icon">💵</span>
+                <div class="payment-option-text">
+                  <span class="payment-option-title">Tiền mặt tại sân</span>
+                  <span class="payment-option-desc">Thanh toán trực tiếp cho nhân viên quản lý khi đến nhận sân (chờ admin duyệt)</span>
+                </div>
+              </div>
+
+              <!-- Option 2: QR Code -->
+              <div id="card-pay-qr" class="payment-option-card" onclick="selectPaymentMethod('QR')">
+                <input type="radio" id="pay-qr" name="paymentMethod" value="QR">
+                <span class="payment-option-icon">📱</span>
+                <div class="payment-option-text">
+                  <span class="payment-option-title">Chuyển khoản QR Code</span>
+                  <span class="payment-option-desc">Quét mã QR tự động bằng App Ngân hàng / Ví điện tử (sân được xác nhận ngay lập tức)</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Nút Thanh Toán CTA màu vàng -->
+            <div style="margin-top: 2rem;">
+              <button type="button" id="btn-checkout" class="btn btn-yellow" style="width: 100%; font-size: 1.1rem; padding: 0.85rem;" onclick="handleFinalCheckout()">
+                ⚡ Xác nhận thanh toán
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/booking.js"></script>
+</body>
+</html>

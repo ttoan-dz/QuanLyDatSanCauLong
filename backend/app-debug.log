@@ -1,0 +1,36 @@
+2026-09-04T08:11:05.272+07:00  INFO 19924 --- [main] c.quanlydatsan.QuanLyDatSanApplication   : Starting QuanLyDatSanApplication using Java 26 with PID 19924 (C:\Users\tn180\OneDrive\Desktop\QLDatSan\backend\target\classes started by tn180 in C:\Users\tn180\OneDrive\Desktop\QLDatSan\backend)
+2026-09-04T08:11:05.275+07:00 DEBUG 19924 --- [main] c.quanlydatsan.QuanLyDatSanApplication   : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-09-04T08:11:05.276+07:00  INFO 19924 --- [main] c.quanlydatsan.QuanLyDatSanApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-09-04T08:11:06.228+07:00  INFO 19924 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-04T08:11:06.338+07:00  INFO 19924 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 98 ms. Found 9 JPA repository interfaces.
+2026-09-04T08:11:07.256+07:00  INFO 19924 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-09-04T08:11:07.287+07:00  INFO 19924 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-04T08:11:07.287+07:00  INFO 19924 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-09-04T08:11:07.386+07:00  INFO 19924 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-09-04T08:11:07.387+07:00  INFO 19924 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2059 ms
+2026-09-04T08:11:07.600+07:00  INFO 19924 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-09-04T08:11:07.669+07:00  INFO 19924 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-09-04T08:11:07.722+07:00  INFO 19924 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-09-04T08:11:08.143+07:00  INFO 19924 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-04T08:11:08.177+07:00  INFO 19924 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-04T08:11:08.524+07:00  INFO 19924 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@a0d875d
+2026-09-04T08:11:08.525+07:00  INFO 19924 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-04T08:11:08.684+07:00  INFO 19924 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 26.7
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-04T08:11:09.844+07:00  INFO 19924 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-04T08:11:09.848+07:00  INFO 19924 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-04T08:11:10.243+07:00 DEBUG 19924 --- [main] c.quanlydatsan.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-04T08:11:10.359+07:00  INFO 19924 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-04T08:11:11.816+07:00  INFO 19924 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-09-04T08:11:11.920+07:00  WARN 19924 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-09-04T08:11:12.575+07:00  INFO 19924 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-09-04T08:11:12.586+07:00  INFO 19924 --- [main] c.quanlydatsan.QuanLyDatSanApplication   : Started QuanLyDatSanApplication in 7.972 seconds (process running for 8.358)
+2026-09-04T08:11:32.452+07:00  INFO 19924 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-04T08:11:32.453+07:00  INFO 19924 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-04T08:11:32.454+07:00  INFO 19924 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

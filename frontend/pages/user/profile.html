@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang Cá Nhân — Quản Lý Đặt Sân</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body data-require-role="CUSTOMER">
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/index.html" class="brand">
+      <span>🏸</span> Đặt Sân Cầu Lông
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
+      <li><a href="/pages/user/courts.html" class="nav-link">Danh sách sân</a></li>
+      <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
+      <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
+    </ul>
+    <div class="user-info">
+      <!-- Sẽ được điền tự động dropdown pill bởi utils.js -->
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container" style="max-width: 860px;">
+    <div class="page-header">
+      <h1 class="page-title">Trang cá nhân</h1>
+      <p class="page-subtitle">Quản lý thông tin tài khoản và cập nhật mật khẩu bảo mật</p>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+      
+      <!-- Section 1: Thông tin cá nhân -->
+      <div class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">👤 Thông tin cá nhân</h2>
+        </div>
+
+        <form id="form-profile" onsubmit="handleUpdateProfile(event)">
+          <div class="form-group">
+            <label for="input-profile-hoTen">Họ và tên (*)</label>
+            <input type="text" id="input-profile-hoTen" class="form-control" placeholder="Nguyễn Văn A" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-profile-sdt">Số điện thoại (*)</label>
+            <input type="tel" id="input-profile-sdt" class="form-control" placeholder="0912345678" pattern="[0-9]{10,11}" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-profile-email">Email (tuỳ chọn)</label>
+            <input type="email" id="input-profile-email" class="form-control" placeholder="email@example.com">
+          </div>
+
+          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+            <button type="submit" id="btn-save-profile" class="btn btn-primary">
+              💾 Lưu thay đổi
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Section 2: Đổi mật khẩu -->
+      <div class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">🔒 Đổi mật khẩu</h2>
+        </div>
+
+        <form id="form-change-password" onsubmit="handleChangePassword(event)">
+          <div class="form-group">
+            <label for="input-current-password">Mật khẩu hiện tại (*)</label>
+            <input type="password" id="input-current-password" class="form-control" placeholder="••••••••" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-new-password">Mật khẩu mới (*)</label>
+            <input type="password" id="input-new-password" class="form-control" minlength="6" placeholder="Ít nhất 6 ký tự" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-confirm-password">Nhập lại mật khẩu mới (*)</label>
+            <input type="password" id="input-confirm-password" class="form-control" minlength="6" placeholder="Nhập lại mật khẩu mới" required>
+          </div>
+
+          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
+            <button type="submit" id="btn-change-password" class="btn btn-yellow">
+              🔑 Đổi mật khẩu
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserProfile();
+    });
+
+    async function loadUserProfile() {
+      try {
+        const data = await api.get('/user/profile');
+        if (data) {
+          document.getElementById('input-profile-hoTen').value = data.hoTen || '';
+          document.getElementById('input-profile-sdt').value = data.sdt || '';
+          document.getElementById('input-profile-email').value = data.email || '';
+        }
+      } catch (error) {
+        showAlert(`Không thể tải thông tin cá nhân: ${error.message}`, 'danger');
+      }
+    }
+
+    async function handleUpdateProfile(event) {
+      if (event) event.preventDefault();
+
+      const hoTen = document.getElementById('input-profile-hoTen').value.trim();
+      const sdt = document.getElementById('input-profile-sdt').value.trim();
+      const email = document.getElementById('input-profile-email').value.trim() || null;
+      const btn = document.getElementById('btn-save-profile');
+
+      if (!hoTen || !sdt) {
+        showAlert('Vui lòng điền họ tên và số điện thoại!', 'warning');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+
+      try {
+        const updated = await api.put('/user/profile', { hoTen, sdt, email });
+        // Cập nhật lại localStorage
+        if (updated?.hoTen) {
+          localStorage.setItem('hoTen', updated.hoTen);
+          const nameEl = document.getElementById('user-display-name');
+          if (nameEl) nameEl.textContent = updated.hoTen;
+        }
+        showAlert('Cập nhật thông tin cá nhân thành công!', 'success');
+      } catch (error) {
+        showAlert(`Lỗi cập nhật: ${error.message}`, 'danger');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function handleChangePassword(event) {
+      if (event) event.preventDefault();
+
+      const matKhauHienTai = document.getElementById('input-current-password').value;
+      const matKhauMoi = document.getElementById('input-new-password').value;
+      const nhapLaiMatKhauMoi = document.getElementById('input-confirm-password').value;
+      const btn = document.getElementById('btn-change-password');
+
+      if (!matKhauHienTai || !matKhauMoi || !nhapLaiMatKhauMoi) {
+        showAlert('Vui lòng điền đầy đủ các trường mật khẩu!', 'warning');
+        return;
+      }
+
+      if (matKhauMoi.length < 6) {
+        showAlert('Mật khẩu mới phải có ít nhất 6 ký tự!', 'warning');
+        return;
+      }
+
+      if (matKhauMoi !== nhapLaiMatKhauMoi) {
+        showAlert('Mật khẩu mới và Nhập lại mật khẩu không khớp!', 'danger');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+
+      try {
+        await api.put('/user/profile/password', {
+          matKhauHienTai,
+          matKhauMoi
+        });
+        showAlert('Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.', 'success');
+        document.getElementById('form-change-password').reset();
+      } catch (error) {
+        showAlert(`Đổi mật khẩu thất bại: ${error.message}`, 'danger');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
+

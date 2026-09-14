@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Sân — Admin Portal</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link active">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Quản lý địa điểm & Sân cầu lông</h1>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- Nút mở form Thêm mới -->
+    <div style="margin-bottom: 1.25rem; display: flex; justify-content: flex-start;">
+      <button type="button" class="btn btn-primary" id="btn-toggle-create-court" onclick="toggleCreateCourtForm()" style="font-size: 0.95rem; font-weight: 600; padding: 0.6rem 1.25rem;">
+        ➕ Thêm sân mới
+      </button>
+    </div>
+
+    <!-- Form Thêm mới Địa điểm + Sân (Mặc định ẩn) -->
+    <div class="card hidden" id="card-create-court">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="card-title" style="margin-bottom: 0;">➕ Thêm cụm sân / Địa điểm mới</h2>
+        <button type="button" class="btn btn-outline btn-sm" onclick="toggleCreateCourtForm()">✖ Đóng</button>
+      </div>
+      <form id="form-create-court" onsubmit="createCourt(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="create-tenDiaDiem">Tên địa điểm / cơ sở (*)</label>
+            <input type="text" id="create-tenDiaDiem" class="form-control" placeholder="VD: Sân Cầu Lông Hà Đông" required>
+          </div>
+          <div class="form-group">
+            <label for="create-gioMo">Giờ mở cửa (*)</label>
+            <input type="time" id="create-gioMo" class="form-control" value="06:00" step="1800" required>
+          </div>
+          <div class="form-group">
+            <label for="create-gioDong">Giờ đóng cửa (*)</label>
+            <input type="time" id="create-gioDong" class="form-control" value="23:00" step="1800" required>
+          </div>
+          <div class="form-group">
+            <label for="create-soSanNho">Số lượng sân con (*)</label>
+            <input type="number" id="create-soSanNho" class="form-control" min="1" max="50" value="4" required>
+          </div>
+          <div class="form-group">
+            <label for="create-hinhAnh">Hình ảnh sân mặc định</label>
+            <select id="create-hinhAnh" class="form-control">
+              <option value="">-- Mặc định (/assets/images/courts.jpg) --</option>
+              <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
+              <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
+              <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
+              <option value="/assets/images/index3.jpg">/assets/images/index3.jpg</option>
+              <option value="/images/san-cau-giay-1.jpg">/images/san-cau-giay-1.jpg</option>
+              <option value="/images/san-cau-giay-2.jpg">/images/san-cau-giay-2.jpg</option>
+              <option value="/images/san-cau-giay-3.jpg">/images/san-cau-giay-3.jpg</option>
+              <option value="/images/san-thanh-xuan-1.jpg">/images/san-thanh-xuan-1.jpg</option>
+              <option value="/images/san-thanh-xuan-2.jpg">/images/san-thanh-xuan-2.jpg</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="create-mapLink">Link Google Maps (không bắt buộc)</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="url" id="create-mapLink" class="form-control" placeholder="https://maps.app.goo.gl/... (để trống sẽ tự sinh theo tên)" style="flex: 1;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">🗺️ Mở Google Maps</button>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="toggleCreateCourtForm()">Hủy</button>
+          <button type="submit" class="btn btn-primary">Tạo mới cơ sở & sân</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Danh sách cơ sở & sân con -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="card-title" style="margin-bottom: 0;">Danh sách địa điểm & sân hiện có</h2>
+        <button type="button" class="btn btn-outline" onclick="loadCourts()">🔄 Làm mới</button>
+      </div>
+      <div id="courts-list-container">
+        <p style="text-align: center;">Đang tải danh sách sân...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Chỉnh sửa Địa điểm -->
+  <div id="modal-edit-court" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Chỉnh sửa địa điểm</h3>
+        <button type="button" class="modal-close" onclick="closeEditCourtModal()">&times;</button>
+      </div>
+      <form id="form-edit-court" onsubmit="updateCourt(event)">
+        <input type="hidden" id="edit-maDiaDiem">
+        <div class="form-group">
+          <label for="edit-tenMoi">Tên địa điểm (*)</label>
+          <input type="text" id="edit-tenMoi" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-gioMo">Giờ mở cửa (*)</label>
+          <input type="time" id="edit-gioMo" class="form-control" step="1800" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-gioDong">Giờ đóng cửa (*)</label>
+          <input type="time" id="edit-gioDong" class="form-control" step="1800" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-soSanNhoMoi">Số lượng sân con mới (*)</label>
+          <input type="number" id="edit-soSanNhoMoi" class="form-control" min="1" max="50" required>
+          <small style="color: var(--text-muted);">Nếu giảm sân, hệ thống sẽ kiểm tra xem sân có đơn đặt chưa trước khi xóa.</small>
+        </div>
+        <div class="form-group">
+          <label for="edit-hinhAnh">Hình ảnh sân (khi thêm sân mới)</label>
+          <select id="edit-hinhAnh" class="form-control">
+            <option value="">-- Mặc định (/assets/images/courts.jpg) --</option>
+            <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
+            <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
+            <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
+            <option value="/assets/images/index3.jpg">/assets/images/index3.jpg</option>
+            <option value="/images/san-cau-giay-1.jpg">/images/san-cau-giay-1.jpg</option>
+            <option value="/images/san-cau-giay-2.jpg">/images/san-cau-giay-2.jpg</option>
+            <option value="/images/san-cau-giay-3.jpg">/images/san-cau-giay-3.jpg</option>
+            <option value="/images/san-thanh-xuan-1.jpg">/images/san-thanh-xuan-1.jpg</option>
+            <option value="/images/san-thanh-xuan-2.jpg">/images/san-thanh-xuan-2.jpg</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-mapLink">Link Google Maps (không bắt buộc)</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="url" id="edit-mapLink" class="form-control" placeholder="https://maps.app.goo.gl/... (để trống sẽ tự sinh theo tên)" style="flex: 1;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">🗺️ Mở Google Maps</button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="closeEditCourtModal()">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js?v=2.1"></script>
+  <script src="/assets/js/utils.js?v=2.1"></script>
+  <script src="/assets/js/admin.js?v=2.1"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCourts();
+    });
+  </script>
+</body>
+</html>
+

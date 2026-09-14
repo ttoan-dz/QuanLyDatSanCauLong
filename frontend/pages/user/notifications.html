@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông Báo & Tiến Trình Đặt Sân — Quản Lý Đặt Sân</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="/index.html" class="brand">
+      <span>🏸</span> Đặt Sân Cầu Lông
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
+      <li><a href="/pages/user/courts.html" class="nav-link">Danh sách sân</a></li>
+      <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
+      <li><a href="/pages/user/notifications.html" class="nav-link active">Thông báo</a></li>
+    </ul>
+    <div class="user-info">
+      <span class="user-name">Xin chào, <strong id="user-display-name">Khách hàng</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Thông báo & Tiến trình đặt sân</h1>
+      <p class="page-subtitle">Theo dõi các cập nhật quan trọng và tiến độ xử lý tất cả các đơn đặt sân của bạn</p>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- 2-Column Layout -->
+    <div class="two-col-layout">
+      
+      <!-- Cột Trái: Thông báo mới -->
+      <aside class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">🔔 Thông báo mới</h2>
+          <span id="notif-count-badge" class="badge badge-secondary">0</span>
+        </div>
+        <div id="notifications-feed" class="notif-feed">
+          <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem;">Đang tải thông báo...</p>
+        </div>
+      </aside>
+
+      <!-- Cột Phải: Tiến trình đặt sân -->
+      <section class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">🏸 Tiến trình đặt sân</h2>
+          <span id="booking-count-badge" class="badge badge-secondary">0 đơn</span>
+        </div>
+        
+        <div id="booking-progress-feed" class="booking-progress-list">
+          <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem;">
+            Đang tải tiến trình đặt sân...
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal Chi Tiết Đơn Đặt Sân -->
+  <div id="modal-booking-detail" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-booking-title" class="modal-title">Chi tiết đơn đặt sân</h3>
+        <button type="button" class="modal-close" onclick="closeBookingDetailModal()">&times;</button>
+      </div>
+      <div id="modal-booking-body">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/notifications.js"></script>
+</body>
+</html>

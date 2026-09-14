@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Đặt Sân — Admin Portal</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link active">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Danh sách đơn đặt sân</h1>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- Filter Bar -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label for="select-status-filter" style="font-weight: 600; font-size: 0.9rem;">Lọc trạng thái:</label>
+          <select id="select-status-filter" class="form-control" onchange="loadBookings()" style="min-width: 180px;">
+            <option value="">-- Tất cả trạng thái --</option>
+            <option value="ChoXacNhan">Chờ xác nhận</option>
+            <option value="DaXacNhan">Đã xác nhận</option>
+            <option value="ChoHuy">Chờ hủy</option>
+            <option value="DaHuy">Đã hủy</option>
+            <option value="HetHan">Hết hạn</option>
+            <option value="HoanThanh">Hoàn thành</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-outline" onclick="loadBookings()">🔄 Làm mới danh sách</button>
+      </div>
+    </div>
+
+    <!-- Table of Bookings -->
+    <div class="card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mã đơn</th>
+              <th>Sân & Địa điểm</th>
+              <th>Ngày chơi</th>
+              <th>Khung giờ</th>
+              <th>Tổng tiền</th>
+              <th>Hình thức TT</th>
+              <th>Trạng thái đặt</th>
+              <th>Trạng thái TT</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-table-body">
+            <tr>
+              <td colspan="9" style="text-align: center;">Đang tải danh sách...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Hủy Đơn Đặt Sân -->
+  <div id="modal-cancel-booking" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger);">Hủy đơn đặt sân</h3>
+        <button type="button" class="modal-close" onclick="closeCancelBookingModal()">&times;</button>
+      </div>
+      <form id="form-cancel-booking" onsubmit="submitCancelBooking(event)">
+        <input type="hidden" id="cancel-booking-id">
+        <p style="margin-bottom: 0.85rem; font-size: 0.95rem;">
+          Bạn đang thực hiện hủy đơn đặt sân <strong id="cancel-booking-id-text">#0</strong>.
+        </p>
+        <div class="form-group">
+          <label for="cancel-booking-note">Lý do hủy (không bắt buộc):</label>
+          <textarea id="cancel-booking-note" class="form-control" rows="3" placeholder="Nhập lý do hủy đơn nếu có (VD: Sân bảo trì đột xuất, khách báo hủy qua hotline...)"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" onclick="closeCancelBookingModal()">Đóng</button>
+          <button type="submit" class="btn btn-danger" id="btn-confirm-cancel">Xác nhận hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js?v=2.1"></script>
+  <script src="/assets/js/utils.js?v=2.1"></script>
+  <script src="/assets/js/admin.js?v=2.1"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBookings();
+    });
+  </script>
+</body>
+</html>
+

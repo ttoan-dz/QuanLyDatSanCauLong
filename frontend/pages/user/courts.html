@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh Sách Sân Cầu Lông — Quản Lý Đặt Sân</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/index.html" class="brand">
+      <span>🏸</span> Sân Cầu Lông
+    </a>
+    <ul class="nav-links">
+      <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
+      <li><a href="/pages/user/courts.html" class="nav-link active">Danh sách sân</a></li>
+      <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
+      <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
+    </ul>
+    <div id="auth-controls" class="user-info">
+      <!-- Sẽ được điền động bởi JS tùy theo trạng thái login -->
+      <a href="/pages/auth/login.html" class="btn btn-outline btn-sm">Đăng nhập</a>
+      <a href="/pages/auth/register.html" class="btn btn-primary btn-sm">Đăng ký</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Hệ thống sân cầu lông</h1>
+      <p class="page-subtitle">Xem thông tin sân bãi, tình trạng hoạt động và đặt lịch trực tuyến</p>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- 2-Column Layout -->
+    <div class="two-col-layout">
+      
+      <!-- Cột Trái: Danh sách Địa điểm Filter -->
+      <aside class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">📍 Địa điểm</h2>
+        </div>
+        <div id="location-filter-list" class="location-list">
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Đang tải danh sách địa điểm...</p>
+        </div>
+      </aside>
+
+      <!-- Cột Phải: Danh sách Sân Grid -->
+      <section class="section-box">
+        <div class="section-header">
+          <h2 class="section-title">🏸 Danh sách sân</h2>
+          <span id="court-count-badge" class="badge badge-secondary">0 sân</span>
+        </div>
+        
+        <div id="courts-grid" class="courts-grid-container">
+          <p style="color: var(--text-muted); font-size: 0.9rem; grid-column: 1 / -1; text-align: center; padding: 2rem;">
+            Đang tải dữ liệu sân...
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal Chi Tiết Sân -->
+  <div id="modal-court-detail" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-court-title" class="modal-title">Chi tiết sân</h3>
+        <button type="button" class="modal-close" onclick="closeCourtDetailModal()">&times;</button>
+      </div>
+      <div id="modal-court-body">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    let allLocations = [];
+    let selectedLocationId = 'ALL';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchCourtsData();
+    });
+
+    async function fetchCourtsData() {
+      try {
+        const data = await api.get('/public/courts');
+        allLocations = data || [];
+        renderLocationSidebar();
+        renderCourtsGrid();
+      } catch (error) {
+        console.error('Lỗi tải danh sách sân:', error);
+        showAlert(`Không thể tải danh sách sân: ${error.message}`, 'danger');
+      }
+    }
+
+    function renderLocationSidebar() {
+      const container = document.getElementById('location-filter-list');
+      if (!container) return;
+
+      let totalCourtsAll = 0;
+      let activeCourtsAll = 0;
+      let bookedCourtsAll = 0;
+
+      allLocations.forEach(loc => {
+        const courts = loc.danhSachSan || [];
+        totalCourtsAll += courts.length;
+        activeCourtsAll += courts.filter(c => c.tinhTrang === 'HoatDong').length;
+        bookedCourtsAll += courts.filter(c => c.dangDuocDat).length;
+      });
+
+      let html = `
+        <div class="location-item ${selectedLocationId === 'ALL' ? 'active' : ''}" onclick="filterByLocation('ALL')">
+          <div class="location-item-top">
+            <span class="location-name">Tất cả địa điểm</span>
+            <span class="location-badge">${activeCourtsAll}/${totalCourtsAll}</span>
+          </div>
+          <div class="location-subtext">${bookedCourtsAll} sân đang có người đặt</div>
+          <div class="location-hours">⏰ Hoạt động toàn thời gian</div>
+        </div>
+      `;
+
+      allLocations.forEach(loc => {
+        const courts = loc.danhSachSan || [];
+        const total = courts.length;
+        const active = courts.filter(c => c.tinhTrang === 'HoatDong').length;
+        const booked = courts.filter(c => c.dangDuocDat).length;
+        const isSelected = selectedLocationId === loc.maDiaDiem;
+
+        html += `
+          <div class="location-item ${isSelected ? 'active' : ''}" onclick="filterByLocation(${loc.maDiaDiem})">
+            <div class="location-item-top">
+              <span class="location-name">${loc.tenDiaDiem}</span>
+              <span class="location-badge">${active}/${total}</span>
+            </div>
+            <div class="location-subtext">${booked} sân đang có người đặt</div>
+            <div class="location-hours">⏰ ${formatGio(loc.gioMo)} - ${formatGio(loc.gioDong)}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function filterByLocation(maDiaDiem) {
+      selectedLocationId = maDiaDiem;
+      renderLocationSidebar();
+      renderCourtsGrid();
+    }
+
+    function renderCourtsGrid() {
+      const grid = document.getElementById('courts-grid');
+      const countBadge = document.getElementById('court-count-badge');
+      if (!grid) return;
+
+      const token = localStorage.getItem('token');
+      let flatCourts = [];
+
+      allLocations.forEach(loc => {
+        if (selectedLocationId === 'ALL' || selectedLocationId === loc.maDiaDiem) {
+          (loc.danhSachSan || []).forEach(court => {
+            flatCourts.push({
+              ...court,
+              maDiaDiem: loc.maDiaDiem,
+              tenDiaDiem: loc.tenDiaDiem,
+              gioMo: loc.gioMo,
+              gioDong: loc.gioDong
+            });
+          });
+        }
+      });
+
+      if (countBadge) {
+        countBadge.textContent = `${flatCourts.length} sân`;
+      }
+
+      if (flatCourts.length === 0) {
+        grid.innerHTML = `
+          <p style="color: var(--text-muted); font-size: 0.9rem; grid-column: 1 / -1; text-align: center; padding: 2rem;">
+            Không có sân nào phù hợp với địa điểm đã chọn.
+          </p>
+        `;
+        return;
+      }
+
+      grid.innerHTML = flatCourts.map(c => {
+        const isBooked = c.dangDuocDat === true;
+        const isAvailable = c.tinhTrang === 'HoatDong' && !isBooked;
+        const fallbackImg = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60';
+        const courtImg = c.hinhAnh && c.hinhAnh.startsWith('http') ? c.hinhAnh : fallbackImg;
+        const isPlaying = c.dangCoNguoiChoi === true;
+
+        let primaryBtn = '';
+        if (isBooked) {
+          primaryBtn = `<button class="btn btn-disabled btn-sm" disabled style="background-color: #e2e8f0; color: #64748b; cursor: not-allowed;">Đã có người đặt</button>`;
+        } else if (c.tinhTrang !== 'HoatDong') {
+          primaryBtn = `<button class="btn btn-disabled btn-sm" disabled>${c.tinhTrang === 'BaoTri' ? 'Bảo trì' : 'Tạm ngưng'}</button>`;
+        } else if (token) {
+          primaryBtn = `<button type="button" class="btn btn-primary btn-sm" onclick='selectCourtAndBook(${JSON.stringify(c)})'>Đặt sân</button>`;
+        } else {
+          primaryBtn = `<a href="/pages/auth/login.html" class="btn btn-outline btn-sm">Đăng nhập để đặt</a>`;
+        }
+
+        return `
+          <div class="court-card-item" style="${isPlaying ? 'border-color: #fdba74; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.12);' : ''}">
+            <div class="court-card-thumb">
+              <img class="court-card-img" src="${courtImg}" alt="${c.tenSan}" onerror="this.src='${fallbackImg}'">
+              <div class="court-card-badge-pos" style="display: flex; flex-direction: column; gap: 0.3rem; align-items: flex-end;">
+                ${badgeTrangThai(c.tinhTrang)}
+                ${isPlaying ? `<span class="badge" style="background-color: #f97316; color: #ffffff; font-weight: 700; font-size: 0.72rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">🏸 Đang có người chơi</span>` : ''}
+              </div>
+            </div>
+            <div class="court-card-content">
+              <div class="court-card-title">
+                <span>🏸</span> ${c.tenSan}
+              </div>
+              <div class="court-card-loc">📍 ${c.tenDiaDiem}</div>
+              
+              <div class="court-card-meta">
+                <div><strong>Mã sân:</strong> #${c.maSan}</div>
+                <div><strong>Giờ mở cửa:</strong> ${formatGio(c.gioMo)} - ${formatGio(c.gioDong)}</div>
+              </div>
+
+              <div class="court-card-desc">
+                Mặt sân thảm tiêu chuẩn thi đấu, ánh sáng đạt chuẩn chống lóa, trần cao thoáng mát.
+              </div>
+
+              <div class="court-card-actions">
+                ${primaryBtn}
+                <button type="button" class="btn btn-outline btn-sm" onclick='openCourtDetailModal(${JSON.stringify(c)})'>Chi tiết</button>
+                ${c.mapLink ? `<a href="${c.mapLink}" target="_blank" class="btn btn-outline btn-sm" style="color: var(--primary-dark); border-color: var(--primary-border);">📍 Bản đồ</a>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectCourtAndBook(court) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/pages/auth/login.html';
+        return;
+      }
+      sessionStorage.setItem('selectedCourt', JSON.stringify({
+        maSan: court.maSan,
+        tenSan: court.tenSan,
+        maDiaDiem: court.maDiaDiem,
+        tenDiaDiem: court.tenDiaDiem,
+        tinhTrang: court.tinhTrang,
+        gioMo: court.gioMo,
+        gioDong: court.gioDong,
+        hinhAnh: court.hinhAnh,
+        mapLink: court.mapLink
+      }));
+      window.location.href = '/pages/user/booking.html';
+    }
+
+    function openCourtDetailModal(court) {
+      const modal = document.getElementById('modal-court-detail');
+      const titleEl = document.getElementById('modal-court-title');
+      const bodyEl = document.getElementById('modal-court-body');
+      const token = localStorage.getItem('token');
+
+      if (!modal || !bodyEl) return;
+
+      titleEl.textContent = `${court.tenSan} — ${court.tenDiaDiem}`;
+
+      const fallbackImg = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60';
+      const courtImg = court.hinhAnh && court.hinhAnh.startsWith('http') ? court.hinhAnh : fallbackImg;
+
+      bodyEl.innerHTML = `
+        <img src="${courtImg}" alt="${court.tenSan}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 1rem;" onerror="this.src='${fallbackImg}'">
+        
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Tên sân:</span>
+          <span class="modal-detail-value">${court.tenSan}</span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Địa điểm cơ sở:</span>
+          <span class="modal-detail-value">
+            ${court.tenDiaDiem}
+            ${court.mapLink ? `<br><a href="${court.mapLink}" target="_blank" style="color: var(--primary); font-size: 0.85rem; text-decoration: underline;">📍 Xem vị trí trên Google Maps ↗</a>` : ''}
+          </span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Mã định danh:</span>
+          <span class="modal-detail-value">#${court.maSan}</span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Giờ hoạt động:</span>
+          <span class="modal-detail-value">${formatGio(court.gioMo)} - ${formatGio(court.gioDong)}</span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Trạng thái hiện tại:</span>
+          <span class="modal-detail-value">${badgeTrangThai(court.tinhTrang)}</span>
+        </div>
+        <div class="modal-detail-row">
+          <span class="modal-detail-label">Bảng giá tham khảo:</span>
+          <span class="modal-detail-value" style="color: var(--primary-dark);">100.000 đ - 150.000 đ / giờ</span>
+        </div>
+        <div class="modal-detail-row" style="flex-direction: column; gap: 0.35rem;">
+          <span class="modal-detail-label">Tiện ích:</span>
+          <span style="font-size: 0.85rem; color: var(--text-main);">
+            • Sân thảm chuyên dụng chống trơn trượt<br>
+            • Hệ thống điều hòa / thông gió & đèn LED cao cấp<br>
+            • Nước uống, phòng thay đồ, wifi miễn phí
+          </span>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline" onclick="closeCourtDetailModal()">Đóng</button>
+          ${court.dangDuocDat
+            ? `<button type="button" class="btn btn-disabled" disabled style="background-color: #e2e8f0; color: #64748b; cursor: not-allowed;">Đã có người đặt</button>`
+            : (token && court.tinhTrang === 'HoatDong'
+                ? `<button type="button" class="btn btn-primary" onclick='selectCourtAndBook(${JSON.stringify(court)})'>Đặt sân này</button>`
+                : '')
+          }
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeCourtDetailModal() {
+      document.getElementById('modal-court-detail').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
+

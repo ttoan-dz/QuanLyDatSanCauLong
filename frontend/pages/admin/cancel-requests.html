@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duyệt Yêu Cầu Hủy — Admin Portal</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link active">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Duyệt yêu cầu hủy sân (Chờ hủy)</h1>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div class="card">
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Danh sách các đơn đặt sân đã được xác nhận mà khách hàng gửi yêu cầu xin hủy. Admin cần kiểm tra và chấp nhận (hoàn tiền) hoặc từ chối yêu cầu.
+      </p>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mã đơn</th>
+              <th>Sân & Địa điểm</th>
+              <th>Ngày chơi</th>
+              <th>Khung giờ</th>
+              <th>Số tiền</th>
+              <th>Trạng thái TT</th>
+              <th>Ghi chú / Lý do</th>
+              <th>Xử lý yêu cầu</th>
+            </tr>
+          </thead>
+          <tbody id="cancel-requests-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center;">Đang tải danh sách yêu cầu...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCancelRequests();
+    });
+  </script>
+</body>
+</html>
+

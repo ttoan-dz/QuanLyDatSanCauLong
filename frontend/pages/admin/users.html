@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Người Dùng — Admin Portal</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link active">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Danh sách người dùng & Khách hàng</h1>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">
+          Quản lý tài khoản khách hàng, theo dõi số lần No-Show và khóa/mở khóa tài khoản khi cần thiết.
+        </p>
+        <button type="button" class="btn btn-outline" onclick="loadUsers()">🔄 Làm mới danh sách</button>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mã KH</th>
+              <th>Họ và tên</th>
+              <th>Số điện thoại</th>
+              <th>Email</th>
+              <th>Số lần No-Show</th>
+              <th>Trạng thái TK</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center;">Đang tải danh sách người dùng...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Chỉnh sửa Thông tin Người Dùng -->
+  <div id="modal-edit-user" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Chi tiết & Sửa thông tin người dùng</h3>
+        <button type="button" class="modal-close" onclick="closeEditUserModal()">&times;</button>
+      </div>
+      <form id="form-edit-user" onsubmit="updateUser(event)">
+        <input type="hidden" id="edit-user-maKH">
+        <div class="form-group">
+          <label>Mã khách hàng</label>
+          <input type="text" id="edit-user-maKH-display" class="form-control" readonly style="background-color: #f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label for="edit-user-hoTen">Họ và tên (*)</label>
+          <input type="text" id="edit-user-hoTen" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-user-sdt">Số điện thoại (*)</label>
+          <input type="tel" id="edit-user-sdt" class="form-control" pattern="^[0-9]{10}$" placeholder="0901234567" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-user-email">Email (*)</label>
+          <input type="email" id="edit-user-email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Số lần No-Show</label>
+          <input type="text" id="edit-user-noShow" class="form-control" readonly style="background-color: #f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label>Trạng thái tài khoản</label>
+          <input type="text" id="edit-user-status" class="form-control" readonly style="background-color: #f1f5f9;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" onclick="closeEditUserModal()">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUsers();
+    });
+  </script>
+</body>
+</html>
+

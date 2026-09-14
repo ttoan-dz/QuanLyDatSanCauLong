@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Quản Lý Đặt Sân Cầu Lông</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link active">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1 class="page-title">Tổng quan & Thống kê doanh thu</h1>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- Filter Form -->
+    <div class="card">
+      <h2 class="card-title">Bộ lọc thống kê</h2>
+      <div class="form-grid" style="align-items: flex-end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="input-thang">Tháng</label>
+          <input type="number" id="input-thang" class="form-control" min="1" max="12" placeholder="1 - 12">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="input-nam">Năm</label>
+          <input type="number" id="input-nam" class="form-control" min="2020" max="2099" placeholder="2026">
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" onclick="loadDashboard()">Xem thống kê</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Doanh thu tháng</span>
+        <span id="stat-total-revenue" class="stat-value">0 đ</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Số đơn hoàn thành (Tháng)</span>
+        <span id="stat-total-bookings" class="stat-value">0 đơn</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Doanh thu cả năm</span>
+        <span id="stat-year-revenue" class="stat-value" style="color: var(--success);">0 đ</span>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="card">
+      <h2 class="card-title">Lối tắt quản trị</h2>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/pages/admin/bookings.html" class="btn btn-outline">📅 Xem đơn đặt sân chờ duyệt</a>
+        <a href="/pages/admin/cancel-requests.html" class="btn btn-outline">⚠️ Xử lý yêu cầu hủy sân</a>
+        <a href="/pages/admin/courts.html" class="btn btn-outline">🏸 Quản lý danh sách sân</a>
+        <a href="/pages/admin/users.html" class="btn btn-outline">👥 Quản lý người dùng</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>
+
