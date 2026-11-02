@@ -154,13 +154,33 @@
                 </div>
               </div>
 
-              <!-- Option 2: QR Code -->
+              <!-- Option 2: QR Code / Chuyển khoản -->
               <div id="card-pay-qr" class="payment-option-card" onclick="selectPaymentMethod('QR')">
                 <input type="radio" id="pay-qr" name="paymentMethod" value="QR">
                 <span class="payment-option-icon">📱</span>
                 <div class="payment-option-text">
-                  <span class="payment-option-title">Chuyển khoản QR Code</span>
-                  <span class="payment-option-desc">Quét mã QR tự động bằng App Ngân hàng / Ví điện tử (sân được xác nhận ngay lập tức)</span>
+                  <span class="payment-option-title">Quét mã QR Ngân hàng</span>
+                  <span class="payment-option-desc">Quét mã VietQR chuyển khoản nhanh 24/7 (tự động giữ chỗ 10 phút)</span>
+                </div>
+              </div>
+
+              <!-- Option 3: Cổng thanh toán VNPay -->
+              <div id="card-pay-vnpay" class="payment-option-card" onclick="selectPaymentMethod('VNPay')">
+                <input type="radio" id="pay-vnpay" name="paymentMethod" value="VNPay">
+                <span class="payment-option-icon">💳</span>
+                <div class="payment-option-text">
+                  <span class="payment-option-title">Cổng thanh toán VNPay</span>
+                  <span class="payment-option-desc">Thanh toán trực tuyến 100% qua ATM / Thẻ quốc tế / Ví VNPay</span>
+                </div>
+              </div>
+
+              <!-- Option 4: Ví điện tử MoMo -->
+              <div id="card-pay-momo" class="payment-option-card" onclick="selectPaymentMethod('MoMo')">
+                <input type="radio" id="pay-momo" name="paymentMethod" value="MoMo">
+                <span class="payment-option-icon">👛</span>
+                <div class="payment-option-text">
+                  <span class="payment-option-title">Ví điện tử MoMo</span>
+                  <span class="payment-option-desc">Thanh toán trực tuyến 100% tiện lợi qua App MoMo</span>
                 </div>
               </div>
 

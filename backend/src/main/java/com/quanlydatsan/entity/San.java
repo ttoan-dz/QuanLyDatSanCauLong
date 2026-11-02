@@ -22,6 +22,9 @@ public class San {
     @Column(name = "TenSan", nullable = false, length = 50)
     private String tenSan;
 
+    @Column(name = "LoaiSan", nullable = false, length = 50)
+    private String loaiSan = "Sân tiêu chuẩn";
+
     /**
      * Giá trị hợp lệ (CHECK constraint): 'HoatDong' | 'TamNgung' | 'BaoTri'
      */

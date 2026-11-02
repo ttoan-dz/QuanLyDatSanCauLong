@@ -16,13 +16,13 @@ import com.quanlydatsan.entity.DatSan;
 public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
 
     /**
-     * Kiểm tra trùng lịch: chỉ tính các đơn đang thực sự giữ chỗ
-     * (ChoXacNhan / DaXacNhan / ChoHuy), so khớp overlap chuẩn.
+     * Kiểm tra trùng lịch: các đơn đang giữ chỗ hoặc đang sử dụng sân
+     * (ChoXacNhan, DaXacNhan, DangChoi, ChoHuy), so khớp overlap chuẩn.
      */
     @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END " +
            "FROM DatSan d WHERE d.san.maSan = :maSan " +
            "AND d.ngayChoi = :ngay " +
-           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','ChoHuy') " +
+           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','DangChoi','ChoHuy') " +
            "AND :gioBatDau < d.gioKetThuc AND :gioKetThuc > d.gioBatDau")
     boolean existsTrungLich(@Param("maSan") Integer maSan,
                             @Param("ngay") LocalDate ngay,
@@ -30,13 +30,12 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
                             @Param("gioKetThuc") LocalTime gioKetThuc);
 
     /**
-     * Đếm số sân đang bị chiếm trong 1 địa điểm ở khung giờ đó
-     * (dùng để kiểm tra "hết sân toàn địa điểm").
+     * Đếm số sân đang bị chiếm trong 1 địa điểm ở khung giờ đó.
      */
     @Query("SELECT COUNT(DISTINCT d.san.maSan) FROM DatSan d " +
            "WHERE d.san.diaDiem.maDiaDiem = :maDiaDiem " +
            "AND d.ngayChoi = :ngay " +
-           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','ChoHuy') " +
+           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','DangChoi','ChoHuy') " +
            "AND :gioBatDau < d.gioKetThuc AND :gioKetThuc > d.gioBatDau")
     long demSoSanDaDat(@Param("maDiaDiem") Integer maDiaDiem,
                        @Param("ngay") LocalDate ngay,
@@ -54,7 +53,7 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     List<DatSan> findByNgayChoiAndTrangThaiDatIn(LocalDate ngayChoi, List<String> trangThaiDats);
 
     /**
-     * Tìm các đơn theo danh sách trạng thái đặt (bất kể ngày nào).
+     * Tìm các đơn theo danh sách trạng thái đặt.
      */
     List<DatSan> findByTrangThaiDatIn(List<String> trangThaiDats);
 
@@ -65,13 +64,12 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     List<DatSan> findDonDaXacNhanQuaGio(@Param("today") LocalDate today, @Param("now") LocalTime now);
 
     /**
-     * Thống kê doanh thu theo tháng/năm — loại trừ đơn đã hủy,
-     * chỉ tính đơn đã thanh toán.
+     * Thống kê doanh thu theo tháng/năm.
      */
     @Query("SELECT COALESCE(SUM(d.soTien),0) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam AND MONTH(d.ngayChoi) = :thang " +
            "AND d.trangThaiThanhToan = 'DaThanhToan' " +
-           "AND d.trangThaiDat <> 'DaHuy'")
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
     Long tinhDoanhThuTheoThang(@Param("nam") int nam, @Param("thang") int thang);
 
     /**
@@ -80,7 +78,7 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     @Query("SELECT COALESCE(SUM(d.soTien),0) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam " +
            "AND d.trangThaiThanhToan = 'DaThanhToan' " +
-           "AND d.trangThaiDat <> 'DaHuy'")
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
     Long tinhDoanhThuTheoNam(@Param("nam") int nam);
 
     /**
@@ -89,7 +87,7 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     @Query("SELECT COUNT(d) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam AND MONTH(d.ngayChoi) = :thang " +
            "AND d.trangThaiThanhToan = 'DaThanhToan' " +
-           "AND d.trangThaiDat <> 'DaHuy'")
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
     Long demSoDonTheoThang(@Param("nam") int nam, @Param("thang") int thang);
 
     /**
@@ -98,25 +96,25 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     @Query("SELECT COUNT(d) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam " +
            "AND d.trangThaiThanhToan = 'DaThanhToan' " +
-           "AND d.trangThaiDat <> 'DaHuy'")
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
     Long demSoDonTheoNam(@Param("nam") int nam);
 
     /**
-     * Kiểm tra sân có đơn đặt đang active không (dùng khi xoá sân).
+     * Kiểm tra sân có đơn đặt đang active không.
      */
     @Query("SELECT CASE WHEN COUNT(d) > 0 THEN true ELSE false END " +
            "FROM DatSan d WHERE d.san.maSan = :maSan " +
-           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','ChoHuy')")
+           "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','DangChoi','ChoHuy')")
     boolean existsDatSanActiveBySan(@Param("maSan") Integer maSan);
 
     /**
-     * Tìm các đơn QR chờ xác nhận đã quá hạn (ngayTao trước thời điểm chỉ định).
+     * Tìm các đơn chờ thanh toán đã quá hạn giữ chỗ 10 phút.
      */
     @Query("SELECT d FROM DatSan d " +
            "WHERE d.trangThaiDat = 'ChoXacNhan' " +
-           "AND d.phuongThucThanhToan = 'QR' " +
-           "AND d.ngayTao < :thoiDiemHetHan")
-    List<DatSan> findDonQRHetHan(@Param("thoiDiemHetHan") LocalDateTime thoiDiemHetHan);
+           "AND ((d.hanThanhToan IS NOT NULL AND d.hanThanhToan < :now) " +
+           "  OR (d.hanThanhToan IS NULL AND d.ngayTao < :thoiDiemHetHan))")
+    List<DatSan> findDonHetHanGiuCho(@Param("now") LocalDateTime now, @Param("thoiDiemHetHan") LocalDateTime thoiDiemHetHan);
 
     /**
      * Lấy toàn bộ đơn đặt sân (kèm JOIN FETCH) sắp xếp mới nhất trước.
@@ -138,5 +136,19 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
            "WHERE d.trangThaiDat = :trangThaiDat " +
            "ORDER BY d.ngayTao DESC")
     List<DatSan> findByTrangThaiDatWithDetails(@Param("trangThaiDat") String trangThaiDat);
-}
 
+    /**
+     * Tìm kiếm đơn đặt sân theo từ khóa (Mã đơn, SĐT, Tên KH) phục vụ nghiệp vụ tại quầy.
+     */
+    @Query("SELECT d FROM DatSan d " +
+           "JOIN FETCH d.san s " +
+           "JOIN FETCH s.diaDiem " +
+           "JOIN FETCH d.khachHang kh " +
+           "WHERE (:keyword IS NULL OR :keyword = '' " +
+           "  OR CAST(d.maDatSan AS string) LIKE CONCAT('%', :keyword, '%') " +
+           "  OR kh.sdt LIKE CONCAT('%', :keyword, '%') " +
+           "  OR LOWER(kh.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:trangThaiDat IS NULL OR :trangThaiDat = '' OR d.trangThaiDat = :trangThaiDat) " +
+           "ORDER BY d.ngayTao DESC")
+    List<DatSan> searchBookings(@Param("keyword") String keyword, @Param("trangThaiDat") String trangThaiDat);
+}

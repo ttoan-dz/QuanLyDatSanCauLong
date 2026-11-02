@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Dịch Vụ — Admin Portal</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body data-require-role="ADMIN">
+
+  <!-- Navigation Bar -->
+  <nav class="admin-navbar">
+    <a href="/pages/admin/dashboard.html" class="brand">
+      <span>🏸</span> Admin Portal
+    </a>
+    <ul class="nav-links">
+      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
+      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
+      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
+      <li><a href="/pages/admin/services.html" class="nav-link active">Quản lý dịch vụ</a></li>
+      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
+      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
+    </ul>
+    <div class="user-controls">
+      <span class="admin-name">Xin chào, <strong id="admin-display-name">Nhân viên / Admin</strong></span>
+      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <div>
+        <h1 class="page-title">Quản lý Dịch vụ tại sân</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+          Quản lý nước uống, bóng cầu lông, dịch vụ cho thuê vợt và tồn kho tại các cơ sở.
+        </p>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openCreateServiceModal()">➕ Thêm dịch vụ mới</button>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <!-- Filter Bar -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label for="select-venue-filter" style="font-weight: 600; font-size: 0.9rem;">Cơ sở / Địa điểm:</label>
+          <select id="select-venue-filter" class="form-control" onchange="loadServicesList()" style="min-width: 220px;">
+            <option value="">-- Tất cả cơ sở --</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-outline" onclick="loadServicesList()">🔄 Làm mới danh sách</button>
+      </div>
+    </div>
+
+    <!-- Services Table -->
+    <div class="card">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mã DV</th>
+              <th>Tên dịch vụ</th>
+              <th>Cơ sở</th>
+              <th>Loại dịch vụ</th>
+              <th>Đơn giá</th>
+              <th>Số lượng tồn</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="services-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center;">Đang tải danh sách dịch vụ...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Tạo / Sửa Dịch Vụ -->
+  <div id="modal-service-form" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="service-form-modal-title">Thêm dịch vụ mới</h3>
+        <button type="button" class="modal-close" onclick="closeModal('modal-service-form')">&times;</button>
+      </div>
+      <form id="form-service" onsubmit="submitServiceForm(event)">
+        <input type="hidden" id="service-edit-id">
+
+        <div class="form-group" id="group-service-venue">
+          <label for="input-service-venue">Cơ sở áp dụng:</label>
+          <select id="input-service-venue" class="form-control" required>
+            <!-- Options dynamically loaded -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="input-service-name">Tên dịch vụ / mặt hàng:</label>
+          <input type="text" id="input-service-name" class="form-control" placeholder="VD: Nước tăng lực RedBull, Thuê vợt Yonex..." required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="input-service-type">Loại dịch vụ:</label>
+            <select id="input-service-type" class="form-control" required>
+              <option value="Ban">Bán hàng (Nước, Cầu...)</option>
+              <option value="ChoThue">Cho thuê (Vợt, Giày...)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="input-service-price">Đơn giá (VNĐ):</label>
+            <input type="number" id="input-service-price" class="form-control" min="0" step="1000" placeholder="VD: 15000" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-service-stock">Số lượng tồn kho:</label>
+          <input type="number" id="input-service-stock" class="form-control" min="0" value="50" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-service-form')">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-service">Lưu thông tin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/assets/js/api.js?v=2.2"></script>
+  <script src="/assets/js/utils.js?v=2.2"></script>
+  <script src="/assets/js/admin.js?v=2.2"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initServicesPage();
+    });
+  </script>
+</body>
+</html>

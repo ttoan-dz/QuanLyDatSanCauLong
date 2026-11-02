@@ -330,20 +330,29 @@ function renderStep2(draft) {
 }
 
 function selectPaymentMethod(method) {
-  const radioCash = document.getElementById('pay-cash');
-  const radioQR = document.getElementById('pay-qr');
-  const cardCash = document.getElementById('card-pay-cash');
-  const cardQR = document.getElementById('card-pay-qr');
+  const cards = {
+    'TienMat': document.getElementById('card-pay-cash'),
+    'QR': document.getElementById('card-pay-qr'),
+    'VNPay': document.getElementById('card-pay-vnpay'),
+    'MoMo': document.getElementById('card-pay-momo')
+  };
+  const radios = {
+    'TienMat': document.getElementById('pay-cash'),
+    'QR': document.getElementById('pay-qr'),
+    'VNPay': document.getElementById('pay-vnpay'),
+    'MoMo': document.getElementById('pay-momo')
+  };
 
-  if (method === 'TienMat') {
-    radioCash.checked = true;
-    cardCash.classList.add('active');
-    cardQR.classList.remove('active');
-  } else {
-    radioQR.checked = true;
-    cardQR.classList.add('active');
-    cardCash.classList.remove('active');
-  }
+  Object.keys(cards).forEach(key => {
+    if (cards[key]) {
+      if (key === method) {
+        cards[key].classList.add('active');
+        if (radios[key]) radios[key].checked = true;
+      } else {
+        cards[key].classList.remove('active');
+      }
+    }
+  });
 }
 
 /**
@@ -357,7 +366,8 @@ async function handleFinalCheckout() {
   }
 
   const draft = JSON.parse(draftStr);
-  const phuongThucThanhToan = document.querySelector('input[name="paymentMethod"]:checked').value;
+  const selectedRadio = document.querySelector('input[name="paymentMethod"]:checked');
+  const phuongThucThanhToan = selectedRadio ? selectedRadio.value : 'QR';
   const btnCheckout = document.getElementById('btn-checkout');
 
   if (btnCheckout) btnCheckout.disabled = true;
@@ -375,10 +385,10 @@ async function handleFinalCheckout() {
     const res = await api.post('/user/booking', payload);
     const maDatSan = res.maDatSan;
 
-    if (phuongThucThanhToan === 'QR') {
-      showQRModalOrSection(maDatSan, draft.tongTien);
-    } else {
+    if (phuongThucThanhToan === 'TienMat') {
       showCashSuccess(maDatSan);
+    } else {
+      showOnlinePaymentModal(maDatSan, draft.tongTien, phuongThucThanhToan);
     }
   } catch (error) {
     showAlert(`Đặt sân thất bại: ${error.message}`, 'danger');
@@ -386,34 +396,83 @@ async function handleFinalCheckout() {
   }
 }
 
-function showQRModalOrSection(maDatSan, tongTien) {
+let holdTimerInterval = null;
+
+function showOnlinePaymentModal(maDatSan, tongTien, method) {
   const container = document.getElementById('booking-app-container');
+  let title = 'Quét mã QR để thanh toán';
+  let icon = '📱';
+  let badgeText = 'VietQR';
+
+  if (method === 'VNPay') {
+    title = 'Thanh toán trực tuyến VNPay Gateway';
+    icon = '💳';
+    badgeText = 'Cổng VNPAY-QR';
+  } else if (method === 'MoMo') {
+    title = 'Thanh toán qua Ví điện tử MoMo';
+    icon = '👛';
+    badgeText = 'Ví MoMo';
+  }
+
   container.innerHTML = `
     <div class="qr-payment-box">
-      <span style="font-size: 2.5rem;">📱</span>
-      <h2 style="font-size: 1.35rem; color: var(--dark); font-weight: 700;">Quét mã QR để thanh toán</h2>
+      <span style="font-size: 2.5rem;">${icon}</span>
+      <h2 style="font-size: 1.35rem; color: var(--dark); font-weight: 700;">${title}</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem;">
-        Đơn đặt sân <strong>#${maDatSan}</strong> — Số tiền: <strong style="color: var(--primary-dark); font-size: 1.1rem;">${formatTien(tongTien)}</strong>
+        Đơn đặt sân <strong>#${maDatSan}</strong> — Số tiền: <strong style="color: var(--primary-dark); font-size: 1.2rem;">${formatTien(tongTien)}</strong>
       </p>
+
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: var(--radius-sm); padding: 0.65rem 1rem; width: 100%; text-align: center; font-size: 0.9rem; font-weight: 600;">
+        ⏳ Thời gian giữ chỗ còn lại: <span id="countdown-timer" style="color: #dc2626; font-size: 1.05rem;">10:00</span>
+      </div>
       
       <img src="/assets/images/qr.jpg" alt="Mã QR thanh toán" class="qr-code-img" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=QUANLYDATSAN_BOOKING_${maDatSan}_${tongTien}'">
 
-      <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted); width: 100%;">
-        <strong>Nội dung CK:</strong> DATSAN ${maDatSan}<br>
-        <strong>Thời gian thanh toán:</strong> 15 phút
+      <div style="background: #f8fafc; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted); width: 100%; line-height: 1.6;">
+        <strong>Hình thức:</strong> ${badgeText} (Thanh toán trước 100%)<br>
+        <strong>Nội dung chuyển khoản:</strong> <code style="color: #0369a1; font-weight: 700;">DATSAN ${maDatSan}</code><br>
+        <strong>Quy định:</strong> Quá 10 phút chưa hoàn tất thanh toán, hệ thống sẽ tự động hủy đơn giữ chỗ.
       </div>
 
       <div id="qr-alert-container" style="width: 100%;"></div>
 
       <button id="btn-pay-qr" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.75rem;" onclick="handleConfirmQRPaid(${maDatSan})">
-        ✅ Tôi đã thanh toán
+        ✅ Đã hoàn tất thanh toán (${badgeText})
       </button>
     </div>
   `;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // 10 phút đếm ngược
+  let timeLeft = 10 * 60;
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
+  holdTimerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(holdTimerInterval);
+      const timerEl = document.getElementById('countdown-timer');
+      if (timerEl) timerEl.textContent = '00:00 (Hết hạn)';
+      const btn = document.getElementById('btn-pay-qr');
+      if (btn) btn.disabled = true;
+      const alertBox = document.getElementById('qr-alert-container');
+      if (alertBox) {
+        alertBox.innerHTML = '<div class="alert alert-danger">Đơn đặt sân đã quá 10 phút giữ chỗ và tự động bị hủy để giải phóng sân.</div>';
+      }
+    } else {
+      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const seconds = String(timeLeft % 60).padStart(2, '0');
+      const timerEl = document.getElementById('countdown-timer');
+      if (timerEl) timerEl.textContent = `${minutes}:${seconds}`;
+    }
+  }, 1000);
+}
+
+function showQRModalOrSection(maDatSan, tongTien) {
+  showOnlinePaymentModal(maDatSan, tongTien, 'QR');
 }
 
 async function handleConfirmQRPaid(maDatSan) {
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
   const btn = document.getElementById('btn-pay-qr');
   if (btn) btn.disabled = true;
 
@@ -424,7 +483,7 @@ async function handleConfirmQRPaid(maDatSan) {
 
     const alertBox = document.getElementById('qr-alert-container');
     if (alertBox) {
-      alertBox.innerHTML = `<div class="alert alert-success">✅ Thanh toán thành công! Sân đã được xác nhận. Đang chuyển đến Lịch sử...</div>`;
+      alertBox.innerHTML = `<div class="alert alert-success">✅ Thanh toán thành công! Đơn đặt sân đã được xác nhận. Đang chuyển đến Lịch sử...</div>`;
     }
 
     setTimeout(() => {

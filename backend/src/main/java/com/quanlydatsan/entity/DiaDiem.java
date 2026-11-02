@@ -32,6 +32,12 @@ public class DiaDiem {
     @Column(name = "TrangThai", nullable = false, length = 20)
     private String trangThai;
 
+    @Column(name = "DiaChi", length = 255)
+    private String diaChi;
+
+    @Column(name = "SDT", length = 15)
+    private String sdt;
+
     @Column(name = "MapLink", length = 500)
     private String mapLink;
 }

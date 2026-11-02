@@ -94,6 +94,22 @@
     </div>
   </div>
 
+  <!-- Modal Chi Tiết Đơn Đặt Sân -->
+  <div id="modal-booking-detail" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Chi tiết đơn đặt sân <span id="detail-modal-id">#</span></h3>
+        <button type="button" class="modal-close" onclick="closeBookingDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="detail-modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; padding: 1rem 1.5rem; border-top: 1px solid var(--border);">
+        <button type="button" class="btn btn-outline" onclick="closeBookingDetailModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/utils.js"></script>

@@ -1,4 +1,44 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+// ============================================================================
+// CẤU HÌNH TẬP TRUNG URL BACKEND CHO TOÀN BỘ ỨNG DỤNG FRONTEND
+// ============================================================================
+// Khi deploy lên Render:
+// - Mặc định tự động nhận diện nếu Frontend và Backend đặt tên theo quy chuẩn Render:
+//   Ví dụ: Frontend 'quanlydatsan-frontend' -> Backend 'quanlydatsan-backend'
+// - Nếu đặt tên service Backend khác trên Render Dashboard, chỉ cần cập nhật DUY NHẤT URL này:
+const DEFAULT_PRODUCTION_BACKEND_URL = 'https://quanlydatsan-backend.onrender.com';
+
+const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' || 
+                    window.location.hostname === '';
+
+function resolveApiBaseUrl() {
+  if (window.API_BASE_URL) {
+    return window.API_BASE_URL.replace(/\/+$/, '');
+  }
+  const cachedUrl = localStorage.getItem('API_BASE_URL');
+  if (cachedUrl) {
+    return cachedUrl.replace(/\/+$/, '');
+  }
+
+  // 1. Môi trường phát triển Localhost
+  if (isLocalhost) {
+    return 'http://localhost:8080/api';
+  }
+
+  // 2. Môi trường Render: Tự động suy luận domain backend từ frontend (*-frontend -> *-backend)
+  const hostname = window.location.hostname;
+  if (hostname.endsWith('.onrender.com')) {
+    if (hostname.includes('-frontend')) {
+      const backendHost = hostname.replace('-frontend', '-backend');
+      return `https://${backendHost}/api`;
+    }
+  }
+
+  // 3. Fallback URL backend production mặc định
+  return `${DEFAULT_PRODUCTION_BACKEND_URL.replace(/\/+$/, '')}/api`;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 const api = {
   async request(endpoint, options = {}) {
@@ -17,7 +57,14 @@ const api = {
       headers
     };
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    let path = endpoint;
+    if (path.startsWith('/api/')) {
+      path = path.substring(4);
+    }
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${path}`;
 
     try {
       const response = await fetch(url, config);

@@ -92,6 +92,7 @@ async function loadBookingHistory() {
                   </td>
                   <td style="padding: 0.85rem 1rem; text-align: right;">
                     <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                      <button class="btn btn-sm btn-outline" onclick="openBookingDetailModal(${b.maDatSan})">Chi tiết</button>
                       ${canPayQR ? `
                         <button class="btn btn-sm btn-primary" onclick="openHistoryQRModal(${b.maDatSan}, ${b.soTien})">Thanh toán QR</button>
                       ` : ''}
@@ -193,5 +194,134 @@ async function confirmQRPaidInHistory() {
     showAlert(`Lỗi thanh toán: ${error.message}`, 'danger');
     if (btn) btn.disabled = false;
   }
+}
+
+// ======================== MODAL XEM CHI TIẾT ĐƠN ========================
+
+function openBookingDetailModal(maDatSan) {
+  const b = historyList.find(x => x.maDatSan === maDatSan);
+  if (!b) return;
+
+  const modal = document.getElementById('modal-booking-detail');
+  const txtId = document.getElementById('detail-modal-id');
+  const body = document.getElementById('detail-modal-body');
+  if (txtId) txtId.textContent = `#${b.maDatSan}`;
+
+  let dvHtml = '';
+  if (b.danhSachDichVu && b.danhSachDichVu.length > 0) {
+    dvHtml = `
+      <div style="margin-top: 1rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--dark);">🏸 Dịch vụ đã sử dụng</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 0.75rem;">
+          <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+              <th style="padding: 0.4rem 0.6rem;">Dịch vụ</th>
+              <th style="padding: 0.4rem 0.6rem; text-align: center;">SL</th>
+              <th style="padding: 0.4rem 0.6rem; text-align: right;">Đơn giá</th>
+              <th style="padding: 0.4rem 0.6rem; text-align: right;">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${b.danhSachDichVu.map(dv => `
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 0.4rem 0.6rem;">${dv.tenDV}</td>
+                <td style="padding: 0.4rem 0.6rem; text-align: center;">${dv.soLuong}</td>
+                <td style="padding: 0.4rem 0.6rem; text-align: right;">${formatTien(dv.donGia)}</td>
+                <td style="padding: 0.4rem 0.6rem; text-align: right; font-weight: 600;">${formatTien(dv.thanhTien)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  let hdHtml = '';
+  if (b.hoaDon) {
+    hdHtml = `
+      <div style="margin-top: 1rem; padding: 0.85rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--primary-dark);">🧾 Chi tiết hóa đơn thanh toán (#${b.hoaDon.maHoaDon})</h4>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span>Tiền sân:</span>
+          <strong>${formatTien(b.hoaDon.tongTienSan || 0)}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span>Tiền dịch vụ:</span>
+          <strong>${formatTien(b.hoaDon.tongTienDV || 0)}</strong>
+        </div>
+        ${b.hoaDon.tienQuaGio > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--orange);">
+            <span>Tiền quá giờ (${b.soBlockQuaGio || 0} block 15p):</span>
+            <strong>+${formatTien(b.hoaDon.tienQuaGio)}</strong>
+          </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--text-muted);">
+          <span>Đã trả trước:</span>
+          <strong>-${formatTien(b.hoaDon.tienTraTruoc || 0)}</strong>
+        </div>
+        ${b.hoaDon.tienHoanDuyet > 0 ? `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--success);">
+            <span>Khấu trừ hoàn tiền:</span>
+            <strong>-${formatTien(b.hoaDon.tienHoanDuyet)}</strong>
+          </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #cbd5e1; font-size: 1rem;">
+          <strong style="color: var(--primary-dark);">Thực thu / Còn lại:</strong>
+          <strong style="color: var(--primary-dark);">${formatTien(b.hoaDon.thanhTien || 0)}</strong>
+        </div>
+      </div>
+    `;
+  }
+
+  let htHtml = '';
+  if (b.hoanTien) {
+    htHtml = `
+      <div style="margin-top: 1rem; padding: 0.85rem; background: #fffbeb; border-radius: 8px; border: 1px solid #fde68a; font-size: 0.85rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #b45309;">💰 Thông tin hoàn tiền</h4>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span>Tỷ lệ hoàn tiền:</span>
+          <strong style="color: #b45309;">${b.hoanTien.tiLeHoan || 0}%</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span>Số tiền được hoàn:</span>
+          <strong style="color: var(--success); font-size: 1rem;">${formatTien(b.hoanTien.soTienHoan || 0)}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span>Trạng thái:</span>
+          <span>${badgeTrangThai(b.hoanTien.trangThai || 'DaHoan')}</span>
+        </div>
+        ${b.hoanTien.lyDo ? `
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Lý do: ${b.hoanTien.lyDo}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  if (body) {
+    body.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.88rem; background: #f8fafc; padding: 0.85rem; border-radius: 8px; margin-bottom: 0.75rem;">
+        <div><strong>Sân:</strong> ${b.tenSan || '---'}</div>
+        <div><strong>Cơ sở:</strong> ${b.tenDiaDiem || '---'}</div>
+        <div><strong>Ngày chơi:</strong> ${formatNgay(b.ngayChoi)}</div>
+        <div><strong>Giờ chơi:</strong> ${formatGio(b.gioBatDau)} - ${formatGio(b.gioKetThuc)}</div>
+        <div><strong>Trạng thái đơn:</strong> ${badgeTrangThai(b.trangThaiDat)}</div>
+        <div><strong>Trạng thái TT:</strong> ${badgeTrangThai(b.trangThaiThanhToan)}</div>
+        ${b.gioCheckIn ? `<div><strong>Check-in:</strong> ${formatGio(b.gioCheckIn)}</div>` : ''}
+        ${b.gioCheckOut ? `<div><strong>Check-out:</strong> ${formatGio(b.gioCheckOut)}</div>` : ''}
+      </div>
+      ${dvHtml}
+      ${hdHtml}
+      ${htHtml}
+    `;
+  }
+
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeBookingDetailModal() {
+  const modal = document.getElementById('modal-booking-detail');
+  if (modal) modal.classList.add('hidden');
 }
 

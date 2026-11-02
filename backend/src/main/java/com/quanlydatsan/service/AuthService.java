@@ -1,16 +1,7 @@
 package com.quanlydatsan.service;
 
-import com.quanlydatsan.dto.request.DangKyRequest;
-import com.quanlydatsan.dto.request.DangNhapRequest;
-import com.quanlydatsan.dto.response.DangNhapResponse;
-import com.quanlydatsan.entity.KhachHang;
-import com.quanlydatsan.entity.Role;
-import com.quanlydatsan.entity.TaiKhoan;
-import com.quanlydatsan.repository.KhachHangRepository;
-import com.quanlydatsan.repository.RoleRepository;
-import com.quanlydatsan.repository.TaiKhoanRepository;
-import com.quanlydatsan.security.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +11,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import com.quanlydatsan.dto.request.DangKyRequest;
+import com.quanlydatsan.dto.request.DangNhapRequest;
+import com.quanlydatsan.dto.response.DangNhapResponse;
+import com.quanlydatsan.entity.KhachHang;
+import com.quanlydatsan.entity.NhanVien;
+import com.quanlydatsan.entity.Role;
+import com.quanlydatsan.entity.TaiKhoan;
+import com.quanlydatsan.repository.KhachHangRepository;
+import com.quanlydatsan.repository.NhanVienRepository;
+import com.quanlydatsan.repository.RoleRepository;
+import com.quanlydatsan.repository.TaiKhoanRepository;
+import com.quanlydatsan.security.JwtTokenProvider;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class AuthService {
     private final TaiKhoanRepository taiKhoanRepository;
     private final KhachHangRepository khachHangRepository;
     private final RoleRepository roleRepository;
+    private final NhanVienRepository nhanVienRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -82,11 +87,25 @@ public class AuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                         "Không tìm thấy tài khoản"));
 
-        String tenRole = tk.getRole().getTenRole();
-        String roleMapped = "Admin".equals(tenRole) ? "ADMIN" : "CUSTOMER";
+        String tenRole = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+        String roleMapped;
+        if ("Admin".equalsIgnoreCase(tenRole)) {
+            roleMapped = "ADMIN";
+        } else if ("Staff".equalsIgnoreCase(tenRole) || "NhanVien".equalsIgnoreCase(tenRole)) {
+            roleMapped = "STAFF";
+        } else {
+            roleMapped = "CUSTOMER";
+        }
 
         Integer maKH = tk.getKhachHang() != null ? tk.getKhachHang().getMaKH() : null;
-        String hoTen = tk.getKhachHang() != null ? tk.getKhachHang().getHoTen() : tenRole;
+        String hoTen;
+        if (tk.getKhachHang() != null) {
+            hoTen = tk.getKhachHang().getHoTen();
+        } else {
+            hoTen = nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK())
+                    .map(NhanVien::getHoTen)
+                    .orElse(tenRole);
+        }
 
         String token = jwtTokenProvider.generateToken(tk.getTenDangNhap(), roleMapped, maKH);
 

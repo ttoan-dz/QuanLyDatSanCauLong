@@ -1,0 +1,45 @@
+services:
+  # ==========================================
+  # 1. Backend Web Service (Spring Boot)
+  # ==========================================
+  - type: web
+    name: quanlydatsan-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xms128m -Xmx300m -XX:+UseSerialGC
+      - key: APP_JWT_SECRET
+        generateValue: true
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+
+  # ==========================================
+  # 2. Frontend Static Site (HTML/CSS/JS)
+  # ==========================================
+  - type: web
+    name: quanlydatsan-frontend
+    runtime: static
+    staticPublishPath: frontend
+    plan: free
+    region: singapore
+

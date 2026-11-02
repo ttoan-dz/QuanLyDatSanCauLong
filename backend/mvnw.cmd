@@ -42,6 +42,20 @@ set ERROR_CODE=0
 @setlocal
 
 @REM ==== START VALIDATION ====
+@chcp 65001 >nul 2>&1
+
+if not "%JAVA_HOME%"=="" goto CheckJHome
+
+if exist "D:\jdk21\bin\java.exe" (
+    set "JAVA_HOME=D:\jdk21"
+    goto CheckJHome
+)
+if exist "C:\Program Files\Java\latest\jdk-21\bin\java.exe" (
+    set "JAVA_HOME=C:\Program Files\Java\latest\jdk-21"
+    goto CheckJHome
+)
+
+:CheckJHome
 if not "%JAVA_HOME%"=="" goto OkJHome
 
 echo.
@@ -66,11 +80,20 @@ goto error
 
 :init
 
+if exist "D:\QuanLyDatSanCauLong\backend\.mvn" (
+    cd /d "D:\QuanLyDatSanCauLong\backend"
+)
+
 @REM Find the project base dir, i.e. the directory that contains the folder ".mvn".
 @REM, where the Maven Wrapper Jar can be found.
 
 set MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%
 IF NOT "%MAVEN_PROJECTBASEDIR%"=="" goto endDetectBaseDir
+
+if exist "%~dp0\.mvn" (
+    for %%F in ("%~dp0.") do set "MAVEN_PROJECTBASEDIR=%%~fF"
+    goto endDetectBaseDir
+)
 
 set EXEC_DIR=%CD%
 set WDIR=%EXEC_DIR%
@@ -102,6 +125,12 @@ for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do s
 
 SET MAVEN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
 set WRAPPER_JAR="%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar"
+
+if exist "D:\QuanLyDatSanCauLong\backend\.mvn\wrapper\maven-wrapper.jar" (
+    set "MAVEN_PROJECTBASEDIR=D:\QuanLyDatSanCauLong\backend"
+    set WRAPPER_JAR="D:\QuanLyDatSanCauLong\backend\.mvn\wrapper\maven-wrapper.jar"
+)
+
 set WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 
 set WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.2/maven-wrapper-3.3.2.jar"

@@ -12,13 +12,14 @@ import org.springframework.stereotype.Service;
 import com.quanlydatsan.entity.TaiKhoan;
 import com.quanlydatsan.repository.TaiKhoanRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final TaiKhoanRepository taiKhoanRepository;
+
+    public CustomUserDetailsService(TaiKhoanRepository taiKhoanRepository) {
+        this.taiKhoanRepository = taiKhoanRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String tenDangNhap) throws UsernameNotFoundException {
@@ -26,9 +27,15 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Không tìm thấy tài khoản: " + tenDangNhap));
 
-        String authority = "Admin".equals(taiKhoan.getRole().getTenRole())
-                ? "ROLE_ADMIN"
-                : "ROLE_USER";
+        String roleName = taiKhoan.getRole() != null ? taiKhoan.getRole().getTenRole() : "";
+        String authority;
+        if ("Admin".equalsIgnoreCase(roleName)) {
+            authority = "ROLE_ADMIN";
+        } else if ("Staff".equalsIgnoreCase(roleName) || "NhanVien".equalsIgnoreCase(roleName)) {
+            authority = "ROLE_STAFF";
+        } else {
+            authority = "ROLE_USER";
+        }
 
         boolean enabled = !"Khoa".equals(taiKhoan.getTrangThai());
 

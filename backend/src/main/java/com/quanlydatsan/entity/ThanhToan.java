@@ -21,6 +21,19 @@ public class ThanhToan {
     @JoinColumn(name = "MaDatSan", nullable = false)
     private DatSan datSan;
 
+    @ManyToOne
+    @JoinColumn(name = "MaHoaDon")
+    private HoaDon hoaDon;
+
+    @Column(name = "MaGiaoDich", length = 100)
+    private String maGiaoDich;
+
+    /**
+     * LoaiThanhToan: 'TraTruoc' | 'PhatSinh'
+     */
+    @Column(name = "LoaiThanhToan", nullable = false, length = 20)
+    private String loaiThanhToan = "TraTruoc";
+
     @Column(name = "SoTien", nullable = false)
     private Integer soTien;
 
@@ -28,7 +41,7 @@ public class ThanhToan {
     private String phuongThuc;
 
     /**
-     * Giá trị hợp lệ (CHECK constraint): 'ThanhCongDemo' | 'ThatBaiDemo'
+     * Giá trị hợp lệ: 'ChoXuLy' | 'ThanhCongDemo' | 'ThatBaiDemo' | 'ThanhCong'
      */
     @Column(name = "TrangThai", nullable = false, length = 30)
     private String trangThai;
@@ -36,4 +49,3 @@ public class ThanhToan {
     @Column(name = "ThoiGianThanhToan", nullable = false)
     private LocalDateTime thoiGianThanhToan;
 }
-

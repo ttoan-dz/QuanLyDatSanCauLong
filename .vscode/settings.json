@@ -1,5 +1,14 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "liveServer.settings.root": "/frontend",
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5501,
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.jdt.ls.java.home": "D:\\jdk21",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "D:\\jdk21",
+            "default": true
+        }
+    ]
 }

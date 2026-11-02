@@ -28,9 +28,12 @@ function formatGio(timeStr) {
 function badgeTrangThai(status) {
   const map = {
     'ChoXacNhan': { text: 'Chờ xác nhận', class: 'badge-warning' },
+    'GiuCho': { text: 'Giữ chỗ (10p)', class: 'badge-warning' },
     'DaXacNhan': { text: 'Đã xác nhận', class: 'badge-success' },
+    'DangChoi': { text: '🏸 Đang chơi', class: 'badge-primary' },
     'ChoHuy': { text: 'Chờ duyệt hủy', class: 'badge-orange' },
     'DaHuy': { text: 'Đã hủy', class: 'badge-danger' },
+    'KhongDen': { text: 'Khách không đến', class: 'badge-danger' },
     'HetHan': { text: 'Hết hạn', class: 'badge-secondary' },
     'HoanThanh': { text: 'Hoàn thành', class: 'badge-info' },
     'ChuaThanhToan': { text: 'Chưa thanh toán', class: 'badge-warning' },
@@ -102,9 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/pages/auth/login.html';
       return;
     }
-    if (requiredRole && requiredRole !== 'ALL' && userRole !== requiredRole) {
+    const hasAdminPerm = (requiredRole === 'ADMIN' && (userRole === 'ADMIN' || userRole === 'STAFF'));
+    if (requiredRole && requiredRole !== 'ALL' && userRole !== requiredRole && !hasAdminPerm) {
       alert('Bạn không có quyền truy cập trang này.');
-      window.location.href = userRole === 'ADMIN' ? '/pages/admin/dashboard.html' : '/pages/user/courts.html';
+      window.location.href = (userRole === 'ADMIN' || userRole === 'STAFF') ? '/pages/admin/dashboard.html' : '/pages/user/courts.html';
       return;
     }
   }
@@ -112,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render User Dropdown Pill on User pages if .user-info or #auth-controls exists
   const userInfoContainer = document.querySelector('.navbar .user-info') || document.getElementById('auth-controls');
   if (userInfoContainer && token) {
+    const isStaffOrAdmin = (userRole === 'ADMIN' || userRole === 'STAFF');
     userInfoContainer.innerHTML = `
       <div class="user-dropdown" id="user-dropdown-container">
         <button type="button" class="user-pill-btn" onclick="toggleUserDropdown(event)">
@@ -123,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <a href="/pages/user/profile.html" class="dropdown-item">
             <span>📱</span> Trang cá nhân
           </a>
-          ${userRole === 'ADMIN' ? '<a href="/pages/admin/dashboard.html" class="dropdown-item"><span>⚙️</span> Trang Admin</a>' : ''}
+          ${isStaffOrAdmin ? '<a href="/pages/admin/dashboard.html" class="dropdown-item"><span>⚙️</span> Trang Quản lý</a>' : ''}
           <button type="button" class="dropdown-item danger" onclick="logout()">
             <span>🚪</span> Đăng xuất
           </button>
