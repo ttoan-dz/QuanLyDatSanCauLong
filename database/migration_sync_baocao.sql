@@ -5,6 +5,10 @@
 
 USE QuanLyDatSan;
 
+SET NAMES 'utf8mb4';
+SET CHARACTER SET utf8mb4;
+SET character_set_connection = utf8mb4;
+
 -- 1. Bổ sung các thuộc tính còn thiếu cho bảng DiaDiem (tương ứng CoSo)
 ALTER TABLE DiaDiem 
     ADD COLUMN IF NOT EXISTS DiaChi VARCHAR(255) NULL AFTER TenDiaDiem,

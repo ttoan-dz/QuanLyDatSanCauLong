@@ -13,6 +13,10 @@ CREATE DATABASE IF NOT EXISTS QuanLyDatSan
 
 USE QuanLyDatSan;
 
+SET NAMES 'utf8mb4';
+SET CHARACTER SET utf8mb4;
+SET character_set_connection = utf8mb4;
+
 /* ---------------------------------------------------------------------
    1. BẢNG DỮ LIỆU
    --------------------------------------------------------------------- */
