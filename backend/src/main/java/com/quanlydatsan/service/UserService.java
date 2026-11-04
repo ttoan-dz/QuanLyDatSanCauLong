@@ -44,6 +44,13 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã được sử dụng bởi tài khoản khác");
         }
 
+        if (req.getEmail() != null && !req.getEmail().trim().isEmpty()) {
+            String emailMoi = req.getEmail().trim();
+            if (khachHangRepository.existsByEmailAndMaKHNot(emailMoi, maKH)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng bởi tài khoản khác");
+            }
+        }
+
         kh.setHoTen(req.getHoTen().trim());
         kh.setSdt(sdtMoi);
         kh.setEmail(req.getEmail() != null ? req.getEmail().trim() : null);

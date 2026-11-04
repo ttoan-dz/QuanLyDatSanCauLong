@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lịch Sử Đặt Sân — Quản Lý Đặt Sân</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
@@ -11,7 +12,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/index.html" class="brand">
-      <span>🏸</span> Đặt Sân Cầu Lông
+      <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+      <span class="brand-text">Sân Cầu Lông</span>
     </a>
     <ul class="nav-links">
       <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
@@ -19,9 +21,8 @@
       <li><a href="/pages/user/history.html" class="nav-link active">Lịch sử</a></li>
       <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
     </ul>
-    <div class="user-info">
-      <span class="user-name">Xin chào, <strong id="user-display-name">Khách hàng</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    <div id="auth-controls" class="user-info">
+      <!-- Dynamic login/register or user dropdown via utils.js -->
     </div>
   </nav>
 
@@ -41,28 +42,31 @@
 
   <!-- Modal Hủy Đặt Sân -->
   <div id="modal-cancel-booking" class="modal-backdrop hidden">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 540px;">
       <div class="modal-header">
         <h3 class="modal-title">Hủy đơn đặt sân <span id="cancel-modal-booking-id">#</span></h3>
         <button type="button" class="modal-close" onclick="closeCancelBookingModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Bạn có chắc chắn muốn yêu cầu hủy đơn đặt sân này không?
-        </p>
+        <!-- Khung hiển thị chính sách và dự kiến hoàn tiền theo mốc thời gian -->
+        <div id="cancel-modal-policy-box" style="margin-bottom: 1.25rem;">
+          <!-- Dynamic info from JS -->
+        </div>
+
         <div class="form-group">
-          <label for="input-cancel-reason">Lý do hủy</label>
+          <label for="input-cancel-reason">Lý do hủy đơn</label>
           <select id="input-cancel-reason" class="form-control">
-            <option value="NguoiDungHuy">Bận việc đột xuất không đến được</option>
-            <option value="DoiLichKhac">Muốn đổi sang khung giờ hoặc ngày khác</option>
-            <option value="ThoiTietXau">Lý do thời tiết / sự cố cá nhân</option>
-            <option value="Khac">Lý do khác</option>
+            <option value="Bận việc đột xuất không đến được">Bận việc đột xuất không đến được</option>
+            <option value="Muốn đổi sang khung giờ hoặc ngày khác">Muốn đổi sang khung giờ hoặc ngày khác</option>
+            <option value="Lý do thời tiết / sự cố cá nhân">Lý do thời tiết / sự cố cá nhân</option>
+            <option value="Lý do cá nhân khác">Lý do cá nhân khác</option>
           </select>
         </div>
+
         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
           <button type="button" class="btn btn-outline" onclick="closeCancelBookingModal()">Đóng</button>
-          <button type="button" id="btn-confirm-cancel" class="btn btn-primary" style="background-color: var(--danger);" onclick="confirmCancelBooking()">
-            Xác nhận hủy
+          <button type="button" id="btn-confirm-cancel" class="btn btn-primary" style="background-color: var(--danger); border-color: var(--danger);" onclick="confirmCancelBooking()">
+            Xác nhận gửi yêu cầu hủy
           </button>
         </div>
       </div>
@@ -86,8 +90,9 @@
         </p>
         <div style="display: flex; gap: 0.5rem; justify-content: center;">
           <button type="button" class="btn btn-outline" onclick="closeHistoryQRModal()">Đóng</button>
-          <button type="button" id="btn-qr-modal-paid" class="btn btn-primary" onclick="confirmQRPaidInHistory()">
-            ✅ Tôi đã thanh toán
+          <button type="button" id="btn-qr-modal-paid" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="confirmQRPaidInHistory()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Tôi đã thanh toán</span>
           </button>
         </div>
       </div>

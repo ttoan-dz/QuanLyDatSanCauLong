@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thông Báo & Tiến Trình Đặt Sân — Quản Lý Đặt Sân</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
@@ -11,7 +12,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/index.html" class="brand">
-      <span>🏸</span> Đặt Sân Cầu Lông
+      <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+      <span class="brand-text">Sân Cầu Lông</span>
     </a>
     <ul class="nav-links">
       <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
@@ -19,9 +21,8 @@
       <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
       <li><a href="/pages/user/notifications.html" class="nav-link active">Thông báo</a></li>
     </ul>
-    <div class="user-info">
-      <span class="user-name">Xin chào, <strong id="user-display-name">Khách hàng</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    <div id="auth-controls" class="user-info">
+      <!-- Dynamic login/register or user dropdown via utils.js -->
     </div>
   </nav>
 
@@ -40,7 +41,10 @@
       <!-- Cột Trái: Thông báo mới -->
       <aside class="section-box">
         <div class="section-header">
-          <h2 class="section-title">🔔 Thông báo mới</h2>
+          <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span>Thông báo mới</span>
+          </h2>
           <span id="notif-count-badge" class="badge badge-secondary">0</span>
         </div>
         <div id="notifications-feed" class="notif-feed">
@@ -51,7 +55,10 @@
       <!-- Cột Phải: Tiến trình đặt sân -->
       <section class="section-box">
         <div class="section-header">
-          <h2 class="section-title">🏸 Tiến trình đặt sân</h2>
+          <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Tiến trình đặt sân</span>
+          </h2>
           <span id="booking-count-badge" class="badge badge-secondary">0 đơn</span>
         </div>
         

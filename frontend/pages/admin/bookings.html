@@ -4,109 +4,256 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản Lý Đặt Sân & Tại Quầy — Admin Portal</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body data-require-role="ADMIN">
 
-  <!-- Navigation Bar -->
-  <nav class="admin-navbar">
-    <a href="/pages/admin/dashboard.html" class="brand">
-      <span>🏸</span> Admin Portal
-    </a>
-    <ul class="nav-links">
-      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
-      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
-      <li><a href="/pages/admin/bookings.html" class="nav-link active">Quản lý đặt sân</a></li>
-      <li><a href="/pages/admin/services.html" class="nav-link">Quản lý dịch vụ</a></li>
-      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
-      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
-    </ul>
-    <div class="user-controls">
-      <span class="admin-name">Xin chào, <strong id="admin-display-name">Nhân viên / Admin</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="container">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Quản lý Đặt sân & Nghiệp vụ tại quầy</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
-          Theo dõi đơn đặt trực tuyến, Check-in, Thêm dịch vụ (nước/vợt), Tính quá giờ và Check-out xuất hóa đơn.
-        </p>
+  <div class="admin-layout">
+    <!-- Master Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-brand-wrapper">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <div class="sidebar-logo-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-title">SÂN CẦU LÔNG</span>
+            <span class="sidebar-brand-subtitle">ADMIN PORTAL</span>
+          </div>
+        </a>
       </div>
-    </div>
 
-    <div id="alert-container"></div>
+      <!-- Navigation Menus -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Tổng quan</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/dashboard.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+              </span>
+              <span>Dashboard & Báo cáo</span>
+            </a>
+          </li>
+        </ul>
 
-    <!-- Search & Filter Bar -->
-    <div class="card" style="margin-bottom: 1.5rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        
-        <!-- Search box -->
-        <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 280px;">
-          <input type="text" id="input-search-booking" class="form-control" placeholder="🔍 Nhập Mã đơn (#123) hoặc SĐT khách hàng..." onkeyup="if(event.key==='Enter') loadBookings()">
-          <button type="button" class="btn btn-primary" onclick="loadBookings()">Tìm kiếm</button>
+        <div class="nav-section-title">Vận hành sân bãi</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/bookings.html" class="active">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <span>Quản lý đặt sân</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/cancel-requests.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </span>
+              <span>Yêu cầu hủy & hoàn</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/courts.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </span>
+              <span>Danh sách sân & bảo trì</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Cơ sở & Dịch vụ</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/services.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+              </span>
+              <span>Quản lý dịch vụ & kho</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Hệ thống</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/users.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </span>
+              <span>Quản lý người dùng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="admin-user-profile">
+          <div class="user-avatar-badge" id="admin-avatar-initials">AD</div>
+          <div class="user-meta-info">
+            <span class="user-meta-name" id="admin-display-name">Quản trị viên</span>
+            <span class="user-meta-role">Hệ thống Quản trị</span>
+          </div>
+        </div>
+        <div class="sidebar-actions-row">
+          <a href="/pages/user/courts.html" class="sidebar-action-btn view-site" title="Xem giao diện người dùng">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            Cổng User
+          </a>
+          <button type="button" class="sidebar-action-btn logout btn-logout" id="btn-logout" title="Đăng xuất">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Thoát
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="admin-main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Toggle menu">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <div class="breadcrumbs">
+            <a href="/pages/admin/dashboard.html">Vận hành sân bãi</a>
+            <span class="separator">/</span>
+            <span class="current">Quản lý đặt sân</span>
+          </div>
         </div>
 
-        <!-- Filter Select -->
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <label for="select-status-filter" style="font-weight: 600; font-size: 0.9rem; white-space: nowrap;">Trạng thái:</label>
-          <select id="select-status-filter" class="form-control" onchange="loadBookings()" style="min-width: 170px;">
-            <option value="">-- Tất cả đơn --</option>
-            <option value="ChoXacNhan">Chờ xác nhận</option>
-            <option value="DaXacNhan">Đã xác nhận (Chờ check-in)</option>
-            <option value="DangChoi">🏸 Đang chơi tại sân</option>
-            <option value="HoanThanh">Hoàn thành (Đã check-out)</option>
-            <option value="ChoHuy">Chờ duyệt hủy</option>
-            <option value="DaHuy">Đã hủy</option>
-            <option value="KhongDen">Khách không đến (No-Show)</option>
-            <option value="HetHan">Hết hạn giữ chỗ</option>
-          </select>
-          <button type="button" class="btn btn-outline" onclick="loadBookings()" title="Làm mới">🔄</button>
+        <div class="topbar-right">
+          <div class="topbar-badge-time">
+            <span class="topbar-pulse-dot"></span>
+            <span id="admin-live-clock">Hệ thống đang hoạt động</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Page Content -->
+      <main class="admin-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="page-header-info">
+            <h1 class="page-title">Quản lý Đặt sân & Nghiệp vụ tại quầy</h1>
+            <p class="page-subtitle">Theo dõi đơn trực tuyến, Check-in khách vào sân, gọi thêm dịch vụ nước uống, tính giờ quá hạn và thanh toán Check-out.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-outline" onclick="loadBookings()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Làm mới dữ liệu
+            </button>
+          </div>
         </div>
 
-      </div>
-    </div>
+        <div id="alert-container"></div>
 
-    <!-- Table of Bookings -->
-    <div class="card">
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Mã đơn</th>
-              <th>Khách hàng</th>
-              <th>Sân & Địa điểm</th>
-              <th>Ngày & Khung giờ</th>
-              <th>Tiền sân</th>
-              <th>Thanh toán</th>
-              <th>Trạng thái</th>
-              <th style="min-width: 220px;">Thao tác tại quầy</th>
-            </tr>
-          </thead>
-          <tbody id="bookings-table-body">
-            <tr>
-              <td colspan="8" style="text-align: center;">Đang tải danh sách...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Filter & Search Toolbar -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <!-- Search box -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 280px;">
+              <input type="text" id="input-search-booking" class="form-control" placeholder="Nhập Mã đơn (#123) hoặc SĐT, tên khách..." onkeyup="if(event.key==='Enter') loadBookings()">
+              <button type="button" class="btn btn-primary" onclick="loadBookings()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Tìm kiếm
+              </button>
+            </div>
+
+            <!-- Filter Status -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <label for="select-status-filter" style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; color: var(--text-secondary);">Trạng thái:</label>
+              <select id="select-status-filter" class="form-control" onchange="loadBookings()" style="min-width: 200px;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ChoXacNhan">Chờ xác nhận</option>
+                <option value="DaXacNhan">Đã xác nhận (Chờ check-in)</option>
+                <option value="DangChoi">Đang chơi tại sân</option>
+                <option value="HoanThanh">Hoàn thành (Đã check-out)</option>
+                <option value="ChoHuy">Chờ duyệt hủy</option>
+                <option value="DaHuy">Đã hủy</option>
+                <option value="KhongDen">Khách không đến (No-Show)</option>
+                <option value="HetHan">Hết hạn giữ chỗ</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table of Bookings (Data Table Pro Max) -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Sân & Cơ sở</th>
+                  <th>Thời gian chơi</th>
+                  <th>Tiền sân</th>
+                  <th>Thanh toán</th>
+                  <th>Trạng thái</th>
+                  <th style="min-width: 220px; text-align: right;">Nghiệp vụ quầy</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-table-body">
+                <tr>
+                  <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                    Đang đồng bộ dữ liệu đặt sân...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
     </div>
-  </main>
+  </div>
 
   <!-- ======================== MODAL 1: CHI TIẾT ĐƠN ĐẶT SÂN & HÓA ĐƠN ======================== -->
   <div id="modal-booking-detail" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 680px;">
       <div class="modal-header">
-        <h3 class="modal-title" id="detail-modal-title">📋 Chi tiết đơn đặt sân #0</h3>
+        <h3 class="modal-title" id="detail-modal-title">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Chi tiết đơn đặt sân #0
+        </h3>
         <button type="button" class="modal-close" onclick="closeModal('modal-booking-detail')">&times;</button>
       </div>
-      <div id="detail-modal-body" style="padding: 1rem 0; font-size: 0.92rem; max-height: 70vh; overflow-y: auto;">
+      <div id="detail-modal-body" style="padding: 0.5rem 0; font-size: 0.92rem; max-height: 70vh; overflow-y: auto;">
         <!-- Dynamic content -->
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+      <div class="modal-footer">
         <button type="button" class="btn btn-outline" onclick="closeModal('modal-booking-detail')">Đóng</button>
       </div>
     </div>
@@ -116,33 +263,36 @@
   <div id="modal-add-service" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 560px;">
       <div class="modal-header">
-        <h3 class="modal-title" style="color: var(--primary-dark);">➕ Thêm dịch vụ cho đơn #<span id="service-booking-id">0</span></h3>
+        <h3 class="modal-title" style="color: var(--primary-dark);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Thêm dịch vụ cho đơn #<span id="service-booking-id">0</span>
+        </h3>
         <button type="button" class="modal-close" onclick="closeModal('modal-add-service')">&times;</button>
       </div>
       <form id="form-add-service" onsubmit="submitAddService(event)">
         <input type="hidden" id="service-booking-id-val">
         <input type="hidden" id="service-court-venue-id">
 
-        <div style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.88rem;">
-          Khách đang chơi tại: <strong id="service-court-name">Sân 1</strong> | Mã đơn: <strong id="service-booking-display">#0</strong>
+        <div style="background: var(--bg-subtle); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; font-size: 0.88rem; border: 1px solid var(--border);">
+          Khách đang chơi: <strong id="service-court-name">Sân 1</strong> | Mã đơn: <strong id="service-booking-display">#0</strong>
         </div>
 
         <!-- Danh sách dịch vụ đã dùng -->
         <div style="margin-bottom: 1.25rem;">
-          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">Dịch vụ đã gọi trong ca:</h4>
-          <div id="service-already-used-list" style="font-size: 0.88rem; max-height: 140px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-secondary);">Dịch vụ đã gọi trong ca:</h4>
+          <div id="service-already-used-list" style="font-size: 0.88rem; max-height: 140px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem; background: #ffffff;">
             <!-- Dynamic items -->
           </div>
         </div>
 
-        <hr style="border: 0; border-top: 1px dashed var(--border); margin: 1rem 0;">
-
-        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Chọn dịch vụ muốn thêm:</h4>
         <div class="form-group">
           <label for="select-service-item">Dịch vụ / Mặt hàng:</label>
           <select id="select-service-item" class="form-control" onchange="handleSelectServiceChange()" required>
-            <option value="">-- Đang tải dịch vụ... --</option>
+            <option value="">-- Đang tải danh sách dịch vụ... --</option>
           </select>
+          <div id="service-stock-info" style="margin-top: 0.45rem; font-size: 0.82rem; min-height: 22px;"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -152,18 +302,23 @@
           </div>
           <div class="form-group">
             <label>Thành tiền:</label>
-            <input type="text" id="display-service-subtotal" class="form-control" value="0 đ" readonly style="font-weight: 700; color: var(--primary-dark); background: #f8fafc;">
+            <input type="text" id="display-service-subtotal" class="form-control" value="0 đ" readonly style="font-weight: 700; color: var(--primary-dark); background: var(--bg-subtle);">
           </div>
         </div>
 
         <div class="form-group">
-          <label for="input-service-note">Ghi chú (tuỳ chọn):</label>
-          <input type="text" id="input-service-note" class="form-control" placeholder="VD: Khách lấy thêm 1 chai ướp lạnh">
+          <label for="input-service-note">Ghi chú (tùy chọn):</label>
+          <input type="text" id="input-service-note" class="form-control" placeholder="VD: Khách lấy ướp lạnh, vợt căng 10.5kg...">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-service')">Hủy</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-service">➕ Thêm vào hóa đơn</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-service">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Thêm vào hóa đơn
+          </button>
         </div>
       </form>
     </div>
@@ -173,15 +328,20 @@
   <div id="modal-checkout-invoice" class="modal-backdrop hidden">
     <div class="modal-content" style="max-width: 640px;">
       <div class="modal-header">
-        <h3 class="modal-title" style="color: var(--primary-dark);">🧾 Check-out & Lập Hóa Đơn #<span id="checkout-booking-id">0</span></h3>
+        <h3 class="modal-title" style="color: var(--primary-dark);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Check-out & Quyết toán hóa đơn #<span id="checkout-booking-id">0</span>
+        </h3>
         <button type="button" class="modal-close" onclick="closeModal('modal-checkout-invoice')">&times;</button>
       </div>
       <form id="form-checkout-invoice" onsubmit="submitCheckOutAndComplete(event)">
         <input type="hidden" id="checkout-booking-id-val">
 
         <!-- Thông tin giờ chơi thực tế -->
-        <div style="background: #f8fafc; border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.9rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border); padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; font-size: 0.9rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
             <span>Sân chơi: <strong id="checkout-court-name">Sân 1</strong></span>
             <span>Khách hàng: <strong id="checkout-customer-name">Nguyễn Văn A</strong></span>
           </div>
@@ -191,8 +351,8 @@
           </div>
         </div>
 
-        <!-- Nhập số block quá giờ (Block 15 phút) -->
-        <div class="form-group" style="background: #fffbeb; border: 1px solid #fef3c7; padding: 0.85rem; border-radius: var(--radius-sm);">
+        <!-- Nhập số block quá giờ -->
+        <div class="form-group" style="background: var(--warning-bg); border: 1px solid var(--warning-border); padding: 0.85rem; border-radius: var(--radius-sm);">
           <label for="input-overtime-blocks" style="font-weight: 700; color: #92400e;">Chơi quá giờ (Overtime - Block 15 phút):</label>
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.35rem;">
             <input type="number" id="input-overtime-blocks" class="form-control" min="0" value="0" style="max-width: 120px;" oninput="recalculateInvoiceTotal()">
@@ -202,49 +362,52 @@
           </div>
         </div>
 
-        <!-- Bảng tính hóa đơn tổng hợp theo công thức Báo Cáo -->
-        <div style="margin: 1.25rem 0; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem;">
-          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark);">Bảng Tổng Hợp Chi Phí:</h4>
+        <!-- Bảng tính chi phí -->
+        <div style="margin: 1.25rem 0; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; background: #ffffff;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main);">Bảng Tổng Hợp Chi Phí:</h4>
           
-          <div class="modal-detail-row">
+          <div class="modal-detail-row" style="display: flex; justify-content: space-between; padding: 0.35rem 0;">
             <span class="modal-detail-label">(1) Tiền sân:</span>
-            <span class="modal-detail-value" id="inv-court-fee">0 đ</span>
+            <span class="modal-detail-value" id="inv-court-fee" style="font-weight: 600;">0 đ</span>
           </div>
-          <div class="modal-detail-row">
-            <span class="modal-detail-label">(2) Tiền dịch vụ (nước, vợt):</span>
-            <span class="modal-detail-value" id="inv-service-fee">0 đ</span>
+          <div class="modal-detail-row" style="display: flex; justify-content: space-between; padding: 0.35rem 0;">
+            <span class="modal-detail-label">(2) Tiền dịch vụ (nước, phụ kiện):</span>
+            <span class="modal-detail-value" id="inv-service-fee" style="font-weight: 600;">0 đ</span>
           </div>
-          <div class="modal-detail-row">
+          <div class="modal-detail-row" style="display: flex; justify-content: space-between; padding: 0.35rem 0;">
             <span class="modal-detail-label">(3) Phụ phí chơi quá giờ:</span>
-            <span class="modal-detail-value" id="inv-overtime-fee" style="color: #b45309;">0 đ</span>
+            <span class="modal-detail-value" id="inv-overtime-fee" style="color: #b45309; font-weight: 600;">0 đ</span>
           </div>
-          <div class="modal-detail-row" style="border-top: 1px dashed var(--border); padding-top: 0.4rem;">
-            <span class="modal-detail-label">(4) Đã thanh toán trước (100% tiền sân):</span>
-            <span class="modal-detail-value" style="color: var(--success);" id="inv-prepaid-fee">- 0 đ</span>
+          <div class="modal-detail-row" style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-top: 1px dashed var(--border); margin-top: 0.25rem;">
+            <span class="modal-detail-label">(4) Đã thanh toán trước:</span>
+            <span class="modal-detail-value" style="color: var(--success); font-weight: 600;" id="inv-prepaid-fee">- 0 đ</span>
           </div>
-          <div class="modal-detail-row" style="margin-top: 0.5rem; padding-top: 0.6rem; border-top: 2px solid var(--dark); font-size: 1.05rem;">
-            <span class="modal-detail-label" style="font-weight: 800; color: var(--dark);">KHOẢN CẦN THU THÊM:</span>
-            <span class="modal-detail-value" style="font-weight: 900; color: var(--primary-dark); font-size: 1.25rem;" id="inv-total-due">0 đ</span>
+          <div class="modal-detail-row" style="display: flex; justify-content: space-between; margin-top: 0.65rem; padding-top: 0.75rem; border-top: 2px solid var(--border); font-size: 1rem;">
+            <span class="modal-detail-label" style="font-weight: 800; color: var(--text-main);">KHOẢN CẦN THU THÊM:</span>
+            <span class="modal-detail-value" style="font-weight: 900; color: var(--primary-dark); font-size: 1.35rem;" id="inv-total-due">0 đ</span>
           </div>
         </div>
 
         <!-- Chọn phương thức thanh toán khoản phát sinh -->
         <div class="form-group" id="group-payment-method">
-          <label style="font-weight: 600;">Phương thức thu tiền phát sinh:</label>
+          <label style="font-weight: 600;">Phương thức thu khoản phát sinh:</label>
           <div style="display: flex; gap: 1.5rem; margin-top: 0.4rem;">
-            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-              <input type="radio" name="checkoutPaymentMethod" value="TienMat" checked> 💵 Tiền mặt
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.9rem;">
+              <input type="radio" name="checkoutPaymentMethod" value="TienMat" checked> Tiền mặt tại quầy
             </label>
-            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-              <input type="radio" name="checkoutPaymentMethod" value="ChuyenKhoan"> 📱 Chuyển khoản QR
+            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.9rem;">
+              <input type="radio" name="checkoutPaymentMethod" value="ChuyenKhoan"> Chuyển khoản QR
             </label>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-checkout-invoice')">Đóng</button>
-          <button type="submit" class="btn btn-success" id="btn-complete-checkout" style="font-size: 1rem; padding: 0.65rem 1.25rem;">
-            ✅ Xác nhận thanh toán & Hoàn thành ca
+          <button type="submit" class="btn btn-success" id="btn-complete-checkout">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Xác nhận thanh toán & Hoàn thành ca
           </button>
         </div>
       </form>
@@ -253,9 +416,14 @@
 
   <!-- ======================== MODAL 4: HỦY ĐƠN ĐẶT SÂN ======================== -->
   <div id="modal-cancel-booking" class="modal-backdrop hidden">
-    <div class="modal-content" style="max-width: 460px;">
+    <div class="modal-content" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 class="modal-title" style="color: var(--danger);">Hủy đơn đặt sân</h3>
+        <h3 class="modal-title" style="color: var(--danger);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          Hủy đơn đặt sân
+        </h3>
         <button type="button" class="modal-close" onclick="closeModal('modal-cancel-booking')">&times;</button>
       </div>
       <form id="form-cancel-booking" onsubmit="submitCancelBooking(event)">
@@ -266,28 +434,34 @@
         <div class="form-group">
           <label for="cancel-booking-reason">Loại hủy:</label>
           <select id="cancel-booking-reason" class="form-control" onchange="handleCancelReasonChange()">
-            <option value="AdminHuy">Cơ sở hủy (Hoàn 100% tiền sân theo báo cáo)</option>
-            <option value="KhongDenNhan">Khách không đến nhận sân sau 30p (No-Show, Hoàn 0%)</option>
+            <option value="AdminHuy">Cơ sở hủy (Hoàn 100% tiền sân theo quy định)</option>
+            <option value="KhongDenNhan">Khách không đến nhận sân (No-Show, Hoàn 0%)</option>
           </select>
         </div>
         <div class="form-group">
           <label for="cancel-booking-note">Lý do / Ghi chú hủy:</label>
-          <textarea id="cancel-booking-note" class="form-control" rows="3" placeholder="Nhập lý do hủy đơn (VD: Sân bảo trì đột xuất, khách không đến quá 30p...)"></textarea>
+          <textarea id="cancel-booking-note" class="form-control" rows="3" placeholder="Nhập lý do hủy đơn (VD: Sân bảo trì đột xuất, khách không đến quá 30 phút...)"></textarea>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeModal('modal-cancel-booking')">Đóng</button>
-          <button type="submit" class="btn btn-danger" id="btn-confirm-cancel">Xác nhận hủy đơn</button>
+          <button type="submit" class="btn btn-danger" id="btn-confirm-cancel">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Xác nhận hủy đơn
+          </button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="/assets/js/api.js?v=2.2"></script>
-  <script src="/assets/js/utils.js?v=2.2"></script>
-  <script src="/assets/js/admin.js?v=2.2"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initAdminLayout === 'function') initAdminLayout();
       loadBookings();
     });
   </script>

@@ -44,6 +44,10 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Số điện thoại đã được đăng ký");
         }
+        if (req.getEmail() != null && !req.getEmail().trim().isEmpty() && khachHangRepository.existsByEmail(req.getEmail().trim())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Email đã được sử dụng bởi tài khoản khác");
+        }
         if (taiKhoanRepository.existsByTenDangNhap(req.getTenDangNhap())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Tên đăng nhập đã tồn tại");
@@ -74,18 +78,33 @@ public class AuthService {
     }
 
     public DangNhapResponse dangNhap(DangNhapRequest req) {
+        String identifier = req.getTenDangNhap() != null ? req.getTenDangNhap().trim() : "";
+
+        TaiKhoan tk = taiKhoanRepository.findByTenDangNhapOrEmail(identifier)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Tên đăng nhập hoặc mật khẩu không chính xác"));
+
+        if ("Khoa".equalsIgnoreCase(tk.getTrangThai())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ ban quản trị để được hỗ trợ!");
+        }
+
+        if (!passwordEncoder.matches(req.getMatKhau(), tk.getMatKhau())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Tên đăng nhập hoặc mật khẩu không chính xác");
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            req.getTenDangNhap(), req.getMatKhau()));
+                            tk.getTenDangNhap(), req.getMatKhau()));
+        } catch (org.springframework.security.authentication.DisabledException | org.springframework.security.authentication.LockedException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ ban quản trị để được hỗ trợ!");
         } catch (AuthenticationException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa");
+                    "Tên đăng nhập hoặc mật khẩu không chính xác");
         }
-
-        TaiKhoan tk = taiKhoanRepository.findByTenDangNhap(req.getTenDangNhap())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "Không tìm thấy tài khoản"));
 
         String tenRole = tk.getRole() != null ? tk.getRole().getTenRole() : "";
         String roleMapped;

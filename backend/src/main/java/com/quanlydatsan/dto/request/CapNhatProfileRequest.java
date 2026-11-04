@@ -12,6 +12,7 @@ public class CapNhatProfileRequest {
     @NotBlank(message = "Số điện thoại không được để trống")
     private String sdt;
 
+    @NotBlank(message = "Email không được để trống")
     private String email;
 }
 

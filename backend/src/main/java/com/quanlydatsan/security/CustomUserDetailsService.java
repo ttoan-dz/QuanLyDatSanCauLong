@@ -22,10 +22,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String tenDangNhap) throws UsernameNotFoundException {
-        TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhap(tenDangNhap)
+    public UserDetails loadUserByUsername(String tenDangNhapOrEmail) throws UsernameNotFoundException {
+        TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhapOrEmail(tenDangNhapOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "Không tìm thấy tài khoản: " + tenDangNhap));
+                        "Không tìm thấy tài khoản: " + tenDangNhapOrEmail));
 
         String roleName = taiKhoan.getRole() != null ? taiKhoan.getRole().getTenRole() : "";
         String authority;

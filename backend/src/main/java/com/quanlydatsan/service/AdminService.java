@@ -7,12 +7,14 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,6 +24,7 @@ import com.quanlydatsan.dto.request.CapNhatDichVuRequest;
 import com.quanlydatsan.dto.request.CapNhatKhachHangRequest;
 import com.quanlydatsan.dto.request.CapNhatTrangThaiSanRequest;
 import com.quanlydatsan.dto.request.CheckOutRequest;
+import com.quanlydatsan.dto.request.DoiSanRequest;
 import com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest;
 import com.quanlydatsan.dto.request.HuyDatSanRequest;
 import com.quanlydatsan.dto.request.SuaSanRequest;
@@ -31,6 +34,7 @@ import com.quanlydatsan.dto.request.ThemDichVuRequest;
 import com.quanlydatsan.dto.response.DatSanResponse;
 import com.quanlydatsan.dto.response.DiaDiemResponse;
 import com.quanlydatsan.dto.response.DichVuResponse;
+import com.quanlydatsan.dto.response.DonXungDotBaoTriResponse;
 import com.quanlydatsan.dto.response.KhachHangResponse;
 import com.quanlydatsan.dto.response.SanResponse;
 import com.quanlydatsan.dto.response.ThongKeDoanhThuResponse;
@@ -84,15 +88,20 @@ public class AdminService {
     private final NhanVienRepository nhanVienRepository;
     private final BangGiaRepository bangGiaRepository;
     private final BookingService bookingService;
+    private final PasswordEncoder passwordEncoder;
 
     // ======================== 1. ĐƠN ĐẶT SÂN & NGHIỆP VỤ TẠI QUẦY (KỊCH BẢN 2) ========================
 
     @Transactional(readOnly = true)
     public List<DatSanResponse> danhSachDatSan(String status, String keyword) {
         List<DatSan> list;
-        if ((keyword != null && !keyword.trim().isEmpty()) || (status != null && !status.trim().isEmpty())) {
-            list = datSanRepository.searchBookings(keyword != null ? keyword.trim() : null,
-                    status != null && !status.trim().isEmpty() ? status.trim() : null);
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty();
+
+        if (hasKeyword) {
+            list = datSanRepository.searchBookings(keyword.trim(), hasStatus ? status.trim() : null);
+        } else if (hasStatus) {
+            list = datSanRepository.findByTrangThaiDatWithDetails(status.trim());
         } else {
             list = datSanRepository.findAllWithDetails();
         }
@@ -217,6 +226,20 @@ public class AdminService {
 
         if (!"HoatDong".equals(dv.getTrangThai())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dịch vụ hiện đang tạm ngưng phục vụ");
+        }
+
+        // Kiểm tra cơ sở: Dịch vụ phải thuộc cùng địa điểm với sân đang đặt
+        if (dv.getDiaDiem() != null && ds.getSan() != null && ds.getSan().getDiaDiem() != null) {
+            if (!dv.getDiaDiem().getMaDiaDiem().equals(ds.getSan().getDiaDiem().getMaDiaDiem())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Dịch vụ này thuộc cơ sở " + dv.getDiaDiem().getTenDiaDiem() +
+                        ", không thể thêm vào đơn đặt tại cơ sở " + ds.getSan().getDiaDiem().getTenDiaDiem());
+            }
+        }
+
+        if (dv.getSoLuongTon() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Dịch vụ " + dv.getTenDV() + " đã hết hàng trong kho!");
         }
 
         if (dv.getSoLuongTon() < req.getSoLuong()) {
@@ -446,6 +469,7 @@ public class AdminService {
 
         LocalDateTime now = LocalDateTime.now();
         ds.setTrangThaiDat("DaHuy");
+        ds.setTrangThaiThanhToan("ChuaThanhToan");
         ds.setLyDoHuy(lyDoHuy);
         if (req != null && req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty()) {
             ds.setGhiChu(req.getGhiChu().trim());
@@ -473,7 +497,9 @@ public class AdminService {
         String noiDung = (req != null && req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty())
                 ? "Đơn đặt sân đã bị cơ sở hủy. Lý do: " + req.getGhiChu().trim() + ". Số tiền hoàn lại 100%."
                 : "Đơn đặt sân đã bị cơ sở hủy. Bạn được hoàn lại 100% tiền sân.";
-        taoThongBao(ds.getKhachHang(), "Đơn đã bị hủy", noiDung, "Huy");
+        if (!"BaoTriHoacTamNgung".equals(lyDoHuy)) {
+            taoThongBao(ds.getKhachHang(), "Đơn đã bị hủy", noiDung, "Huy");
+        }
 
         return bookingService.toDatSanResponse(ds);
     }
@@ -492,37 +518,59 @@ public class AdminService {
         LocalDateTime now = LocalDateTime.now();
         if (Boolean.TRUE.equals(req.getDongY())) {
             ds.setTrangThaiDat("DaHuy");
-            ds.setLyDoHuy("NguoiDungHuy");
             datSanRepository.save(ds);
 
+            // Khi duyệt đồng ý hủy: lúc này slot sân mới chính thức được giải phóng
             chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
                 ct.setTrangThai("DaHuy");
                 chiTietDatSanRepository.save(ct);
             });
 
-            // Tính tỷ lệ hoàn tiền theo thời điểm
-            LocalDateTime gioBatDau = LocalDateTime.of(ds.getNgayChoi(), ds.getGioBatDau());
-            long hoursBefore = Duration.between(now, gioBatDau).toHours();
-            int tyLeHoan = hoursBefore >= 24 ? 100 : (hoursBefore >= 12 ? 50 : 0);
-            BigDecimal tienGoc = ds.getTienSan().compareTo(BigDecimal.ZERO) > 0 ? ds.getTienSan() : BigDecimal.valueOf(ds.getSoTien());
-            BigDecimal soTienHoan = tienGoc.multiply(BigDecimal.valueOf(tyLeHoan)).divide(BigDecimal.valueOf(100));
+            // Lấy hoặc tạo bản ghi HoanTien và chuyển sang DaHoan
+            HoanTien ht = hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(maDatSan)
+                    .orElseGet(() -> {
+                        LocalDateTime gioBatDau = LocalDateTime.of(ds.getNgayChoi(), ds.getGioBatDau());
+                        long hoursBefore = Duration.between(now, gioBatDau).toHours();
+                        int tyLeHoan = hoursBefore >= 24 ? 100 : (hoursBefore >= 12 ? 50 : 0);
+                        BigDecimal tienGoc = ds.getTienSan().compareTo(BigDecimal.ZERO) > 0 ? ds.getTienSan() : BigDecimal.valueOf(ds.getSoTien());
+                        BigDecimal soTienHoan = tienGoc.multiply(BigDecimal.valueOf(tyLeHoan)).divide(BigDecimal.valueOf(100));
 
-            HoanTien ht = new HoanTien();
-            ht.setDatSan(ds);
-            ht.setNgayYeuCau(now);
-            ht.setLyDo("Khách yêu cầu hủy và được duyệt");
-            ht.setLoaiHuy("KhachHuy");
-            ht.setTyLeHoan(tyLeHoan);
-            ht.setSoTienHoan(soTienHoan);
-            ht.setTrangThai(tyLeHoan > 0 ? "DaHoan" : "KhongHoan");
+                        HoanTien newHt = new HoanTien();
+                        newHt.setDatSan(ds);
+                        newHt.setNgayYeuCau(now);
+                        newHt.setLyDo(ds.getLyDoHuy() != null ? ds.getLyDoHuy() : "Khách yêu cầu hủy và được duyệt");
+                        newHt.setLoaiHuy("KhachHuy");
+                        newHt.setTyLeHoan(tyLeHoan);
+                        newHt.setSoTienHoan(soTienHoan);
+                        return newHt;
+                    });
+
+            ht.setTrangThai(ht.getTyLeHoan() > 0 ? "DaHoan" : "KhongHoan");
             hoanTienRepository.save(ht);
+
+            // Nếu hoàn 100%: chuyển sang ChuaThanhToan để khấu trừ hoàn toàn khỏi doanh thu
+            // Nếu hoàn 0% hoặc 50%: giữ DaThanhToan để ghi nhận phần doanh thu giữ lại theo quy định
+            if (ht.getTyLeHoan() == 100) {
+                ds.setTrangThaiThanhToan("ChuaThanhToan");
+                datSanRepository.save(ds);
+            }
+
+            // Đồng bộ hóa đơn (nếu có)
+            hoaDonRepository.findByDatSan_MaDatSan(maDatSan).ifPresent(hd -> {
+                hd.setTienHoanDuyet(ht.getSoTienHoan());
+                if (ht.getTyLeHoan() == 100) {
+                    hd.setTrangThai("ChuaThanhToan");
+                }
+                hoaDonRepository.save(hd);
+            });
 
             taoThongBao(ds.getKhachHang(),
                     "Yêu cầu hủy được chấp nhận",
                     String.format("Yêu cầu hủy đơn #%d đã được duyệt. Tỷ lệ hoàn: %d%%. Số tiền hoàn: %,.0f VNĐ.",
-                            maDatSan, tyLeHoan, soTienHoan),
+                            maDatSan, ht.getTyLeHoan(), ht.getSoTienHoan()),
                     "DuyetHuy");
         } else {
+            // Khi từ chối: phục hồi lại DaXacNhan và giữ nguyên slot sân
             ds.setTrangThaiDat("DaXacNhan");
             datSanRepository.save(ds);
 
@@ -531,9 +579,22 @@ public class AdminService {
                 chiTietDatSanRepository.save(ct);
             });
 
+            // Cập nhật bản ghi HoanTien thành 'TuChoi'
+            hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(maDatSan).ifPresent(ht -> {
+                ht.setTrangThai("TuChoi");
+                if (req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty()) {
+                    ht.setLyDo(ht.getLyDo() + " (Admin từ chối: " + req.getGhiChu().trim() + ")");
+                }
+                hoanTienRepository.save(ht);
+            });
+
+            String lyDoTuChoi = (req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty())
+                    ? req.getGhiChu().trim() : "Quản trị viên không chấp thuận hủy đơn";
+
             taoThongBao(ds.getKhachHang(),
                     "Yêu cầu hủy bị từ chối",
-                    "Yêu cầu hủy sân của bạn đã bị từ chối. Lịch đặt vẫn giữ nguyên.",
+                    String.format("Yêu cầu hủy đơn #%d đã bị từ chối. Lý do: %s. Khung giờ đặt vẫn được giữ nguyên cho bạn.",
+                            maDatSan, lyDoTuChoi),
                     "DuyetHuy");
         }
 
@@ -709,6 +770,18 @@ public class AdminService {
         San san = sanRepository.findById(maSan)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Không tìm thấy sân"));
+
+        String tinhTrangMoi = req.getTinhTrang();
+        if ("BaoTri".equalsIgnoreCase(tinhTrangMoi) || "TamNgung".equalsIgnoreCase(tinhTrangMoi)) {
+            List<DatSan> conflicts = datSanRepository.findDonXungDotKhiBaoTri(maSan, LocalDate.now());
+            if (!conflicts.isEmpty()) {
+                String action = "TamNgung".equalsIgnoreCase(tinhTrangMoi) ? "Tạm ngưng" : "Bảo trì";
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Không thể chuyển sân sang " + action + " vì đang có " + conflicts.size() +
+                        " đơn đặt trước trong tương lai. Vui lòng điều phối chuyển sân hoặc hủy hoàn tiền trước.");
+            }
+        }
+
         san.setTinhTrang(req.getTinhTrang());
         sanRepository.save(san);
 
@@ -722,6 +795,173 @@ public class AdminService {
         sr.setTinhTrang(san.getTinhTrang());
         sr.setHinhAnh(san.getHinhAnh());
         return sr;
+    }
+
+    /**
+     * Lấy danh sách các đơn đặt sân trong tương lai bị ảnh hưởng khi đưa sân vào bảo trì,
+     * kèm danh sách các sân trống khả dụng cùng cơ sở để điều phối chuyển sân.
+     */
+    @Transactional(readOnly = true)
+    public List<DonXungDotBaoTriResponse> layDanhSachDonXungDotKhiBaoTri(Integer maSan) {
+        San san = sanRepository.findById(maSan)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sân"));
+
+        if (san.getDiaDiem() == null) {
+            return List.of();
+        }
+
+        List<DatSan> conflictingBookings = datSanRepository.findDonXungDotKhiBaoTri(maSan, LocalDate.now());
+        List<DonXungDotBaoTriResponse> results = new ArrayList<>();
+
+        for (DatSan ds : conflictingBookings) {
+            DatSanResponse donRes = bookingService.toDatSanResponse(ds);
+            List<SanResponse> dsSanTrong = bookingService.timSanTrong(
+                    san.getDiaDiem().getMaDiaDiem(),
+                    ds.getNgayChoi(),
+                    ds.getGioBatDau(),
+                    ds.getGioKetThuc()
+            ).stream()
+             .filter(s -> !s.getMaSan().equals(maSan))
+             .collect(Collectors.toList());
+
+            DonXungDotBaoTriResponse item = new DonXungDotBaoTriResponse();
+            item.setDonDatSan(donRes);
+            item.setDsSanKhaDung(dsSanTrong);
+            results.add(item);
+        }
+
+        return results;
+    }
+
+    /**
+     * Điều phối chuyển đơn đặt sân sang sân khác cùng cơ sở khi sân cũ bảo trì.
+     */
+    @Transactional
+    public DatSanResponse doiSanChoDon(Integer maDatSan, DoiSanRequest req) {
+        DatSan ds = datSanRepository.findById(maDatSan)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt sân"));
+
+        String trangThai = ds.getTrangThaiDat();
+        if ("DaHuy".equals(trangThai) || "HetHan".equals(trangThai) || "HoanThanh".equals(trangThai)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chuyển sân cho đơn ở trạng thái " + trangThai);
+        }
+
+        San sanMoi = sanRepository.findById(req.getMaSanMoi())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sân mới"));
+
+        if (!"HoatDong".equalsIgnoreCase(sanMoi.getTinhTrang())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sân mới không ở trạng thái Hoạt động");
+        }
+
+        if (ds.getSan() != null && ds.getSan().getDiaDiem() != null && sanMoi.getDiaDiem() != null) {
+            if (!ds.getSan().getDiaDiem().getMaDiaDiem().equals(sanMoi.getDiaDiem().getMaDiaDiem())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sân mới phải thuộc cùng cơ sở với sân cũ");
+            }
+        }
+
+        boolean daDat = datSanRepository.existsTrungLich(sanMoi.getMaSan(), ds.getNgayChoi(), ds.getGioBatDau(), ds.getGioKetThuc());
+        if (daDat) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sân mới đã có khách đặt trong khung giờ này");
+        }
+
+        San sanCu = ds.getSan();
+        ds.setSan(sanMoi);
+        datSanRepository.save(ds);
+
+        chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
+            chiTietDatSanRepository.save(ct);
+        });
+
+        String tenSanCu = sanCu != null ? sanCu.getTenSan() : "Sân cũ";
+        String ghiChuExtra = (req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty())
+                ? " (" + req.getGhiChu().trim() + ")" : "";
+
+        taoThongBao(ds.getKhachHang(), "Điều phối đổi sân thi đấu",
+                "Đơn đặt sân #" + maDatSan + " ngày " + ds.getNgayChoi() + " (" + ds.getGioBatDau() + " - " + ds.getGioKetThuc() + ") " +
+                "đã được ban quản lý chuyển từ " + tenSanCu + " sang " + sanMoi.getTenSan() + " do sân cần bảo trì / tạm ngưng phục vụ." + ghiChuExtra,
+                "HeThong");
+
+        return bookingService.toDatSanResponse(ds);
+    }
+
+    /**
+     * Hủy đơn do sân bảo trì kỹ thuật hoặc tạm ngưng đột xuất và tự động hoàn tiền 100% cọc cho khách.
+     */
+    @Transactional
+    public DatSanResponse huyDonDoBaoTri(Integer maDatSan) {
+        return huyDonDoBaoTriHoacTamNgung(maDatSan, "bảo trì kỹ thuật");
+    }
+
+    @Transactional
+    public DatSanResponse huyDonDoBaoTriHoacTamNgung(Integer maDatSan, String lyDo) {
+        DatSan ds = datSanRepository.findById(maDatSan)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn đặt sân"));
+
+        if ("DaHuy".equals(ds.getTrangThaiDat()) || "HetHan".equals(ds.getTrangThaiDat())) {
+            return bookingService.toDatSanResponse(ds);
+        }
+
+        String reasonText = (lyDo != null && !lyDo.trim().isEmpty()) ? lyDo : "bảo trì / tạm ngưng";
+        HuyDatSanRequest req = new HuyDatSanRequest();
+        req.setLyDoHuy("BaoTriHoacTamNgung");
+        req.setGhiChu("Sân " + reasonText + " đột xuất. Hoàn tiền 100%.");
+        DatSanResponse resp = huyDatSan(maDatSan, req);
+
+        // 1. Cập nhật trạng thái thanh toán là ChuaThanhToan để loại hoàn toàn khỏi doanh thu (tuân thủ CHECK constraint DB)
+        ds.setTrangThaiThanhToan("ChuaThanhToan");
+        datSanRepository.save(ds);
+
+        // 2. Đồng bộ hóa đơn (nếu có)
+        hoaDonRepository.findByDatSan_MaDatSan(maDatSan).ifPresent(hd -> {
+            hd.setTienHoanDuyet(BigDecimal.valueOf(ds.getSoTien()));
+            hd.setTrangThai("ChuaThanhToan");
+            hoaDonRepository.save(hd);
+        });
+
+        // 3. Đồng thời gửi thông báo chi tiết và trang trọng đến khách hàng (nếu có tài khoản)
+        if (ds.getKhachHang() != null) {
+            String tenSan = ds.getSan() != null ? ds.getSan().getTenSan() : "Sân";
+            String tenDiaDiem = (ds.getSan() != null && ds.getSan().getDiaDiem() != null)
+                    ? ds.getSan().getDiaDiem().getTenDiaDiem() : "Cơ sở";
+            String tieuDe = "Thông báo hủy đơn #" + maDatSan + " do sân " + reasonText + " đột xuất - Hoàn tiền 100%";
+            String noiDung = "Đơn đặt sân #" + maDatSan + " (" + tenSan + " - " + tenDiaDiem + ") ngày " +
+                    ds.getNgayChoi() + " (" + ds.getGioBatDau() + " - " + ds.getGioKetThuc() + ") " +
+                    "đã được hủy do sân " + reasonText + " đột xuất. Bạn đã được hoàn trả 100% số tiền (" +
+                    String.format("%,d", ds.getSoTien()) + " đ). Chúng tôi chân thành xin lỗi quý khách vì sự bất tiện này!";
+            taoThongBao(ds.getKhachHang(), tieuDe, noiDung, "Huy");
+        }
+
+        return resp;
+    }
+
+    /**
+     * Chuyển sân sang trạng thái Bảo trì, đồng thời tự động hủy và hoàn tiền 100% toàn bộ đơn xung đột.
+     */
+    @Transactional
+    public SanResponse chuyenBaoTriKemHuyTatCa(Integer maSan) {
+        return chuyenTrangThaiKemHuyTatCa(maSan, "BaoTri");
+    }
+
+    /**
+     * Chuyển sân sang Bảo trì hoặc Tạm ngưng, đồng thời tự động hủy và hoàn tiền 100% toàn bộ đơn xung đột.
+     */
+    @Transactional
+    public SanResponse chuyenTrangThaiKemHuyTatCa(Integer maSan, String tinhTrangMoi) {
+        San san = sanRepository.findById(maSan)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sân"));
+
+        String targetStatus = ("TamNgung".equalsIgnoreCase(tinhTrangMoi)) ? "TamNgung" : "BaoTri";
+        String lyDo = ("TamNgung".equals(targetStatus)) ? "tạm ngưng phục vụ" : "bảo trì kỹ thuật";
+
+        List<DatSan> conflictingBookings = datSanRepository.findDonXungDotKhiBaoTri(maSan, LocalDate.now());
+        for (DatSan ds : conflictingBookings) {
+            huyDonDoBaoTriHoacTamNgung(ds.getMaDatSan(), lyDo);
+        }
+
+        san.setTinhTrang(targetStatus);
+        sanRepository.save(san);
+
+        return bookingService.toSanResponse(san);
     }
 
     @Transactional(readOnly = true)
@@ -788,7 +1028,11 @@ public class AdminService {
                     res.setEmail(kh.getEmail());
                     res.setSoLanNoShow(kh.getSoLanNoShow());
                     taiKhoanRepository.findByKhachHang_MaKH(kh.getMaKH())
-                            .ifPresent(tk -> res.setTrangThaiTaiKhoan(tk.getTrangThai()));
+                            .ifPresent(tk -> {
+                                res.setMaTK(tk.getMaTK());
+                                res.setTenDangNhap(tk.getTenDangNhap());
+                                res.setTrangThaiTaiKhoan(tk.getTrangThai());
+                            });
                     return res;
                 })
                 .collect(Collectors.toList());
@@ -796,9 +1040,22 @@ public class AdminService {
 
     @Transactional
     public void doiTrangThaiTaiKhoan(Integer maTK) {
+        // Tìm chính xác tài khoản theo MaTK (khóa chính bảng TaiKhoan)
         TaiKhoan tk = taiKhoanRepository.findById(maTK)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Không tìm thấy tài khoản"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Không tìm thấy tài khoản người dùng"));
+
+        // Bảo vệ tuyệt đối tài khoản Quản trị viên (Admin)
+        if (tk.getRole() != null && "Admin".equalsIgnoreCase(tk.getRole().getTenRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Không thể khóa tài khoản Quản trị viên hệ thống!");
+        }
+        if ("admin".equalsIgnoreCase(tk.getTenDangNhap())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Không thể khóa tài khoản Quản trị viên hệ thống!");
+        }
+
+        // Đảo trạng thái tài khoản người dùng
         tk.setTrangThai("HoatDong".equals(tk.getTrangThai()) ? "Khoa" : "HoatDong");
         taiKhoanRepository.save(tk);
     }
@@ -815,6 +1072,23 @@ public class AdminService {
         kh.setEmail(req.getEmail());
         khachHangRepository.save(kh);
 
+        // Đổi mật khẩu tài khoản nếu Admin có nhập mật khẩu mới
+        if (req.getMatKhau() != null && !req.getMatKhau().trim().isEmpty()) {
+            String newPassword = req.getMatKhau().trim();
+            if (newPassword.length() < 6) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải có tối thiểu 6 ký tự trở lên");
+            }
+            TaiKhoan tk = taiKhoanRepository.findByKhachHang_MaKH(kh.getMaKH())
+                    .or(() -> (kh.getEmail() != null && !kh.getEmail().trim().isEmpty())
+                            ? taiKhoanRepository.findByTenDangNhapOrEmail(kh.getEmail().trim())
+                            : java.util.Optional.empty())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Khách hàng này chưa có tài khoản đăng nhập để đặt mật khẩu"));
+
+            tk.setMatKhau(passwordEncoder.encode(newPassword));
+            taiKhoanRepository.saveAndFlush(tk);
+        }
+
         KhachHangResponse res = new KhachHangResponse();
         res.setMaKH(kh.getMaKH());
         res.setHoTen(kh.getHoTen());
@@ -822,7 +1096,11 @@ public class AdminService {
         res.setEmail(kh.getEmail());
         res.setSoLanNoShow(kh.getSoLanNoShow());
         taiKhoanRepository.findByKhachHang_MaKH(kh.getMaKH())
-                .ifPresent(tk -> res.setTrangThaiTaiKhoan(tk.getTrangThai()));
+                .ifPresent(tk -> {
+                    res.setMaTK(tk.getMaTK());
+                    res.setTenDangNhap(tk.getTenDangNhap());
+                    res.setTrangThaiTaiKhoan(tk.getTrangThai());
+                });
         return res;
     }
 
@@ -832,7 +1110,27 @@ public class AdminService {
         ThongKeDoanhThuResponse res = new ThongKeDoanhThuResponse();
         res.setNam(nam);
         res.setThang(thang);
-        res.setTongDoanhThu(datSanRepository.tinhDoanhThuTheoThang(nam, thang));
+
+        Long doanhThuSanGoc = datSanRepository.tinhDoanhThuTheoThang(nam, thang);
+        if (doanhThuSanGoc == null) doanhThuSanGoc = 0L;
+
+        BigDecimal doanhThuHuyGiuLaiMonth = hoanTienRepository.tinhDoanhThuGiuLaiTuDonHuyTheoThang(nam, thang);
+        Long doanhThuPhatHuy = (doanhThuHuyGiuLaiMonth != null) ? doanhThuHuyGiuLaiMonth.longValue() : 0L;
+
+        BigDecimal quaGioMonth = datSanRepository.tinhTienQuaGioTheoThang(nam, thang);
+        Long doanhThuQuaGio = (quaGioMonth != null) ? quaGioMonth.longValue() : 0L;
+
+        BigDecimal dvMonth = chiTietDichVuRepository.tinhDoanhThuDichVuTheoThang(nam, thang);
+        Long doanhThuDichVu = (dvMonth != null) ? dvMonth.longValue() : 0L;
+
+        // Doanh thu sân = Tiền cọc sân gốc + Tiền cọc giữ lại từ đơn hủy (0%, 50%) + Tiền phụ phí quá giờ thực tế
+        Long doanhThuSanTong = doanhThuSanGoc + doanhThuPhatHuy + doanhThuQuaGio;
+
+        res.setDoanhThuSan(doanhThuSanTong);
+        res.setDoanhThuQuaGio(doanhThuQuaGio);
+        res.setDoanhThuPhatHuy(doanhThuPhatHuy);
+        res.setDoanhThuDichVu(doanhThuDichVu);
+        res.setTongDoanhThu(doanhThuSanTong + doanhThuDichVu);
         res.setSoDon(datSanRepository.demSoDonTheoThang(nam, thang));
         return res;
     }
@@ -841,7 +1139,27 @@ public class AdminService {
         ThongKeDoanhThuResponse res = new ThongKeDoanhThuResponse();
         res.setNam(nam);
         res.setThang(null);
-        res.setTongDoanhThu(datSanRepository.tinhDoanhThuTheoNam(nam));
+
+        Long doanhThuSanGoc = datSanRepository.tinhDoanhThuTheoNam(nam);
+        if (doanhThuSanGoc == null) doanhThuSanGoc = 0L;
+
+        BigDecimal doanhThuHuyGiuLaiYear = hoanTienRepository.tinhDoanhThuGiuLaiTuDonHuyTheoNam(nam);
+        Long doanhThuPhatHuy = (doanhThuHuyGiuLaiYear != null) ? doanhThuHuyGiuLaiYear.longValue() : 0L;
+
+        BigDecimal quaGioYear = datSanRepository.tinhTienQuaGioTheoNam(nam);
+        Long doanhThuQuaGio = (quaGioYear != null) ? quaGioYear.longValue() : 0L;
+
+        BigDecimal dvYear = chiTietDichVuRepository.tinhDoanhThuDichVuTheoNam(nam);
+        Long doanhThuDichVu = (dvYear != null) ? dvYear.longValue() : 0L;
+
+        // Doanh thu sân = Tiền cọc sân gốc + Tiền cọc giữ lại từ đơn hủy (0%, 50%) + Tiền phụ phí quá giờ thực tế
+        Long doanhThuSanTong = doanhThuSanGoc + doanhThuPhatHuy + doanhThuQuaGio;
+
+        res.setDoanhThuSan(doanhThuSanTong);
+        res.setDoanhThuQuaGio(doanhThuQuaGio);
+        res.setDoanhThuPhatHuy(doanhThuPhatHuy);
+        res.setDoanhThuDichVu(doanhThuDichVu);
+        res.setTongDoanhThu(doanhThuSanTong + doanhThuDichVu);
         res.setSoDon(datSanRepository.demSoDonTheoNam(nam));
         return res;
     }
@@ -849,6 +1167,9 @@ public class AdminService {
     // ======================== HELPER ========================
 
     private void taoThongBao(KhachHang kh, String tieuDe, String noiDung, String loai) {
+        if (kh == null) {
+            return;
+        }
         ThongBao tb = new ThongBao();
         tb.setKhachHang(kh);
         tb.setTieuDe(tieuDe);

@@ -4,82 +4,535 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — Quản Lý Đặt Sân Cầu Lông</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body data-require-role="ADMIN">
 
-  <!-- Navigation Bar -->
-  <nav class="admin-navbar">
-    <a href="/pages/admin/dashboard.html" class="brand">
-      <span>🏸</span> Admin Portal
-    </a>
-    <ul class="nav-links">
-      <li><a href="/pages/admin/dashboard.html" class="nav-link active">Dashboard</a></li>
-      <li><a href="/pages/admin/courts.html" class="nav-link">Quản lý sân</a></li>
-      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
-      <li><a href="/pages/admin/services.html" class="nav-link">Dịch vụ</a></li>
-      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
-      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
-    </ul>
-    <div class="user-controls">
-      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
-    </div>
-  </nav>
+  <div class="admin-layout">
+    <!-- Master Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-brand-wrapper">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <div class="sidebar-logo-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-title">SÂN CẦU LÔNG</span>
+            <span class="sidebar-brand-subtitle">ADMIN PORTAL</span>
+          </div>
+        </a>
+      </div>
 
-  <!-- Main Content -->
-  <main class="container">
-    <div class="page-header">
-      <h1 class="page-title">Tổng quan & Thống kê doanh thu</h1>
-    </div>
+      <!-- Navigation Menus -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Tổng quan</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/dashboard.html" class="active">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+              </span>
+              <span>Dashboard & Báo cáo</span>
+            </a>
+          </li>
+        </ul>
 
-    <div id="alert-container"></div>
+        <div class="nav-section-title">Vận hành sân bãi</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/bookings.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <span>Quản lý đặt sân</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/cancel-requests.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </span>
+              <span>Yêu cầu hủy & hoàn</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/courts.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </span>
+              <span>Danh sách sân & bảo trì</span>
+            </a>
+          </li>
+        </ul>
 
-    <!-- Filter Form -->
-    <div class="card">
-      <h2 class="card-title">Bộ lọc thống kê</h2>
-      <div class="form-grid" style="align-items: flex-end;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label for="input-thang">Tháng</label>
-          <input type="number" id="input-thang" class="form-control" min="1" max="12" placeholder="1 - 12">
+        <div class="nav-section-title">Cơ sở & Dịch vụ</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/services.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+              </span>
+              <span>Quản lý dịch vụ & kho</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Hệ thống</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/users.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </span>
+              <span>Quản lý người dùng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="admin-user-profile">
+          <div class="user-avatar-badge" id="admin-avatar-initials">AD</div>
+          <div class="user-meta-info">
+            <span class="user-meta-name" id="admin-display-name">Quản trị viên</span>
+            <span class="user-meta-role">Hệ thống Quản trị</span>
+          </div>
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label for="input-nam">Năm</label>
-          <input type="number" id="input-nam" class="form-control" min="2020" max="2099" placeholder="2026">
+        <div class="sidebar-actions-row">
+          <a href="/pages/user/courts.html" class="sidebar-action-btn view-site" title="Xem giao diện người dùng">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            Cổng User
+          </a>
+          <button type="button" class="sidebar-action-btn logout btn-logout" id="btn-logout" title="Đăng xuất">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Thoát
+          </button>
         </div>
-        <div>
-          <button type="button" class="btn btn-primary" onclick="loadDashboard()">Xem thống kê</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="admin-main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Toggle menu">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <div class="breadcrumbs">
+            <a href="/pages/admin/dashboard.html">Tổng quan</a>
+            <span class="separator">/</span>
+            <span class="current">Dashboard & Báo cáo</span>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-label">Doanh thu tháng</span>
-        <span id="stat-total-revenue" class="stat-value">0 đ</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Số đơn hoàn thành (Tháng)</span>
-        <span id="stat-total-bookings" class="stat-value">0 đơn</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Doanh thu cả năm</span>
-        <span id="stat-year-revenue" class="stat-value" style="color: var(--success);">0 đ</span>
-      </div>
-    </div>
+        <div class="topbar-right">
+          <div class="topbar-badge-time">
+            <span class="topbar-pulse-dot"></span>
+            <span id="admin-live-clock">Hệ thống đang hoạt động</span>
+          </div>
+        </div>
+      </header>
 
-    <!-- Quick Navigation Links -->
-    <div class="card">
-      <h2 class="card-title">Lối tắt quản trị</h2>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="/pages/admin/bookings.html" class="btn btn-outline">📅 Xem đơn đặt sân chờ duyệt</a>
-        <a href="/pages/admin/cancel-requests.html" class="btn btn-outline">⚠️ Xử lý yêu cầu hủy sân</a>
-        <a href="/pages/admin/courts.html" class="btn btn-outline">🏸 Quản lý danh sách sân</a>
-        <a href="/pages/admin/users.html" class="btn btn-outline">👥 Quản lý người dùng</a>
-      </div>
+      <!-- Main Page Content -->
+      <main class="admin-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="page-header-info">
+            <h1 class="page-title">Tổng quan & Thống kê điều hành</h1>
+            <p class="page-subtitle">Theo dõi các chỉ số tài chính, số lượng đơn hoàn thành và hiệu suất vận hành sân bãi thời gian thực.</p>
+          </div>
+          <div class="page-actions">
+            <a href="/pages/admin/bookings.html" class="btn btn-primary">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Quản lý đặt sân tại quầy
+            </a>
+          </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Sleek Period Filter Bar Card -->
+        <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Kỳ thống kê:
+              </span>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <label for="input-thang" style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">Tháng:</label>
+                <select id="input-thang" class="form-control" style="width: 120px; padding: 0.45rem 0.65rem;" onchange="loadDashboard()">
+                  <option value="1">Tháng 1</option>
+                  <option value="2">Tháng 2</option>
+                  <option value="3">Tháng 3</option>
+                  <option value="4">Tháng 4</option>
+                  <option value="5">Tháng 5</option>
+                  <option value="6">Tháng 6</option>
+                  <option value="7">Tháng 7</option>
+                  <option value="8">Tháng 8</option>
+                  <option value="9">Tháng 9</option>
+                  <option value="10">Tháng 10</option>
+                  <option value="11" selected>Tháng 11</option>
+                  <option value="12">Tháng 12</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <label for="input-nam" style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">Năm:</label>
+                <input type="number" id="input-nam" class="form-control" min="2020" max="2099" value="2026" style="width: 90px; padding: 0.45rem 0.65rem;" onchange="loadDashboard()">
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="loadDashboard()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Xem số liệu
+              </button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="setDashboardPeriod(new Date().getMonth() + 1, new Date().getFullYear())">
+                Tháng này
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setDashboardPeriod(new Date().getMonth() === 0 ? 12 : new Date().getMonth(), new Date().getMonth() === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear())">
+                Tháng trước
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 KPI Stats Grid Pro Max -->
+        <div class="stats-grid">
+          <!-- Card 1: Doanh thu tháng này -->
+          <div class="stat-card">
+            <div class="stat-card-content">
+              <span class="stat-label">Doanh thu tháng này</span>
+              <span id="stat-total-revenue" class="stat-value primary-highlight">0 đ</span>
+              <span class="stat-meta" id="stat-total-revenue-meta" style="flex-wrap: wrap; gap: 0.25rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                  </svg>
+                  Sân: <strong id="stat-court-revenue" style="color: #047857; margin-left: 2px;">0 đ</strong>
+                </span>
+                <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  Dịch vụ: <strong id="stat-service-subrevenue" style="color: #d97706; margin-left: 2px;">0 đ</strong>
+                </span>
+                <span id="stat-overtime-container" style="display: none;">
+                  <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Quá giờ: <strong id="stat-overtime-revenue" style="color: #b45309; margin-left: 2px;">0 đ</strong>
+                  </span>
+                </span>
+                <span id="stat-cancellation-container" style="display: none;">
+                  <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Phí hủy giữ lại: <strong id="stat-cancellation-revenue" style="color: #4f46e5; margin-left: 2px;">0 đ</strong>
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div class="stat-icon-box">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Card 2: Tiền dịch vụ (Tháng) -->
+          <div class="stat-card">
+            <div class="stat-card-content">
+              <span class="stat-label">Tiền dịch vụ (Tháng)</span>
+              <span id="stat-service-revenue" class="stat-value" style="color: #d97706;">0 đ</span>
+              <span class="stat-meta">
+                <svg width="14" height="14" fill="none" stroke="#d97706" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+                Nước uống, thuê vợt & cầu
+              </span>
+            </div>
+            <div class="stat-icon-box" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Card 3: Đơn hoàn thành -->
+          <div class="stat-card">
+            <div class="stat-card-content">
+              <span class="stat-label">Đơn hoàn thành (Tháng)</span>
+              <span id="stat-total-bookings" class="stat-value">0 đơn</span>
+              <span class="stat-meta" id="stat-bookings-meta">Khách đã hoàn tất giờ chơi & check-out</span>
+            </div>
+            <div class="stat-icon-box info">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Card 4: Doanh thu năm -->
+          <div class="stat-card">
+            <div class="stat-card-content">
+              <span class="stat-label">Doanh thu cả năm</span>
+              <span id="stat-year-revenue" class="stat-value" style="color: #059669;">0 đ</span>
+              <span class="stat-meta" style="flex-wrap: wrap; gap: 0.25rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  Sân: <strong id="stat-year-court-revenue" style="color: #047857; margin-left: 2px;">0 đ</strong>
+                </span>
+                <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  DV: <strong id="stat-year-service-revenue" style="color: #d97706; margin-left: 2px;">0 đ</strong>
+                </span>
+                <span id="stat-year-overtime-container" style="display: none;">
+                  <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Quá giờ: <strong id="stat-year-overtime-revenue" style="color: #b45309; margin-left: 2px;">0 đ</strong>
+                  </span>
+                </span>
+                <span id="stat-year-cancellation-container" style="display: none;">
+                  <span style="color: var(--text-muted); margin: 0 2px;">•</span>
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Phí hủy giữ lại: <strong id="stat-year-cancellation-revenue" style="color: #4f46e5; margin-left: 2px;">0 đ</strong>
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div class="stat-icon-box warning">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Card 5: Tình trạng sân sẵn sàng thực tế -->
+          <div class="stat-card">
+            <div class="stat-card-content">
+              <span class="stat-label">Tỷ lệ sân sẵn sàng</span>
+              <span id="stat-court-capacity" class="stat-value" style="color: #0284c7;">-- / --</span>
+              <span id="stat-court-desc" class="stat-meta">
+                <span class="pulsing-dot" style="background:#10b981; color:#10b981;"></span>
+                Khả năng phục vụ khách chơi
+              </span>
+            </div>
+            <div class="stat-icon-box">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ phân tích doanh thu 12 tháng trực quan Pro Max -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                </svg>
+                Phân tích Doanh thu 12 Tháng
+              </h2>
+              <span class="card-description">Biểu đồ ước lượng và phân bổ doanh thu theo từng tháng trong năm vận hành.</span>
+            </div>
+          </div>
+
+          <div class="chart-wrapper">
+            <!-- Summary Bar trên Chart -->
+            <div class="chart-header-summary">
+              <div class="chart-summary-item">
+                <span style="color: var(--text-muted);">Tháng đang xem:</span>
+                <span class="chart-summary-val" id="chart-summary-selected-month">Tháng 11/2026</span>
+              </div>
+              <div class="chart-summary-item">
+                <span style="color: var(--text-muted);">Doanh thu tháng cao nhất:</span>
+                <span class="chart-summary-val" id="chart-summary-peak-revenue">100.000 đ</span>
+              </div>
+              <div class="chart-summary-item">
+                <span style="color: var(--text-muted);">Trung bình tháng:</span>
+                <span class="chart-summary-val" id="chart-summary-avg-revenue">-- đ</span>
+              </div>
+            </div>
+
+            <!-- Chart Box with Real Y-Axis Ticks & Gridlines -->
+            <div class="chart-box">
+              <div class="chart-y-axis">
+                <span id="y-tick-4">100.000 đ</span>
+                <span id="y-tick-3">75.000 đ</span>
+                <span id="y-tick-2">50.000 đ</span>
+                <span id="y-tick-1">25.000 đ</span>
+                <span id="y-tick-0">0 đ</span>
+              </div>
+              <div class="chart-plot-area">
+                <div class="chart-gridline" style="bottom: 100%;"></div>
+                <div class="chart-gridline" style="bottom: 75%;"></div>
+                <div class="chart-gridline" style="bottom: 50%;"></div>
+                <div class="chart-gridline" style="bottom: 25%;"></div>
+                <div class="chart-gridline" style="bottom: 0%;"></div>
+
+                <div class="chart-bars-row" id="revenue-bar-chart">
+                  <!-- 12 Bars rendered dynamically with proper scale -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Cột Widget Phân Tích Thông Minh -->
+        <div class="dashboard-two-col">
+          <!-- Widget 1: Phân bổ Phương thức Thanh toán -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  </svg>
+                  Phương thức Thanh toán
+                </h2>
+                <span class="card-description">Tỷ lệ thanh toán tự động VietQR so với Tiền mặt tại quầy</span>
+              </div>
+            </div>
+            <div id="payment-breakdown-container">
+              <p style="text-align:center; padding: 2rem; color: var(--text-muted);">Đang phân tích phương thức...</p>
+            </div>
+          </div>
+
+          <!-- Widget 2: Phân bổ Cơ sở & Trạng thái Sân -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  Tình trạng Sân theo Cơ sở
+                </h2>
+                <span class="card-description">Khả năng đáp ứng thực tế tại các chi nhánh</span>
+              </div>
+              <a href="/pages/admin/courts.html" class="btn btn-outline btn-sm">Xem sơ đồ ↗</a>
+            </div>
+            <div id="venue-capacity-container">
+              <p style="text-align:center; padding: 2rem; color: var(--text-muted);">Đang tải tình trạng cơ sở...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng Đơn Đặt Sân Gần Đây (Realtime Activity Table) -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Đơn đặt sân gần đây nhất
+              </h2>
+              <span class="card-description">Các lượt đặt mới cần nhân viên theo dõi và đón tiếp khách</span>
+            </div>
+            <a href="/pages/admin/bookings.html" class="btn btn-outline btn-sm">Xem toàn bộ đơn ↗</a>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Sân & Cơ sở</th>
+                  <th>Lịch chơi</th>
+                  <th>Tổng tiền</th>
+                  <th>Thanh toán</th>
+                  <th>Trạng thái</th>
+                  <th style="text-align: right;">Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="recent-bookings-table-body">
+                <tr>
+                  <td colspan="8" style="text-align:center; padding: 2.5rem; color: var(--text-muted);">
+                    Đang tải đơn đặt sân gần đây...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Navigation Links Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Lối tắt thao tác nhanh
+              </h2>
+              <span class="card-description">Truy cập tức thì các tính năng vận hành quan trọng thường ngày.</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; flex-wrap: wrap;">
+            <a href="/pages/admin/bookings.html" class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              Quản lý đơn đặt sân & quầy
+            </a>
+            <a href="/pages/admin/cancel-requests.html" class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Xử lý yêu cầu hủy & hoàn tiền
+            </a>
+            <a href="/pages/admin/courts.html" class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Sơ đồ sân bãi & bảo trì
+            </a>
+            <a href="/pages/admin/services.html" class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+              Quản lý dịch vụ & kho nước
+            </a>
+            <a href="/pages/admin/users.html" class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+              Quản lý tài khoản người dùng
+            </a>
+          </div>
+        </div>
+      </main>
     </div>
-  </main>
+  </div>
 
   <!-- Scripts -->
   <script src="/assets/js/api.js"></script>
@@ -87,9 +540,9 @@
   <script src="/assets/js/admin.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initAdminLayout === 'function') initAdminLayout();
       loadDashboard();
     });
   </script>
 </body>
 </html>
-

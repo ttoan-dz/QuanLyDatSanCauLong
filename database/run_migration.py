@@ -24,6 +24,19 @@ def table_exists(table):
     ok, out = run_sql(sql)
     return ok and table.lower() in out.lower()
 
+def index_exists(table, index_name):
+    sql = f"SELECT INDEX_NAME FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = 'QuanLyDatSan' AND TABLE_NAME = '{table}' AND INDEX_NAME = '{index_name}';"
+    ok, out = run_sql(sql)
+    return ok and index_name.lower() in out.lower()
+
+def add_index_if_not_exists(table, index_name, columns):
+    if not index_exists(table, index_name):
+        ok, _ = run_sql(f"ALTER TABLE `{table}` ADD INDEX `{index_name}` ({columns});")
+        if ok:
+            print(f"Added index {index_name} on {table}")
+    else:
+        print(f"Index {index_name} already exists on {table}")
+
 print("Starting safe migration...")
 
 # 1. DiaDiem columns
@@ -278,5 +291,38 @@ SELECT 4, '2026-09-25 20:30:00', 'Khách không đến nhận sân quá 30 phút
 WHERE EXISTS (SELECT 1 FROM DatSan WHERE MaDatSan = 4)
   AND NOT EXISTS (SELECT 1 FROM HoanTien WHERE MaDatSan = 4);
 """)
+
+print("Creating and verifying high-performance indexes...")
+# 11. Performance Indexes
+add_index_if_not_exists("DatSan", "IDX_DatSan_TrungLich", "MaSan, NgayChoi, TrangThaiDat, GioBatDau, GioKetThuc")
+add_index_if_not_exists("DatSan", "IDX_DatSan_KH_NgayTao", "MaKH, NgayTao DESC")
+add_index_if_not_exists("DatSan", "IDX_DatSan_ChoXacNhan_HanTT", "TrangThaiDat, HanThanhToan")
+add_index_if_not_exists("DatSan", "IDX_DatSan_ThongKe", "TrangThaiThanhToan, NgayChoi, TrangThaiDat")
+add_index_if_not_exists("DatSan", "IDX_DatSan_NgayChoi_TrangThai", "NgayChoi, TrangThaiDat")
+add_index_if_not_exists("DatSan", "IDX_DatSan_NgayTao", "NgayTao DESC")
+
+add_index_if_not_exists("San", "IDX_San_DiaDiem_TinhTrang", "MaDiaDiem, TinhTrang")
+add_index_if_not_exists("DichVu", "IDX_DichVu_DiaDiem_TrangThai", "MaDiaDiem, TrangThai")
+
+add_index_if_not_exists("ThongBao", "IDX_ThongBao_KH_DaDoc_ThoiGian", "MaKH, DaDoc, ThoiGianTao DESC")
+add_index_if_not_exists("TaiKhoan", "IDX_TaiKhoan_KH", "MaKH")
+add_index_if_not_exists("TaiKhoan", "IDX_TaiKhoan_Role_TrangThai", "MaRole, TrangThai")
+add_index_if_not_exists("KhachHang", "IDX_KhachHang_Email", "Email")
+
+add_index_if_not_exists("ThanhToan", "IDX_ThanhToan_MaGiaoDich", "MaGiaoDich")
+add_index_if_not_exists("ThanhToan", "IDX_ThanhToan_DatSan_Loai", "MaDatSan, LoaiThanhToan")
+add_index_if_not_exists("ThanhToan", "IDX_ThanhToan_ThoiGian", "ThoiGianThanhToan DESC")
+
+add_index_if_not_exists("HoanTien", "IDX_HoanTien_DatSan", "MaDatSan")
+add_index_if_not_exists("HoanTien", "IDX_HoanTien_TrangThai", "TrangThai")
+add_index_if_not_exists("HoanTien", "IDX_HoanTien_NgayYeuCau", "NgayYeuCau DESC")
+
+add_index_if_not_exists("HoaDon", "IDX_HoaDon_NgayLap", "NgayLap DESC")
+add_index_if_not_exists("HoaDon", "IDX_HoaDon_TrangThai", "TrangThai")
+
+add_index_if_not_exists("ChiTietDatSan", "IDX_CTDS_DatSan", "MaDatSan")
+add_index_if_not_exists("ChiTietDatSan", "IDX_CTDS_San_ThoiGian", "MaSan, BatDau, KetThuc, TrangThai")
+add_index_if_not_exists("ChiTietDichVu", "IDX_CTDV_DatSan", "MaDatSan")
+add_index_if_not_exists("ChiTietDichVu", "IDX_CTDV_DichVu", "MaDV")
 
 print("Migration completed successfully!")

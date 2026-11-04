@@ -18,5 +18,8 @@ public class CapNhatKhachHangRequest {
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;
+
+    // Mật khẩu mới (tùy chọn: để trống nếu không muốn đổi)
+    private String matKhau;
 }
 

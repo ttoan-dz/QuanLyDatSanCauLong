@@ -22,6 +22,7 @@ import com.quanlydatsan.dto.request.CapNhatDichVuRequest;
 import com.quanlydatsan.dto.request.CapNhatKhachHangRequest;
 import com.quanlydatsan.dto.request.CapNhatTrangThaiSanRequest;
 import com.quanlydatsan.dto.request.CheckOutRequest;
+import com.quanlydatsan.dto.request.DoiSanRequest;
 import com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest;
 import com.quanlydatsan.dto.request.HuyDatSanRequest;
 import com.quanlydatsan.dto.request.SuaSanRequest;
@@ -31,6 +32,7 @@ import com.quanlydatsan.dto.request.ThemDichVuRequest;
 import com.quanlydatsan.dto.response.DatSanResponse;
 import com.quanlydatsan.dto.response.DiaDiemResponse;
 import com.quanlydatsan.dto.response.DichVuResponse;
+import com.quanlydatsan.dto.response.DonXungDotBaoTriResponse;
 import com.quanlydatsan.dto.response.KhachHangResponse;
 import com.quanlydatsan.dto.response.SanResponse;
 import com.quanlydatsan.dto.response.ThongKeDoanhThuResponse;
@@ -199,6 +201,35 @@ public class AdminController {
             @PathVariable Integer maSan,
             @Valid @RequestBody CapNhatTrangThaiSanRequest req) {
         return ResponseEntity.ok(adminService.capNhatTrangThaiSan(maSan, req));
+    }
+
+    @GetMapping("/courts/court/{maSan}/conflicting-bookings")
+    public ResponseEntity<List<DonXungDotBaoTriResponse>> layDonXungDotKhiBaoTri(@PathVariable Integer maSan) {
+        return ResponseEntity.ok(adminService.layDanhSachDonXungDotKhiBaoTri(maSan));
+    }
+
+    @PutMapping("/bookings/{id}/reassign-court")
+    public ResponseEntity<DatSanResponse> doiSanChoDon(
+            @PathVariable Integer id,
+            @Valid @RequestBody DoiSanRequest req) {
+        return ResponseEntity.ok(adminService.doiSanChoDon(id, req));
+    }
+
+    @PostMapping("/bookings/{id}/cancel-due-to-maintenance")
+    public ResponseEntity<DatSanResponse> huyDonDoBaoTri(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminService.huyDonDoBaoTri(id));
+    }
+
+    @PostMapping("/courts/court/{maSan}/force-maintenance-with-refund")
+    public ResponseEntity<SanResponse> chuyenBaoTriKemHuyTatCa(@PathVariable Integer maSan) {
+        return ResponseEntity.ok(adminService.chuyenBaoTriKemHuyTatCa(maSan));
+    }
+
+    @PostMapping("/courts/court/{maSan}/force-status-with-refund")
+    public ResponseEntity<SanResponse> chuyenTrangThaiKemHuyTatCa(
+            @PathVariable Integer maSan,
+            @RequestParam(defaultValue = "BaoTri") String status) {
+        return ResponseEntity.ok(adminService.chuyenTrangThaiKemHuyTatCa(maSan, status));
     }
 
     // ======================== 4. KHÁCH HÀNG ========================

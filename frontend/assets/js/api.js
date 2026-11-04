@@ -42,7 +42,7 @@ const API_BASE_URL = resolveApiBaseUrl();
 
 const api = {
   async request(endpoint, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const headers = {
       'Content-Type': 'application/json',
       ...(options.headers || {})
@@ -71,6 +71,7 @@ const api = {
 
       if (response.status === 401 || response.status === 403) {
         if (response.status === 401 && !url.includes('/auth/login')) {
+          sessionStorage.clear();
           localStorage.clear();
           window.location.href = '/pages/auth/login.html';
         }

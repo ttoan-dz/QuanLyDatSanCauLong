@@ -4,54 +4,245 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đăng Ký Tài Khoản — Quản Lý Đặt Sân Cầu Lông</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f1f5f9;">
+<body>
 
-  <div class="card" style="max-width: 480px; width: 100%; margin: 1.5rem; padding: 2rem; box-shadow: var(--shadow-lg);">
-    <div style="text-align: center; margin-bottom: 1.5rem;">
-      <span style="font-size: 2.5rem;">🏸</span>
-      <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-top: 0.5rem;">Đăng ký tài khoản</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Tạo tài khoản để bắt đầu đặt sân</p>
-    </div>
-
-    <div id="alert-container"></div>
-
-    <form onsubmit="handleRegister(event)">
-      <div class="form-group">
-        <label for="input-hoTen">Họ và tên (*)</label>
-        <input type="text" id="input-hoTen" class="form-control" placeholder="Nguyễn Văn A" required autofocus>
+  <div class="auth-split-wrapper">
+    
+    <!-- Cột Trái: Brand Showcase & Features (Desktop) -->
+    <aside class="auth-hero-panel">
+      <div>
+        <a href="/index.html" class="auth-hero-brand">
+          <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img" style="width: 44px; height: 44px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 10px;">
+          <div class="auth-hero-brand-text">Sân Cầu Lông Pro</div>
+        </a>
       </div>
 
-      <div class="form-group">
-        <label for="input-sdt">Số điện thoại (*)</label>
-        <input type="tel" id="input-sdt" class="form-control" placeholder="0912345678" pattern="[0-9]{10,11}" required>
+      <div class="auth-hero-content">
+        <div class="auth-hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Đăng ký thành viên hoàn toàn miễn phí</span>
+        </div>
+        <h2 class="auth-hero-title">
+          Tham gia cộng đồng<br>cầu lông sôi động
+        </h2>
+        <p class="auth-hero-subtitle">
+          Khởi tạo tài khoản trong 1 phút để trải nghiệm đặt sân siêu tốc, nhận thông báo nhắc lịch tự động và quản lý các trận cầu thuận tiện.
+        </p>
+
+        <div class="auth-features-list">
+          <div class="auth-feature-item">
+            <div class="auth-feature-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="auth-feature-text">
+              <h4>Giữ chỗ ưu tiên 10 phút</h4>
+              <p>Khung giờ thi đấu được bảo lưu ngay khi chọn để bạn thong thả thanh toán.</p>
+            </div>
+          </div>
+
+          <div class="auth-feature-item">
+            <div class="auth-feature-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+            <div class="auth-feature-text">
+              <h4>Thông báo tiến trình thông minh</h4>
+              <p>Cập nhật trạng thái duyệt đơn, mã QR và hoàn tiền trực tiếp theo thời gian thực.</p>
+            </div>
+          </div>
+
+          <div class="auth-feature-item">
+            <div class="auth-feature-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <div class="auth-feature-text">
+              <h4>Lịch sử & Thống kê cá nhân</h4>
+              <p>Dễ dàng tra cứu các đơn đặt sân, hóa đơn điện tử và dịch vụ đã sử dụng.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="input-email">Email (tuỳ chọn)</label>
-        <input type="email" id="input-email" class="form-control" placeholder="email@example.com">
+      <div class="auth-hero-footer">
+        <span style="display:flex; align-items:center; gap:0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Bảo mật thông tin tuyệt đối
+        </span>
+        <span style="display:flex; align-items:center; gap:0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Kích hoạt tài khoản tức thì
+        </span>
+      </div>
+    </aside>
+
+    <!-- Cột Phải: Form Đăng Ký Chuẩn UI/UX Pro Max -->
+    <main class="auth-form-panel">
+      <!-- Nút quay lại Trang chủ ở góc trên bên phải -->
+      <div class="auth-floating-home">
+        <a href="/index.html" class="auth-home-btn" title="Quay lại trang chủ">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Trang chủ</span>
+        </a>
       </div>
 
-      <div class="form-group">
-        <label for="input-tenDangNhap">Tên đăng nhập (*)</label>
-        <input type="text" id="input-tenDangNhap" class="form-control" minlength="4" maxlength="50" placeholder="Ít nhất 4 ký tự" required>
-      </div>
+      <div class="auth-form-container wide">
+        
+        <div class="auth-top-nav">
+          <a href="/index.html" class="auth-home-btn" title="Quay lại trang chủ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Về trang chủ</span>
+          </a>
+          <a href="/index.html" class="auth-mobile-logo">
+            <img src="/assets/images/logo.png" alt="Logo" class="brand-logo-img" style="width: 28px; height: 28px;">
+            <span>Sân Cầu Lông</span>
+          </a>
+        </div>
 
-      <div class="form-group">
-        <label for="input-matKhau">Mật khẩu (*)</label>
-        <input type="password" id="input-matKhau" class="form-control" minlength="6" placeholder="Ít nhất 6 ký tự" required>
-      </div>
+        <div class="auth-header">
+          <h1>Tạo tài khoản mới</h1>
+          <p>Điền thông tin để bắt đầu trải nghiệm đặt sân trực tuyến</p>
+        </div>
 
-      <button type="submit" id="btn-register" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Đăng ký</button>
-    </form>
+        <div id="alert-container"></div>
 
-    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
-      Đã có tài khoản? <a href="/pages/auth/login.html" style="color: var(--primary-dark); font-weight: 600; text-decoration: none;">Đăng nhập ngay</a>
-      <div style="margin-top: 0.5rem;">
-        <a href="/index.html" style="color: var(--secondary); text-decoration: none; font-size: 0.85rem;">← Về trang chủ</a>
+        <form onsubmit="handleRegister(event)" novalidate id="form-register">
+          
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="input-hoTen">Họ và tên (*)</label>
+              <div class="input-icon-wrap" id="wrap-hoTen">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </span>
+                <input type="text" id="input-hoTen" class="form-control-icon" placeholder="VD: Nguyễn Văn An" required autofocus autocomplete="name">
+              </div>
+              <div class="field-error-msg" id="error-hoTen"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-sdt">Số điện thoại (*)</label>
+              <div class="input-icon-wrap" id="wrap-sdt">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </span>
+                <input type="tel" id="input-sdt" class="form-control-icon" placeholder="VD: 0901234567" maxlength="10" required autocomplete="tel">
+              </div>
+              <div class="field-error-msg" id="error-sdt"></div>
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 0.85rem;">
+            <div class="form-group">
+              <label for="input-email">Địa chỉ Email (*)</label>
+              <div class="input-icon-wrap" id="wrap-email">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </span>
+                <input type="email" id="input-email" class="form-control-icon" placeholder="VD: an.nguyen@gmail.com" required autocomplete="email">
+              </div>
+              <div class="field-error-msg" id="error-email"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-tenDangNhap">Tên đăng nhập (*)</label>
+              <div class="input-icon-wrap" id="wrap-tenDangNhap">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                  </svg>
+                </span>
+                <input type="text" id="input-tenDangNhap" class="form-control-icon" minlength="4" maxlength="50" placeholder="Từ 4 ký tự" required autocomplete="username">
+              </div>
+              <div class="field-error-msg" id="error-tenDangNhap"></div>
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top: 0.85rem;">
+            <div class="form-group">
+              <label for="input-matKhau">Mật khẩu (*)</label>
+              <div class="input-icon-wrap" id="wrap-matKhau">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input type="password" id="input-matKhau" class="form-control-icon" minlength="6" placeholder="Từ 6 ký tự" required autocomplete="new-password">
+                <button type="button" class="password-toggle-btn" title="Ẩn/Hiện mật khẩu" onclick="togglePasswordVisibility('input-matKhau', this)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="field-error-msg" id="error-matKhau"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-confirmMatKhau">Xác nhận mật khẩu (*)</label>
+              <div class="input-icon-wrap" id="wrap-confirmMatKhau">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+                <input type="password" id="input-confirmMatKhau" class="form-control-icon" minlength="6" placeholder="Nhập lại mật khẩu" required autocomplete="new-password">
+                <button type="button" class="password-toggle-btn" title="Ẩn/Hiện mật khẩu" onclick="togglePasswordVisibility('input-confirmMatKhau', this)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="field-error-msg" id="error-confirmMatKhau"></div>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-register" class="btn btn-primary auth-submit-btn">
+            <span>Đăng ký tài khoản</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="auth-footer-prompt">
+          Đã có tài khoản? <a href="/pages/auth/login.html">Đăng nhập ngay</a>
+        </div>
+
       </div>
-    </div>
+    </main>
+
   </div>
 
   <script src="/assets/js/api.js"></script>
@@ -59,4 +250,3 @@
   <script src="/assets/js/auth.js"></script>
 </body>
 </html>
-

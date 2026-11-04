@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang Cá Nhân — Quản Lý Đặt Sân</title>
+  <title>Trang Cá Nhân — Quản Lý Đặt Sân Cầu Lông</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
+  <link rel="shortcut icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-require-role="CUSTOMER">
@@ -11,7 +13,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/index.html" class="brand">
-      <span>🏸</span> Đặt Sân Cầu Lông
+      <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+      <span class="brand-text">Sân Cầu Lông</span>
     </a>
     <ul class="nav-links">
       <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
@@ -19,82 +22,227 @@
       <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
       <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
     </ul>
-    <div class="user-info">
+    <div id="auth-controls" class="user-info">
       <!-- Sẽ được điền tự động dropdown pill bởi utils.js -->
     </div>
   </nav>
 
   <!-- Main Container -->
-  <main class="container" style="max-width: 860px;">
-    <div class="page-header">
-      <h1 class="page-title">Trang cá nhân</h1>
-      <p class="page-subtitle">Quản lý thông tin tài khoản và cập nhật mật khẩu bảo mật</p>
+  <main class="container" style="max-width: 1100px; padding-top: 2rem; padding-bottom: 3.5rem;">
+    
+    <!-- Page Header Modern -->
+    <div class="page-header" style="margin-bottom: 2rem;">
+      <div class="section-pill-tag" style="margin-bottom: 0.75rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Hồ sơ & Bảo mật tài khoản</span>
+      </div>
+      <h1 class="page-title">Trang Cá Nhân & Thiết Lập Tài Khoản</h1>
+      <p class="page-subtitle">Quản lý thông tin định danh, số điện thoại liên hệ và cập nhật mật khẩu bảo vệ tài khoản</p>
     </div>
 
     <div id="alert-container"></div>
 
-    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+    <!-- 2-Column Responsive Dashboard Layout -->
+    <div class="profile-layout-grid">
       
-      <!-- Section 1: Thông tin cá nhân -->
-      <div class="section-box">
-        <div class="section-header">
-          <h2 class="section-title">👤 Thông tin cá nhân</h2>
+      <!-- CỘT TRÁI: Thẻ Định Danh Tóm Tắt & Lối Tắt -->
+      <aside class="profile-card-summary">
+        <div class="profile-avatar-wrap" id="profile-avatar-initials">
+          --
+        </div>
+        <h2 class="profile-user-name" id="profile-card-name">Đang tải...</h2>
+        <div class="profile-badge-role" id="profile-card-role-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="profile-card-role">Khách hàng</span>
         </div>
 
-        <form id="form-profile" onsubmit="handleUpdateProfile(event)">
-          <div class="form-group">
-            <label for="input-profile-hoTen">Họ và tên (*)</label>
-            <input type="text" id="input-profile-hoTen" class="form-control" placeholder="Nguyễn Văn A" required>
-          </div>
+        <div class="profile-info-divider"></div>
 
-          <div class="form-group">
-            <label for="input-profile-sdt">Số điện thoại (*)</label>
-            <input type="tel" id="input-profile-sdt" class="form-control" placeholder="0912345678" pattern="[0-9]{10,11}" required>
+        <div class="profile-contact-list">
+          <div class="profile-contact-item" title="Số điện thoại liên hệ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span id="profile-card-phone">---</span>
           </div>
-
-          <div class="form-group">
-            <label for="input-profile-email">Email (tuỳ chọn)</label>
-            <input type="email" id="input-profile-email" class="form-control" placeholder="email@example.com">
+          <div class="profile-contact-item" title="Email liên hệ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span id="profile-card-email">---</span>
           </div>
-
-          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-            <button type="submit" id="btn-save-profile" class="btn btn-primary">
-              💾 Lưu thay đổi
-            </button>
+          <div class="profile-contact-item" title="Trạng thái bảo vệ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Tài khoản xác thực JWT</span>
           </div>
-        </form>
-      </div>
-
-      <!-- Section 2: Đổi mật khẩu -->
-      <div class="section-box">
-        <div class="section-header">
-          <h2 class="section-title">🔒 Đổi mật khẩu</h2>
         </div>
 
-        <form id="form-change-password" onsubmit="handleChangePassword(event)">
-          <div class="form-group">
-            <label for="input-current-password">Mật khẩu hiện tại (*)</label>
-            <input type="password" id="input-current-password" class="form-control" placeholder="••••••••" required>
+        <div class="profile-info-divider"></div>
+
+        <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-sub); text-align: left; margin-bottom: 0.65rem; letter-spacing: 0.05em;">
+          Lối tắt chức năng
+        </div>
+
+        <div class="profile-quick-nav">
+          <a href="/pages/user/courts.html" class="profile-quick-link">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+              Đặt sân thi đấu
+            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+
+          <a href="/pages/user/history.html" class="profile-quick-link">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Lịch sử đặt sân
+            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+
+          <a href="/pages/user/notifications.html" class="profile-quick-link">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Tiến trình & Thông báo
+            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+      </aside>
+
+      <!-- CỘT PHẢI: Form Cài Đặt Thông Tin & Đổi Mật Khẩu -->
+      <div>
+        
+        <!-- Section 1: Thông tin cá nhân -->
+        <section class="profile-card-modern">
+          <div class="profile-card-header">
+            <div class="profile-card-iconbox emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h3 class="profile-card-title">Thông Tin Định Danh</h3>
+              <p class="profile-card-subtitle">Thông tin hiển thị khi nhận sân và đối chiếu tại quầy lễ tân</p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="input-new-password">Mật khẩu mới (*)</label>
-            <input type="password" id="input-new-password" class="form-control" minlength="6" placeholder="Ít nhất 6 ký tự" required>
+          <form id="form-profile" onsubmit="handleUpdateProfile(event)" novalidate>
+            <div class="profile-form-grid-2">
+              <div class="form-group">
+                <label for="input-profile-hoTen">Họ và tên (*)</label>
+                <div class="input-icon-wrap" id="wrap-profile-hoTen">
+                  <span class="input-icon-prefix">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </span>
+                  <input type="text" id="input-profile-hoTen" class="form-control-icon" placeholder="VD: Nguyễn Văn An" autocomplete="name" required>
+                </div>
+                <div class="field-error-msg" id="error-profile-hoTen"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-sdt">Số điện thoại (*)</label>
+                <div class="input-icon-wrap" id="wrap-profile-sdt">
+                  <span class="input-icon-prefix">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  </span>
+                  <input type="tel" id="input-profile-sdt" class="form-control-icon" placeholder="VD: 0901234567" maxlength="10" autocomplete="tel" required>
+                </div>
+                <div class="field-error-msg" id="error-profile-sdt"></div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+              <label for="input-profile-email">Địa chỉ Email (*)</label>
+              <div class="input-icon-wrap" id="wrap-profile-email">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </span>
+                <input type="email" id="input-profile-email" class="form-control-icon" placeholder="VD: an.nguyen@gmail.com" autocomplete="email" required>
+              </div>
+              <div class="field-error-msg" id="error-profile-email"></div>
+            </div>
+
+            <div class="profile-form-tip">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Tất cả thuộc tính họ tên, số điện thoại và email đều bắt buộc điền đầy đủ và chính xác để đối chiếu thông tin đặt sân.</span>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+              <button type="submit" id="btn-save-profile" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0.75rem 1.75rem; border-radius: 11px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Lưu Thay Đổi</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Section 2: Đổi mật khẩu -->
+        <section class="profile-card-modern">
+          <div class="profile-card-header">
+            <div class="profile-card-iconbox amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div>
+              <h3 class="profile-card-title">Bảo Mật & Mật Khẩu</h3>
+              <p class="profile-card-subtitle">Cập nhật mật khẩu định kỳ để nâng cao tính bảo mật cho tài khoản cá nhân</p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="input-confirm-password">Nhập lại mật khẩu mới (*)</label>
-            <input type="password" id="input-confirm-password" class="form-control" minlength="6" placeholder="Nhập lại mật khẩu mới" required>
-          </div>
+          <form id="form-change-password" onsubmit="handleChangePassword(event)" novalidate>
+            <div class="form-group">
+              <label for="input-current-password">Mật khẩu hiện tại (*)</label>
+              <div class="input-icon-wrap" id="wrap-current-password">
+                <span class="input-icon-prefix">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <input type="password" id="input-current-password" class="form-control-icon" placeholder="••••••••" required>
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('input-current-password', this)" title="Hiện/Ẩn mật khẩu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="field-error-msg" id="error-current-password"></div>
+            </div>
 
-          <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-            <button type="submit" id="btn-change-password" class="btn btn-yellow">
-              🔑 Đổi mật khẩu
-            </button>
-          </div>
-        </form>
+            <div class="profile-form-grid-2" style="margin-top: 1rem;">
+              <div class="form-group">
+                <label for="input-new-password">Mật khẩu mới (*)</label>
+                <div class="input-icon-wrap" id="wrap-new-password">
+                  <span class="input-icon-prefix">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                  </span>
+                  <input type="password" id="input-new-password" class="form-control-icon" minlength="6" placeholder="Tối thiểu 6 ký tự" required>
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('input-new-password', this)" title="Hiện/Ẩn mật khẩu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <div class="field-error-msg" id="error-new-password"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-confirm-password">Xác nhận mật khẩu mới (*)</label>
+                <div class="input-icon-wrap" id="wrap-confirm-password">
+                  <span class="input-icon-prefix">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <input type="password" id="input-confirm-password" class="form-control-icon" minlength="6" placeholder="Nhập lại mật khẩu mới" required>
+                  <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('input-confirm-password', this)" title="Hiện/Ẩn mật khẩu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <div class="field-error-msg" id="error-confirm-password"></div>
+              </div>
+            </div>
+
+            <div class="profile-form-tip">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Mật khẩu an toàn nên kết hợp cả chữ cái, chữ số và độ dài từ 6 ký tự trở lên. Không nên sử dụng mật khẩu trùng với số điện thoại.</span>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+              <button type="submit" id="btn-change-password" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0.75rem 1.75rem; border-radius: 11px; font-weight: 700; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                <span>Cập Nhật Mật Khẩu</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
       </div>
-
     </div>
   </main>
 
@@ -102,46 +250,452 @@
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/utils.js"></script>
   <script>
+    const SVG_EYE_OPEN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    const SVG_EYE_CLOSED = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+    const SVG_VALIDATION_ERROR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.innerHTML = isPassword ? SVG_EYE_CLOSED : SVG_EYE_OPEN;
+    }
+
+    // ==================== FORM VALIDATION UI HELPERS ====================
+    function setFieldError(fieldKey, message) {
+      const input = document.getElementById(`input-profile-${fieldKey}`) || document.getElementById(`input-${fieldKey}`);
+      const wrap = document.getElementById(`wrap-profile-${fieldKey}`) || document.getElementById(`wrap-${fieldKey}`);
+      const errEl = document.getElementById(`error-profile-${fieldKey}`) || document.getElementById(`error-${fieldKey}`);
+
+      if (input) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+      }
+      if (wrap) {
+        wrap.classList.add('has-error');
+        wrap.classList.remove('is-valid');
+      }
+      if (errEl) {
+        errEl.innerHTML = `${SVG_VALIDATION_ERROR}<span>${message}</span>`;
+        errEl.classList.add('visible');
+      }
+    }
+
+    function clearFieldError(fieldKey, markValid = false) {
+      const input = document.getElementById(`input-profile-${fieldKey}`) || document.getElementById(`input-${fieldKey}`);
+      const wrap = document.getElementById(`wrap-profile-${fieldKey}`) || document.getElementById(`wrap-${fieldKey}`);
+      const errEl = document.getElementById(`error-profile-${fieldKey}`) || document.getElementById(`error-${fieldKey}`);
+
+      if (input) {
+        input.classList.remove('is-invalid');
+        if (markValid) {
+          input.classList.add('is-valid');
+        } else {
+          input.classList.remove('is-valid');
+        }
+      }
+      if (wrap) {
+        wrap.classList.remove('has-error');
+        if (markValid) {
+          wrap.classList.add('is-valid');
+        } else {
+          wrap.classList.remove('is-valid');
+        }
+      }
+      if (errEl) {
+        errEl.innerHTML = '';
+        errEl.classList.remove('visible');
+      }
+    }
+
+    // Kiểm tra Họ và tên (không được để trống, không được ghi số, không ký tự đặc biệt, >= 2 ký tự)
+    function validateHoTen(value, showError = true) {
+      const val = (value || '').trim();
+      if (!val) {
+        if (showError) setFieldError('hoTen', 'Họ và tên không được để trống khi thay đổi');
+        return false;
+      }
+      if (/\d/.test(val)) {
+        if (showError) setFieldError('hoTen', 'Họ và tên không được chứa chữ số');
+        return false;
+      }
+      if (val.length < 2) {
+        if (showError) setFieldError('hoTen', 'Họ và tên tối thiểu từ 2 ký tự trở lên');
+        return false;
+      }
+      // Hỗ trợ đầy đủ tiếng Việt có dấu và bảng chữ cái Latin
+      const regexHoTen = /^[a-zA-ZàáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệđìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆĐÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴ\s]+$/;
+      if (!regexHoTen.test(val)) {
+        if (showError) setFieldError('hoTen', 'Họ và tên chỉ được chứa chữ cái, không chứa ký tự đặc biệt');
+        return false;
+      }
+
+      clearFieldError('hoTen', true);
+      return true;
+    }
+
+    // Kiểm tra Số điện thoại (không được để trống, không chứa dấu cách, không chứa chữ, đúng 10 số bắt đầu bằng 0)
+    function validateSdt(value, showError = true) {
+      const raw = value || '';
+      if (/\s/.test(raw)) {
+        if (showError) setFieldError('sdt', 'Số điện thoại không được chứa khoảng trắng (dấu cách)');
+        return false;
+      }
+      const val = raw.trim();
+      if (!val) {
+        if (showError) setFieldError('sdt', 'Số điện thoại không được để trống khi thay đổi');
+        return false;
+      }
+      if (/[^\d]/.test(val)) {
+        if (showError) setFieldError('sdt', 'Số điện thoại chỉ được chứa chữ số, không được ghi chữ');
+        return false;
+      }
+      if (!val.startsWith('0')) {
+        if (showError) setFieldError('sdt', 'Số điện thoại phải bắt đầu bằng chữ số 0 (VD: 0901234567)');
+        return false;
+      }
+      if (val.length !== 10) {
+        if (showError) setFieldError('sdt', `Số điện thoại phải gồm đúng 10 chữ số (hiện có ${val.length}/10 số)`);
+        return false;
+      }
+
+      clearFieldError('sdt', true);
+      return true;
+    }
+
+    // Kiểm tra Email (bắt buộc, không được để trống, chuẩn đuôi @gmail.com)
+    function validateEmail(value, showError = true) {
+      const raw = value || '';
+      if (/\s/.test(raw)) {
+        if (showError) setFieldError('email', 'Email không được chứa khoảng trắng');
+        return false;
+      }
+      const val = raw.trim();
+      if (!val) {
+        if (showError) setFieldError('email', 'Địa chỉ email không được để trống khi thay đổi');
+        return false;
+      }
+
+      // Kiểm tra định dạng bắt buộc đuôi @gmail.com
+      const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+      if (!regexGmail.test(val)) {
+        if (!val.includes('@')) {
+          if (showError) setFieldError('email', 'Email thiếu ký tự @ và phần mở rộng @gmail.com');
+        } else if (!val.toLowerCase().endsWith('@gmail.com')) {
+          if (showError) setFieldError('email', 'Email phải có đúng định dạng đuôi @gmail.com (VD: tenban@gmail.com)');
+        } else {
+          if (showError) setFieldError('email', 'Tên tài khoản email chứa ký tự không hợp lệ');
+        }
+        return false;
+      }
+
+      clearFieldError('email', true);
+      return true;
+    }
+
+    // Kiểm tra Mật khẩu hiện tại (không được để trống)
+    function validateCurrentPassword(value, showError = true) {
+      const val = value || '';
+      if (!val) {
+        if (showError) setFieldError('current-password', 'Mật khẩu hiện tại không được để trống');
+        return false;
+      }
+      clearFieldError('current-password', true);
+      return true;
+    }
+
+    // Kiểm tra Mật khẩu mới (không được để trống, tối thiểu 6 ký tự)
+    function validateNewPassword(value, showError = true) {
+      const val = value || '';
+      if (!val) {
+        if (showError) setFieldError('new-password', 'Mật khẩu mới không được để trống');
+        return false;
+      }
+      if (val.length < 6) {
+        if (showError) setFieldError('new-password', 'Mật khẩu mới phải có ít nhất 6 ký tự');
+        return false;
+      }
+      clearFieldError('new-password', true);
+      return true;
+    }
+
+    // Kiểm tra Xác nhận mật khẩu mới (không được để trống, phải khớp với mật khẩu mới)
+    function validateConfirmPassword(value, newPass, showError = true) {
+      const val = value || '';
+      if (!val) {
+        if (showError) setFieldError('confirm-password', 'Vui lòng xác nhận mật khẩu mới, không được để trống');
+        return false;
+      }
+      if (val !== newPass) {
+        if (showError) setFieldError('confirm-password', 'Mật khẩu xác nhận không khớp với mật khẩu mới');
+        return false;
+      }
+      clearFieldError('confirm-password', true);
+      return true;
+    }
+
+    // Thiết lập lắng nghe sự kiện nhập liệu form Thông Tin Định Danh
+    function setupProfileValidation() {
+      const inputHoTen = document.getElementById('input-profile-hoTen');
+      const inputSdt = document.getElementById('input-profile-sdt');
+      const inputEmail = document.getElementById('input-profile-email');
+
+      if (inputHoTen) {
+        // Chặn người dùng gõ trực tiếp chữ số
+        inputHoTen.addEventListener('keydown', (e) => {
+          if (/^[0-9]$/.test(e.key)) {
+            e.preventDefault();
+            setFieldError('hoTen', 'Họ và tên không được ghi số');
+          }
+        });
+
+        // Lọc sạch số nếu dán hoặc dùng bàn phím ảo
+        inputHoTen.addEventListener('input', () => {
+          const original = inputHoTen.value;
+          const stripped = original.replace(/[0-9]/g, '');
+          if (original !== stripped) {
+            inputHoTen.value = stripped;
+            setFieldError('hoTen', 'Họ và tên không được ghi số');
+          } else if (stripped.trim().length === 0) {
+            setFieldError('hoTen', 'Họ và tên không được để trống khi thay đổi');
+          } else {
+            validateHoTen(stripped, false);
+          }
+        });
+
+        inputHoTen.addEventListener('blur', () => {
+          validateHoTen(inputHoTen.value, true);
+        });
+      }
+
+      if (inputSdt) {
+        // Chặn phím space (dấu cách) và phím chữ cái
+        inputSdt.addEventListener('keydown', (e) => {
+          if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+            setFieldError('sdt', 'Số điện thoại không được chứa khoảng trắng (dấu cách)');
+            return;
+          }
+          const allowedNav = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Home', 'End'];
+          const isModifier = e.ctrlKey || e.metaKey;
+          if (!allowedNav.includes(e.key) && !isModifier && !/^[0-9]$/.test(e.key)) {
+            e.preventDefault();
+            setFieldError('sdt', 'Số điện thoại chỉ được chứa chữ số, không được ghi chữ');
+          }
+        });
+
+        // Lọc bỏ dấu cách, ký tự chữ và giới hạn tối đa 10 chữ số
+        inputSdt.addEventListener('input', () => {
+          const original = inputSdt.value;
+          const cleaned = original.replace(/\s+/g, '').replace(/\D/g, '').slice(0, 10);
+          if (original !== cleaned) {
+            inputSdt.value = cleaned;
+          }
+          if (cleaned.length === 0) {
+            setFieldError('sdt', 'Số điện thoại không được để trống khi thay đổi');
+          } else if (!cleaned.startsWith('0')) {
+            setFieldError('sdt', 'Số điện thoại phải bắt đầu bằng chữ số 0');
+          } else if (cleaned.length === 10) {
+            clearFieldError('sdt', true);
+          } else {
+            clearFieldError('sdt', false);
+          }
+        });
+
+        inputSdt.addEventListener('blur', () => {
+          validateSdt(inputSdt.value, true);
+        });
+      }
+
+      if (inputEmail) {
+        // Chặn dấu cách trong email
+        inputEmail.addEventListener('keydown', (e) => {
+          if (e.key === ' ' || e.code === 'Space') {
+            e.preventDefault();
+            setFieldError('email', 'Email không được chứa khoảng trắng');
+          }
+        });
+
+        inputEmail.addEventListener('input', () => {
+          const original = inputEmail.value;
+          const cleaned = original.replace(/\s+/g, '');
+          if (original !== cleaned) {
+            inputEmail.value = cleaned;
+          }
+          const val = cleaned.trim();
+          if (!val) {
+            setFieldError('email', 'Địa chỉ email không được để trống khi thay đổi');
+          } else if (/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(val)) {
+            clearFieldError('email', true);
+          } else {
+            clearFieldError('email', false);
+          }
+        });
+
+        inputEmail.addEventListener('blur', () => {
+          validateEmail(inputEmail.value, true);
+        });
+      }
+    }
+
+    // Thiết lập lắng nghe sự kiện nhập liệu form Đổi Mật Khẩu
+    function setupPasswordValidation() {
+      const inputCurrent = document.getElementById('input-current-password');
+      const inputNew = document.getElementById('input-new-password');
+      const inputConfirm = document.getElementById('input-confirm-password');
+
+      if (inputCurrent) {
+        inputCurrent.addEventListener('input', () => {
+          if (inputCurrent.value) {
+            clearFieldError('current-password', true);
+          } else {
+            setFieldError('current-password', 'Mật khẩu hiện tại không được để trống');
+          }
+        });
+        inputCurrent.addEventListener('blur', () => {
+          validateCurrentPassword(inputCurrent.value, true);
+        });
+      }
+
+      if (inputNew) {
+        inputNew.addEventListener('input', () => {
+          const val = inputNew.value;
+          if (!val) {
+            setFieldError('new-password', 'Mật khẩu mới không được để trống');
+          } else if (val.length < 6) {
+            setFieldError('new-password', `Mật khẩu mới phải có ít nhất 6 ký tự (hiện có ${val.length}/6)`);
+          } else {
+            clearFieldError('new-password', true);
+          }
+          if (inputConfirm && inputConfirm.value) {
+            validateConfirmPassword(inputConfirm.value, val, false);
+          }
+        });
+        inputNew.addEventListener('blur', () => {
+          validateNewPassword(inputNew.value, true);
+        });
+      }
+
+      if (inputConfirm) {
+        inputConfirm.addEventListener('input', () => {
+          const val = inputConfirm.value;
+          const newPass = inputNew ? inputNew.value : '';
+          if (!val) {
+            setFieldError('confirm-password', 'Vui lòng xác nhận mật khẩu mới, không được để trống');
+          } else if (val !== newPass) {
+            setFieldError('confirm-password', 'Mật khẩu xác nhận chưa khớp với mật khẩu mới');
+          } else {
+            clearFieldError('confirm-password', true);
+          }
+        });
+        inputConfirm.addEventListener('blur', () => {
+          const newPass = inputNew ? inputNew.value : '';
+          validateConfirmPassword(inputConfirm.value, newPass, true);
+        });
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      setupProfileValidation();
+      setupPasswordValidation();
       loadUserProfile();
     });
+
+    function updateProfileSummaryCard(data) {
+      const name = (data && data.hoTen) || getAuthUser() || 'Người dùng';
+      const role = getAuthRole() || 'CUSTOMER';
+      const phone = (data && data.sdt) || 'Chưa cập nhật';
+      const email = (data && data.email) || 'Chưa cập nhật';
+
+      // Chữ cái đại diện avatar
+      const words = name.trim().split(/\s+/);
+      let initials = 'ND';
+      if (words.length >= 2) {
+        initials = (words[words.length - 2][0] + words[words.length - 1][0]).toUpperCase();
+      } else if (words.length === 1 && words[0].length >= 2) {
+        initials = words[0].substring(0, 2).toUpperCase();
+      }
+
+      const avatarEl = document.getElementById('profile-avatar-initials');
+      if (avatarEl) avatarEl.textContent = initials;
+
+      const nameEl = document.getElementById('profile-card-name');
+      if (nameEl) nameEl.textContent = name;
+
+      const roleEl = document.getElementById('profile-card-role');
+      if (roleEl) {
+        roleEl.textContent = (role === 'ADMIN' ? 'Quản Trị Viên' : (role === 'STAFF' ? 'Nhân Viên Sân' : 'Khách Hàng Thân Thiết'));
+      }
+
+      const phoneEl = document.getElementById('profile-card-phone');
+      if (phoneEl) phoneEl.textContent = phone;
+
+      const emailEl = document.getElementById('profile-card-email');
+      if (emailEl) emailEl.textContent = email;
+    }
 
     async function loadUserProfile() {
       try {
         const data = await api.get('/user/profile');
         if (data) {
-          document.getElementById('input-profile-hoTen').value = data.hoTen || '';
-          document.getElementById('input-profile-sdt').value = data.sdt || '';
-          document.getElementById('input-profile-email').value = data.email || '';
+          const inputHoTen = document.getElementById('input-profile-hoTen');
+          const inputSdt = document.getElementById('input-profile-sdt');
+          const inputEmail = document.getElementById('input-profile-email');
+
+          if (inputHoTen) inputHoTen.value = data.hoTen || '';
+          if (inputSdt) inputSdt.value = data.sdt || '';
+          if (inputEmail) inputEmail.value = data.email || '';
+
+          // Đánh dấu valid nhẹ nếu dữ liệu hiện hữu đạt chuẩn
+          if (data.hoTen) validateHoTen(data.hoTen, false);
+          if (data.sdt) validateSdt(data.sdt, false);
+          if (data.email) validateEmail(data.email, false);
+
+          updateProfileSummaryCard(data);
         }
       } catch (error) {
         showAlert(`Không thể tải thông tin cá nhân: ${error.message}`, 'danger');
+        updateProfileSummaryCard(null);
       }
     }
 
     async function handleUpdateProfile(event) {
       if (event) event.preventDefault();
 
-      const hoTen = document.getElementById('input-profile-hoTen').value.trim();
-      const sdt = document.getElementById('input-profile-sdt').value.trim();
-      const email = document.getElementById('input-profile-email').value.trim() || null;
+      const hoTenInput = document.getElementById('input-profile-hoTen');
+      const sdtInput = document.getElementById('input-profile-sdt');
+      const emailInput = document.getElementById('input-profile-email');
       const btn = document.getElementById('btn-save-profile');
 
-      if (!hoTen || !sdt) {
-        showAlert('Vui lòng điền họ tên và số điện thoại!', 'warning');
+      const isHoTenValid = validateHoTen(hoTenInput.value, true);
+      const isSdtValid = validateSdt(sdtInput.value, true);
+      const isEmailValid = validateEmail(emailInput.value, true);
+
+      if (!isHoTenValid || !isSdtValid || !isEmailValid) {
+        showAlert('Tất cả thuộc tính đều không được để trống khi thay đổi! Vui lòng kiểm tra các ô báo lỗi màu đỏ.', 'danger');
+        if (!isHoTenValid) hoTenInput.focus();
+        else if (!isSdtValid) sdtInput.focus();
+        else if (!isEmailValid) emailInput.focus();
         return;
       }
+
+      const hoTen = hoTenInput.value.trim();
+      const sdt = sdtInput.value.trim();
+      const email = emailInput.value.trim();
 
       if (btn) btn.disabled = true;
 
       try {
         const updated = await api.put('/user/profile', { hoTen, sdt, email });
-        // Cập nhật lại localStorage
+        // Cập nhật lại sessionStorage & localStorage
         if (updated?.hoTen) {
+          sessionStorage.setItem('hoTen', updated.hoTen);
           localStorage.setItem('hoTen', updated.hoTen);
           const nameEl = document.getElementById('user-display-name');
           if (nameEl) nameEl.textContent = updated.hoTen;
         }
+        updateProfileSummaryCard(updated || { hoTen, sdt, email });
         showAlert('Cập nhật thông tin cá nhân thành công!', 'success');
       } catch (error) {
         showAlert(`Lỗi cập nhật: ${error.message}`, 'danger');
@@ -153,23 +707,24 @@
     async function handleChangePassword(event) {
       if (event) event.preventDefault();
 
-      const matKhauHienTai = document.getElementById('input-current-password').value;
-      const matKhauMoi = document.getElementById('input-new-password').value;
-      const nhapLaiMatKhauMoi = document.getElementById('input-confirm-password').value;
+      const inputCurrent = document.getElementById('input-current-password');
+      const inputNew = document.getElementById('input-new-password');
+      const inputConfirm = document.getElementById('input-confirm-password');
       const btn = document.getElementById('btn-change-password');
 
-      if (!matKhauHienTai || !matKhauMoi || !nhapLaiMatKhauMoi) {
-        showAlert('Vui lòng điền đầy đủ các trường mật khẩu!', 'warning');
-        return;
-      }
+      const matKhauHienTai = inputCurrent.value;
+      const matKhauMoi = inputNew.value;
+      const nhapLaiMatKhauMoi = inputConfirm.value;
 
-      if (matKhauMoi.length < 6) {
-        showAlert('Mật khẩu mới phải có ít nhất 6 ký tự!', 'warning');
-        return;
-      }
+      const isCurrentValid = validateCurrentPassword(matKhauHienTai, true);
+      const isNewValid = validateNewPassword(matKhauMoi, true);
+      const isConfirmValid = validateConfirmPassword(nhapLaiMatKhauMoi, matKhauMoi, true);
 
-      if (matKhauMoi !== nhapLaiMatKhauMoi) {
-        showAlert('Mật khẩu mới và Nhập lại mật khẩu không khớp!', 'danger');
+      if (!isCurrentValid || !isNewValid || !isConfirmValid) {
+        showAlert('Tất cả trường mật khẩu đều không được để trống và phải đạt chuẩn bảo mật!', 'warning');
+        if (!isCurrentValid) inputCurrent.focus();
+        else if (!isNewValid) inputNew.focus();
+        else if (!isConfirmValid) inputConfirm.focus();
         return;
       }
 
@@ -182,6 +737,9 @@
         });
         showAlert('Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.', 'success');
         document.getElementById('form-change-password').reset();
+        clearFieldError('current-password', false);
+        clearFieldError('new-password', false);
+        clearFieldError('confirm-password', false);
       } catch (error) {
         showAlert(`Đổi mật khẩu thất bại: ${error.message}`, 'danger');
       } finally {
@@ -191,4 +749,3 @@
   </script>
 </body>
 </html>
-

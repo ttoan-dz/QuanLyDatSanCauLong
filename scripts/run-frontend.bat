@@ -2,7 +2,7 @@
 title QuanLyDatSan - Frontend Web
 chcp 65001 >nul
 
-cd /d "%~dp0frontend"
+cd /d "%~dp0..\frontend"
 echo ========================================================
 echo   Dang khoi chay Frontend Web tai: http://localhost:3000
 echo ========================================================

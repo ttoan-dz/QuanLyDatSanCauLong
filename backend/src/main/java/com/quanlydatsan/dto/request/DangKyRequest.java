@@ -16,7 +16,8 @@ public class DangKyRequest {
     @Pattern(regexp = "^\\d{10,11}$", message = "SĐT phải gồm 10-11 chữ số")
     private String sdt;
 
-    @Email
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng")
     private String email;
 
     @NotBlank
