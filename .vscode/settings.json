@@ -3,11 +3,11 @@
     "liveServer.settings.root": "/frontend",
     "liveServer.settings.port": 5501,
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.jdt.ls.java.home": "D:\\jdk21",
+    "java.jdt.ls.java.home": "${env:JAVA_HOME}",
     "java.configuration.runtimes": [
         {
             "name": "JavaSE-21",
-            "path": "D:\\jdk21",
+            "path": "${env:JAVA_HOME}",
             "default": true
         }
     ]
