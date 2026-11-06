@@ -28,8 +28,9 @@ CREATE TABLE IF NOT EXISTS KhachHang (
     SDT         VARCHAR(15)  NOT NULL UNIQUE,
     Email       VARCHAR(100) NULL,
     SoLanNoShow INT NOT NULL DEFAULT 0,
-    NgayTao     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    NgayTao     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX IDX_KhachHang_Email (Email)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.2 Địa điểm / Cơ sở kinh doanh (CoSo)
 CREATE TABLE IF NOT EXISTS DiaDiem (
@@ -42,8 +43,9 @@ CREATE TABLE IF NOT EXISTS DiaDiem (
     TrangThai   VARCHAR(20) NOT NULL DEFAULT 'HoatDong',
     MapLink     VARCHAR(500) NULL,
     CONSTRAINT CK_DiaDiem_Gio CHECK (GioDong > GioMo),
-    CONSTRAINT CK_DiaDiem_TrangThai CHECK (TrangThai IN ('HoatDong', 'TamNgung'))
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_DiaDiem_TrangThai CHECK (TrangThai IN ('HoatDong', 'TamNgung')),
+    INDEX IDX_DiaDiem_TrangThai (TrangThai)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.3 Sân cầu lông
 CREATE TABLE IF NOT EXISTS San (
@@ -56,8 +58,9 @@ CREATE TABLE IF NOT EXISTS San (
     HinhAnh     VARCHAR(255) NULL,
     CONSTRAINT UQ_San_TenSan_TheoDiaDiem UNIQUE (MaDiaDiem, TenSan),
     CONSTRAINT FK_San_DiaDiem FOREIGN KEY (MaDiaDiem) REFERENCES DiaDiem(MaDiaDiem),
-    CONSTRAINT CK_San_TinhTrang CHECK (TinhTrang IN ('HoatDong', 'TamNgung', 'BaoTri'))
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_San_TinhTrang CHECK (TinhTrang IN ('HoatDong', 'TamNgung', 'BaoTri')),
+    INDEX IDX_San_DiaDiem_TinhTrang (MaDiaDiem, TinhTrang)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.4 Bảng giá / Khung giá
 CREATE TABLE IF NOT EXISTS BangGia (
@@ -66,14 +69,15 @@ CREATE TABLE IF NOT EXISTS BangGia (
     GiaMoi30Phut  INT NOT NULL,
     DangApDung    TINYINT(1) NOT NULL DEFAULT 1,
     NgayApDung    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT CK_BangGia_Gia CHECK (GiaMoi30Phut > 0)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_BangGia_Gia CHECK (GiaMoi30Phut > 0),
+    INDEX IDX_BangGia_DangApDung (DangApDung)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.5 Phân quyền & Tài khoản hệ thống
 CREATE TABLE IF NOT EXISTS Role (
     MaRole   INT AUTO_INCREMENT PRIMARY KEY,
     TenRole  VARCHAR(50) NOT NULL UNIQUE
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS TaiKhoan (
     MaTK          INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,8 +89,10 @@ CREATE TABLE IF NOT EXISTS TaiKhoan (
     NgayTao       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_TaiKhoan_Role FOREIGN KEY (MaRole) REFERENCES Role(MaRole),
     CONSTRAINT FK_TaiKhoan_KhachHang FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
-    CONSTRAINT CK_TaiKhoan_TrangThai CHECK (TrangThai IN ('HoatDong', 'Khoa'))
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_TaiKhoan_TrangThai CHECK (TrangThai IN ('HoatDong', 'Khoa')),
+    INDEX IDX_TaiKhoan_MaKH (MaKH),
+    INDEX IDX_TaiKhoan_Role_TrangThai (MaRole, TrangThai)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.6 Nhân viên (kế thừa NguoiDung, quản lý theo cơ sở)
 CREATE TABLE IF NOT EXISTS NhanVien (
@@ -99,8 +105,9 @@ CREATE TABLE IF NOT EXISTS NhanVien (
     NgayVaoLam  DATE         NOT NULL DEFAULT (CURRENT_DATE),
     MaTK        INT          NULL UNIQUE,
     CONSTRAINT FK_NhanVien_DiaDiem FOREIGN KEY (MaDiaDiem) REFERENCES DiaDiem(MaDiaDiem),
-    CONSTRAINT FK_NhanVien_TaiKhoan FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT FK_NhanVien_TaiKhoan FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK),
+    INDEX IDX_NhanVien_DiaDiem (MaDiaDiem)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.7 Đơn đặt sân (DatSan)
 CREATE TABLE IF NOT EXISTS DatSan (
@@ -130,8 +137,15 @@ CREATE TABLE IF NOT EXISTS DatSan (
     CONSTRAINT FK_DatSan_NhanVien FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV),
     CONSTRAINT CK_DatSan_GioHopLe CHECK (GioKetThuc > GioBatDau),
     CONSTRAINT CK_DatSan_SoTien CHECK (SoTien >= 0),
-    CONSTRAINT CK_DatSan_TrangThaiThanhToan CHECK (TrangThaiThanhToan IN ('ChuaThanhToan', 'DaThanhToan'))
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_DatSan_TrangThaiThanhToan CHECK (TrangThaiThanhToan IN ('ChuaThanhToan', 'DaThanhToan')),
+    -- Tối ưu hoá chỉ mục truy vấn cao tần (High-frequency indexes):
+    INDEX IDX_DatSan_TrungLich (MaSan, NgayChoi, TrangThaiDat, GioBatDau, GioKetThuc),
+    INDEX IDX_DatSan_KH_NgayTao (MaKH, NgayTao DESC),
+    INDEX IDX_DatSan_ChoXacNhan_HanTT (TrangThaiDat, HanThanhToan),
+    INDEX IDX_DatSan_ThongKe (TrangThaiThanhToan, NgayChoi, TrangThaiDat),
+    INDEX IDX_DatSan_NgayChoi_TrangThai (NgayChoi, TrangThaiDat),
+    INDEX IDX_DatSan_NgayTao (NgayTao DESC)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.8 Chi tiết đặt sân (ChiTietDatSan)
 CREATE TABLE IF NOT EXISTS ChiTietDatSan (
@@ -149,8 +163,10 @@ CREATE TABLE IF NOT EXISTS ChiTietDatSan (
     TrangThai     VARCHAR(20) NOT NULL DEFAULT 'DaXacNhan', -- GiuCho, DaXacNhan, DangChoi, HoanThanh, DaHuy, KhongDen
     CONSTRAINT FK_CTDS_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan) ON DELETE CASCADE,
     CONSTRAINT FK_CTDS_San FOREIGN KEY (MaSan) REFERENCES San(MaSan),
-    CONSTRAINT FK_CTDS_NhanVien FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT FK_CTDS_NhanVien FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV),
+    INDEX IDX_CTDS_DatSan (MaDatSan),
+    INDEX IDX_CTDS_San_ThoiGian (MaSan, BatDau, KetThuc, TrangThai)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.9 Dịch vụ tại sân (DichVu)
 CREATE TABLE IF NOT EXISTS DichVu (
@@ -164,8 +180,9 @@ CREATE TABLE IF NOT EXISTS DichVu (
     TrangThai   VARCHAR(20) NOT NULL DEFAULT 'HoatDong',
     CONSTRAINT FK_DichVu_DiaDiem FOREIGN KEY (MaDiaDiem) REFERENCES DiaDiem(MaDiaDiem),
     CONSTRAINT CK_DichVu_DonGia CHECK (DonGia >= 0),
-    CONSTRAINT CK_DichVu_SoLuongTon CHECK (SoLuongTon >= 0)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_DichVu_SoLuongTon CHECK (SoLuongTon >= 0),
+    INDEX IDX_DichVu_DiaDiem_TrangThai (MaDiaDiem, TrangThai)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.10 Chi tiết sử dụng dịch vụ (ChiTietDichVu)
 CREATE TABLE IF NOT EXISTS ChiTietDichVu (
@@ -179,8 +196,10 @@ CREATE TABLE IF NOT EXISTS ChiTietDichVu (
     CONSTRAINT FK_CTDV_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan) ON DELETE CASCADE,
     CONSTRAINT FK_CTDV_DichVu FOREIGN KEY (MaDV) REFERENCES DichVu(MaDV),
     CONSTRAINT CK_CTDV_SoLuong CHECK (SoLuong > 0),
-    CONSTRAINT CK_CTDV_DonGia CHECK (DonGia >= 0)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_CTDV_DonGia CHECK (DonGia >= 0),
+    INDEX IDX_CTDV_DatSan (MaDatSan),
+    INDEX IDX_CTDV_DichVu (MaDV)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.11 Hóa đơn tổng kết (HoaDon)
 CREATE TABLE IF NOT EXISTS HoaDon (
@@ -194,8 +213,10 @@ CREATE TABLE IF NOT EXISTS HoaDon (
     TienHoanDuyet   DECIMAL(12,2) NOT NULL DEFAULT 0,
     ThanhTien       DECIMAL(12,2) NOT NULL DEFAULT 0,
     TrangThai       VARCHAR(20) NOT NULL DEFAULT 'DaThanhToan', -- ChuaThanhToan, DaThanhToan
-    CONSTRAINT FK_HoaDon_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT FK_HoaDon_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan),
+    INDEX IDX_HoaDon_NgayLap (NgayLap DESC),
+    INDEX IDX_HoaDon_TrangThai (TrangThai)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.12 Giao dịch thanh toán (ThanhToan)
 CREATE TABLE IF NOT EXISTS ThanhToan (
@@ -210,8 +231,11 @@ CREATE TABLE IF NOT EXISTS ThanhToan (
     ThoiGianThanhToan   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT FK_ThanhToan_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan),
     CONSTRAINT FK_ThanhToan_HoaDon FOREIGN KEY (MaHoaDon) REFERENCES HoaDon(MaHoaDon),
-    CONSTRAINT CK_ThanhToan_SoTien CHECK (SoTien >= 0)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT CK_ThanhToan_SoTien CHECK (SoTien >= 0),
+    INDEX IDX_ThanhToan_MaGiaoDich (MaGiaoDich),
+    INDEX IDX_ThanhToan_DatSan_Loai (MaDatSan, LoaiThanhToan),
+    INDEX IDX_ThanhToan_ThoiGian (ThoiGianThanhToan DESC)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.13 Hoàn tiền (HoanTien)
 CREATE TABLE IF NOT EXISTS HoanTien (
@@ -225,8 +249,11 @@ CREATE TABLE IF NOT EXISTS HoanTien (
     SoTienHoan    DECIMAL(12,2) NOT NULL DEFAULT 0,
     TrangThai     VARCHAR(20) NOT NULL DEFAULT 'DaHoan',    -- ChoHoan, DaHoan, ThatBai, KhongHoan
     CONSTRAINT FK_HoanTien_DatSan FOREIGN KEY (MaDatSan) REFERENCES DatSan(MaDatSan),
-    CONSTRAINT FK_HoanTien_ThanhToan FOREIGN KEY (MaThanhToan) REFERENCES ThanhToan(MaThanhToan)
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    CONSTRAINT FK_HoanTien_ThanhToan FOREIGN KEY (MaThanhToan) REFERENCES ThanhToan(MaThanhToan),
+    INDEX IDX_HoanTien_DatSan (MaDatSan),
+    INDEX IDX_HoanTien_TrangThai (TrangThai),
+    INDEX IDX_HoanTien_NgayYeuCau (NgayYeuCau DESC)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 1.14 Thông báo người dùng (ThongBao)
 CREATE TABLE IF NOT EXISTS ThongBao (
@@ -240,8 +267,9 @@ CREATE TABLE IF NOT EXISTS ThongBao (
     CONSTRAINT FK_ThongBao_KhachHang FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     CONSTRAINT CK_ThongBao_Loai CHECK (
         LoaiThongBao IN ('DatSan', 'ThanhToan', 'XacNhan', 'Huy', 'YeuCauHuy', 'DuyetHuy')
-    )
-) ENGINE=InnoDB CHARACTER SET utf8mb4;
+    ),
+    INDEX IDX_ThongBao_KH_DaDoc_ThoiGian (MaKH, DaDoc, ThoiGianTao DESC)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 /* ---------------------------------------------------------------------
    2. DỮ LIỆU KHỞI TẠO BAN ĐẦU
@@ -297,12 +325,12 @@ SELECT 1, 'Trần Nhân Viên', '0912345678', 'staff.cg@datsan.vn', 'NhanVien', 
 WHERE NOT EXISTS (SELECT 1 FROM NhanVien WHERE SDT = '0912345678');
 -- 3.6 Sân cầu lông
 INSERT INTO San (MaDiaDiem, TenSan, LoaiSan, TinhTrang, HinhAnh) VALUES
-(1, 'Sân 1', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', '/images/san-cau-giay-1.jpg'),
-(1, 'Sân 2', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', '/images/san-cau-giay-2.jpg'),
-(1, 'Sân 3', 'Sân tiêu chuẩn thảm PVC', 'BaoTri', '/images/san-cau-giay-3.jpg'),
-(2, 'Sân 1', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', '/images/san-thanh-xuan-1.jpg'),
-(2, 'Sân 2', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', '/images/san-thanh-xuan-2.jpg')
-ON DUPLICATE KEY UPDATE LoaiSan = VALUES(LoaiSan);
+(1, 'Sân 1', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60'),
+(1, 'Sân 2', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&auto=format&fit=crop&q=60'),
+(1, 'Sân 3', 'Sân tiêu chuẩn thảm PVC', 'BaoTri',   'https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?w=500&auto=format&fit=crop&q=60'),
+(2, 'Sân 1', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', 'https://images.unsplash.com/photo-1613918431703-aa6321c17242?w=500&auto=format&fit=crop&q=60'),
+(2, 'Sân 2', 'Sân tiêu chuẩn thảm PVC', 'HoatDong', 'https://images.unsplash.com/photo-1563299796-17596ed6b017?w=500&auto=format&fit=crop&q=60')
+ON DUPLICATE KEY UPDATE LoaiSan = VALUES(LoaiSan), HinhAnh = VALUES(HinhAnh);
 
 -- 3.7 Dịch vụ tại sân
 INSERT INTO DichVu (MaDiaDiem, TenDV, LoaiDV, DonGia, SoLuongTon) VALUES

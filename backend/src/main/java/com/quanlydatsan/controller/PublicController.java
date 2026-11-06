@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.quanlydatsan.dto.response.DiaDiemResponse;
 import com.quanlydatsan.dto.response.DichVuResponse;
+import com.quanlydatsan.dto.response.KhungGioDaDatResponse;
 import com.quanlydatsan.dto.response.SanResponse;
 import com.quanlydatsan.entity.BangGia;
 import com.quanlydatsan.entity.DichVu;
@@ -39,6 +40,13 @@ public class PublicController {
     @GetMapping("/courts")
     public ResponseEntity<List<DiaDiemResponse>> layTatCaDiaDiemVaSan() {
         return ResponseEntity.ok(bookingService.layTatCaDiaDiemVaSan());
+    }
+
+    @GetMapping("/courts/{maSan}/booked-slots")
+    public ResponseEntity<List<KhungGioDaDatResponse>> layKhungGioDaDat(
+            @PathVariable Integer maSan,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay) {
+        return ResponseEntity.ok(bookingService.layDanhSachKhungGioDaDat(maSan, ngay));
     }
 
     @GetMapping("/courts/{maDiaDiem}/available")

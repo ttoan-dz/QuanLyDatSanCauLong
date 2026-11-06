@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đặt Sân Cầu Lông — Quản Lý Đặt Sân</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-require-role="CUSTOMER">
@@ -11,7 +12,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="/index.html" class="brand">
-      <span>🏸</span> Đặt Sân Cầu Lông
+      <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+      <span class="brand-text">Sân Cầu Lông</span>
     </a>
     <ul class="nav-links">
       <li><a href="/index.html" class="nav-link">Trang chủ</a></li>
@@ -19,9 +21,9 @@
       <li><a href="/pages/user/history.html" class="nav-link">Lịch sử</a></li>
       <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
     </ul>
-    <div class="user-info">
-      <span class="user-name">Xin chào, <strong id="user-display-name">Khách hàng</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+    <div id="auth-controls" class="user-info">
+      <a href="/pages/auth/login.html" class="btn btn-outline btn-sm">Đăng nhập</a>
+      <a href="/pages/auth/register.html" class="btn btn-primary btn-sm">Đăng ký</a>
     </div>
   </nav>
 
@@ -56,7 +58,10 @@
           <!-- Cột Trái: Thông tin sân đã chọn -->
           <aside class="section-box">
             <div class="section-header">
-              <h2 class="section-title">🏸 Thông tin sân</h2>
+              <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Thông tin sân
+              </h2>
             </div>
             <div id="step1-court-info">
               <p style="color: var(--text-muted); font-size: 0.85rem;">Đang tải thông tin sân...</p>
@@ -66,7 +71,10 @@
           <!-- Cột Phải: Form chọn ngày & giờ -->
           <section class="section-box">
             <div class="section-header">
-              <h2 class="section-title">📅 Biểu mẫu đặt sân</h2>
+              <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Biểu mẫu đặt sân
+              </h2>
             </div>
 
             <form onsubmit="event.preventDefault(); proceedToStep2();">
@@ -92,8 +100,25 @@
               <!-- Lưới chọn khung giờ -->
               <div class="time-slots-container">
                 <div class="time-slots-label">
-                  Khung giờ khả dụng (Click 1 lần chọn giờ bắt đầu, Click lần 2 chọn giờ kết thúc):
+                  Khung giờ khả dụng (Click chọn giờ bắt đầu và giờ kết thúc):
                 </div>
+
+                <!-- Chú thích trạng thái khung giờ -->
+                <div class="time-slots-legend">
+                  <span class="legend-item"><span class="legend-box available"></span> Còn trống</span>
+                  <span class="legend-item"><span class="legend-box selected"></span> Đang chọn</span>
+                  <span class="legend-item" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="legend-box booked"></span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Đã đặt
+                  </span>
+                  <span class="legend-item" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="legend-box past"></span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Đã qua giờ
+                  </span>
+                </div>
+
                 <div id="time-slots-grid" class="time-slots-grid">
                   <p style="color: var(--text-muted); font-size: 0.85rem;">Đang tải khung giờ...</p>
                 </div>
@@ -125,7 +150,10 @@
           <!-- Cột Trái: Tóm tắt đơn đặt & Tổng tiền -->
           <aside class="section-box">
             <div class="section-header">
-              <h2 class="section-title">📋 Thông tin đặt sân</h2>
+              <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Thông tin đặt sân
+              </h2>
             </div>
             <div id="step2-booking-info">
               <!-- Dynamic content -->
@@ -135,7 +163,10 @@
           <!-- Cột Phải: Chọn phương thức thanh toán -->
           <section class="section-box">
             <div class="section-header">
-              <h2 class="section-title">💳 Phương thức thanh toán</h2>
+              <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Phương thức thanh toán
+              </h2>
             </div>
 
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
@@ -147,7 +178,9 @@
               <!-- Option 1: Tiền mặt -->
               <div id="card-pay-cash" class="payment-option-card active" onclick="selectPaymentMethod('TienMat')">
                 <input type="radio" id="pay-cash" name="paymentMethod" value="TienMat" checked>
-                <span class="payment-option-icon">💵</span>
+                <span class="payment-option-icon" style="display: flex; align-items: center; justify-content: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                </span>
                 <div class="payment-option-text">
                   <span class="payment-option-title">Tiền mặt tại sân</span>
                   <span class="payment-option-desc">Thanh toán trực tiếp cho nhân viên quản lý khi đến nhận sân (chờ admin duyệt)</span>
@@ -157,7 +190,9 @@
               <!-- Option 2: QR Code / Chuyển khoản -->
               <div id="card-pay-qr" class="payment-option-card" onclick="selectPaymentMethod('QR')">
                 <input type="radio" id="pay-qr" name="paymentMethod" value="QR">
-                <span class="payment-option-icon">📱</span>
+                <span class="payment-option-icon" style="display: flex; align-items: center; justify-content: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><path d="M14 14h3v3h-3z"/></svg>
+                </span>
                 <div class="payment-option-text">
                   <span class="payment-option-title">Quét mã QR Ngân hàng</span>
                   <span class="payment-option-desc">Quét mã VietQR chuyển khoản nhanh 24/7 (tự động giữ chỗ 10 phút)</span>
@@ -167,7 +202,9 @@
               <!-- Option 3: Cổng thanh toán VNPay -->
               <div id="card-pay-vnpay" class="payment-option-card" onclick="selectPaymentMethod('VNPay')">
                 <input type="radio" id="pay-vnpay" name="paymentMethod" value="VNPay">
-                <span class="payment-option-icon">💳</span>
+                <span class="payment-option-icon" style="display: flex; align-items: center; justify-content: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </span>
                 <div class="payment-option-text">
                   <span class="payment-option-title">Cổng thanh toán VNPay</span>
                   <span class="payment-option-desc">Thanh toán trực tuyến 100% qua ATM / Thẻ quốc tế / Ví VNPay</span>
@@ -177,7 +214,9 @@
               <!-- Option 4: Ví điện tử MoMo -->
               <div id="card-pay-momo" class="payment-option-card" onclick="selectPaymentMethod('MoMo')">
                 <input type="radio" id="pay-momo" name="paymentMethod" value="MoMo">
-                <span class="payment-option-icon">👛</span>
+                <span class="payment-option-icon" style="display: flex; align-items: center; justify-content: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z"/></svg>
+                </span>
                 <div class="payment-option-text">
                   <span class="payment-option-title">Ví điện tử MoMo</span>
                   <span class="payment-option-desc">Thanh toán trực tuyến 100% tiện lợi qua App MoMo</span>
@@ -188,8 +227,9 @@
 
             <!-- Nút Thanh Toán CTA màu vàng -->
             <div style="margin-top: 2rem;">
-              <button type="button" id="btn-checkout" class="btn btn-yellow" style="width: 100%; font-size: 1.1rem; padding: 0.85rem;" onclick="handleFinalCheckout()">
-                ⚡ Xác nhận thanh toán
+              <button type="button" id="btn-checkout" class="btn btn-yellow" style="width: 100%; font-size: 1.1rem; padding: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="handleFinalCheckout()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Xác nhận thanh toán
               </button>
             </div>
           </section>

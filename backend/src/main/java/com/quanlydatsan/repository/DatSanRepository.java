@@ -1,5 +1,6 @@
 package com.quanlydatsan.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -53,6 +54,11 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     List<DatSan> findByNgayChoiAndTrangThaiDatIn(LocalDate ngayChoi, List<String> trangThaiDats);
 
     /**
+     * Tìm các đơn của một sân theo ngày chơi và danh sách trạng thái đặt.
+     */
+    List<DatSan> findBySan_MaSanAndNgayChoiAndTrangThaiDatIn(Integer maSan, LocalDate ngayChoi, List<String> trangThaiDats);
+
+    /**
      * Tìm các đơn theo danh sách trạng thái đặt.
      */
     List<DatSan> findByTrangThaiDatIn(List<String> trangThaiDats);
@@ -64,7 +70,7 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     List<DatSan> findDonDaXacNhanQuaGio(@Param("today") LocalDate today, @Param("now") LocalTime now);
 
     /**
-     * Thống kê doanh thu theo tháng/năm.
+     * Thống kê doanh thu tiền sân gốc theo tháng/năm.
      */
     @Query("SELECT COALESCE(SUM(d.soTien),0) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam AND MONTH(d.ngayChoi) = :thang " +
@@ -73,13 +79,31 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     Long tinhDoanhThuTheoThang(@Param("nam") int nam, @Param("thang") int thang);
 
     /**
-     * Thống kê doanh thu theo năm.
+     * Thống kê tiền phụ phí quá giờ theo tháng.
+     */
+    @Query("SELECT COALESCE(SUM(d.tienQuaGio),0) FROM DatSan d " +
+           "WHERE YEAR(d.ngayChoi) = :nam AND MONTH(d.ngayChoi) = :thang " +
+           "AND d.trangThaiThanhToan = 'DaThanhToan' " +
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
+    BigDecimal tinhTienQuaGioTheoThang(@Param("nam") int nam, @Param("thang") int thang);
+
+    /**
+     * Thống kê doanh thu tiền sân gốc theo năm.
      */
     @Query("SELECT COALESCE(SUM(d.soTien),0) FROM DatSan d " +
            "WHERE YEAR(d.ngayChoi) = :nam " +
            "AND d.trangThaiThanhToan = 'DaThanhToan' " +
            "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
     Long tinhDoanhThuTheoNam(@Param("nam") int nam);
+
+    /**
+     * Thống kê tiền phụ phí quá giờ theo năm.
+     */
+    @Query("SELECT COALESCE(SUM(d.tienQuaGio),0) FROM DatSan d " +
+           "WHERE YEAR(d.ngayChoi) = :nam " +
+           "AND d.trangThaiThanhToan = 'DaThanhToan' " +
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan')")
+    BigDecimal tinhTienQuaGioTheoNam(@Param("nam") int nam);
 
     /**
      * Đếm số đơn đã thanh toán theo tháng.
@@ -106,6 +130,19 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
            "FROM DatSan d WHERE d.san.maSan = :maSan " +
            "AND d.trangThaiDat IN ('ChoXacNhan','DaXacNhan','DangChoi','ChoHuy')")
     boolean existsDatSanActiveBySan(@Param("maSan") Integer maSan);
+
+    /**
+     * Tìm các đơn đặt sân trong tương lai bị ảnh hưởng khi sân bảo trì hoặc tạm ngưng.
+     */
+    @Query("SELECT d FROM DatSan d " +
+           "LEFT JOIN FETCH d.san s " +
+           "LEFT JOIN FETCH s.diaDiem " +
+           "LEFT JOIN FETCH d.khachHang kh " +
+           "WHERE d.san.maSan = :maSan " +
+           "AND d.ngayChoi >= :today " +
+           "AND d.trangThaiDat NOT IN ('DaHuy', 'HetHan', 'HoanThanh') " +
+           "ORDER BY d.ngayChoi ASC, d.gioBatDau ASC")
+    List<DatSan> findDonXungDotKhiBaoTri(@Param("maSan") Integer maSan, @Param("today") LocalDate today);
 
     /**
      * Tìm các đơn chờ thanh toán đã quá hạn giữ chỗ 10 phút.
@@ -145,7 +182,7 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
            "JOIN FETCH s.diaDiem " +
            "JOIN FETCH d.khachHang kh " +
            "WHERE (:keyword IS NULL OR :keyword = '' " +
-           "  OR CAST(d.maDatSan AS string) LIKE CONCAT('%', :keyword, '%') " +
+           "  OR CONCAT(d.maDatSan, '') LIKE CONCAT('%', :keyword, '%') " +
            "  OR kh.sdt LIKE CONCAT('%', :keyword, '%') " +
            "  OR LOWER(kh.hoTen) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
            "AND (:trangThaiDat IS NULL OR :trangThaiDat = '' OR d.trangThaiDat = :trangThaiDat) " +

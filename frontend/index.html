@@ -3,160 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang Chủ — Quản Lý Đặt Sân Cầu Lông</title>
+  <title>Trang Chủ — Hệ Thống Đặt Sân Cầu Lông Trực Tuyến</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/style.css">
-  <style>
-    .hero-section {
-      background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%);
-      color: #ffffff;
-      padding: 4.5rem 1.5rem;
-      border-radius: var(--radius);
-      text-align: center;
-      margin-bottom: 2.5rem;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .hero-title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      line-height: 1.25;
-    }
-
-    .hero-subtitle {
-      font-size: 1.15rem;
-      max-width: 680px;
-      margin: 0 auto 2rem auto;
-      opacity: 0.92;
-      line-height: 1.6;
-    }
-
-    .hero-actions {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .hero-btn-primary {
-      background-color: #ffffff;
-      color: #065f46;
-      font-weight: 700;
-      padding: 0.8rem 1.75rem;
-      font-size: 1.05rem;
-      border-radius: var(--radius-sm);
-      text-decoration: none;
-      transition: all 0.2s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .hero-btn-primary:hover {
-      background-color: #f0fdf4;
-      transform: translateY(-2px);
-    }
-
-    .hero-btn-secondary {
-      background-color: rgba(255, 255, 255, 0.15);
-      color: #ffffff;
-      border: 1.5px solid rgba(255, 255, 255, 0.4);
-      font-weight: 600;
-      padding: 0.8rem 1.75rem;
-      font-size: 1.05rem;
-      border-radius: var(--radius-sm);
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .hero-btn-secondary:hover {
-      background-color: rgba(255, 255, 255, 0.25);
-      border-color: #ffffff;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .feature-card {
-      background: #ffffff;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.75rem 1.5rem;
-      text-align: center;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s;
-    }
-
-    .feature-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-
-    .feature-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      display: inline-block;
-    }
-
-    .feature-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .stats-banner {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem 2rem;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
-    .stat-item-num {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: var(--primary-dark);
-    }
-
-    .stat-item-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 0.2rem;
-      font-weight: 600;
-    }
-
-    .footer {
-      border-top: 1px solid var(--border);
-      padding: 1.5rem;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      background: #ffffff;
-      margin-top: auto;
-    }
-  </style>
 </head>
 <body>
 
   <!-- Navbar -->
   <nav class="navbar">
     <a href="/index.html" class="brand">
-      <span>🏸</span> Sân Cầu Lông
+      <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+      <span class="brand-text">Sân Cầu Lông</span>
     </a>
     <ul class="nav-links">
       <li><a href="/index.html" class="nav-link active">Trang chủ</a></li>
@@ -165,7 +22,7 @@
       <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
     </ul>
     <div id="auth-controls" class="user-info">
-      <!-- Sẽ được điền động bởi JS tùy theo trạng thái login -->
+      <!-- Sẽ được điền động bởi utils.js tùy theo trạng thái login -->
       <a href="/pages/auth/login.html" class="btn btn-outline btn-sm">Đăng nhập</a>
       <a href="/pages/auth/register.html" class="btn btn-primary btn-sm">Đăng ký</a>
     </div>
@@ -174,81 +31,369 @@
   <!-- Main Content -->
   <main class="container">
     
-    <!-- Hero Banner -->
-    <section class="hero-section">
-      <h1 class="hero-title">Hệ Thống Đặt Sân Cầu Lông Trực Tuyến</h1>
-      <p class="hero-subtitle">
-        Đặt sân nhanh chóng, tra cứu lịch trống theo thời gian thực và quản lý đơn đặt sân tiện lợi trên mọi thiết bị.
-      </p>
-      <div class="hero-actions">
-        <a href="/pages/user/courts.html" class="hero-btn-primary">🏸 Xem danh sách sân & Đặt ngay</a>
+    <!-- Hero Section: Split Athletic Showcase -->
+    <section class="index-hero-section">
+      
+      <!-- Cột Trái: Tiêu đề, Cam kết & Kêu gọi hành động -->
+      <div>
+        <div class="hero-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Nền Tảng Đặt Sân Cầu Lông Tiêu Chuẩn BWF Số 2</span>
+        </div>
+
+        <h1 class="hero-title">
+          Hệ Thống Đặt Sân Cầu Lông <span class="gradient-text">Trực Tuyến 24/7</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Tra cứu lịch trống tức thời chính xác đến từng 30 phút. Đặt chỗ linh hoạt, tự động thanh toán qua mã VietQR và trải nghiệm mặt sân tiêu chuẩn thi đấu đỉnh cao.
+        </p>
+
+        <div class="hero-actions">
+          <a href="/pages/user/courts.html" class="btn btn-primary" style="padding: 0.85rem 1.85rem; font-size: 1rem; border-radius: 12px; gap: 0.6rem;">
+            <span>Xem danh sách sân & Đặt ngay</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="#co-so-vat-chat" class="btn btn-outline" style="padding: 0.85rem 1.45rem; font-size: 1rem; border-radius: 12px;">
+            <span>Khám phá cơ sở</span>
+          </a>
+        </div>
+
+        <div class="hero-trust-list">
+          <div class="hero-trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>Giữ chỗ 10 phút</span>
+          </div>
+
+          <div class="hero-trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>Xác nhận VietQR tức thì</span>
+          </div>
+
+          <div class="hero-trust-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>Đổi trả minh bạch</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Cột Phải: Visual Spotlight Card (images/index1.webp) -->
+      <div class="hero-visual-card">
+        <img src="/assets/images/index1.webp" alt="Sân thi đấu cầu lông tiêu chuẩn" class="hero-visual-img">
+        
+        <div class="hero-floating-badge badge-top" id="hero-courts-badge">
+          <span id="hero-courts-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px rgba(34,197,94,0.3);"></span>
+          <span id="hero-ready-courts-text">4/5 Sân sẵn sàng</span>
+        </div>
+
+        <div class="hero-floating-badge badge-bottom">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+          <span>Thảm PVC Chuyên Dụng BWF</span>
+        </div>
+      </div>
+
     </section>
 
-    <!-- Stats Banner -->
-    <div class="stats-banner">
-      <div>
-        <div class="stat-item-num">10+</div>
-        <div class="stat-item-label">Sân cầu lông đạt chuẩn</div>
+    <!-- Stats Banner Modern -->
+    <div class="stats-banner-modern">
+      
+      <div class="stat-item-modern">
+        <div class="stat-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+        </div>
+        <div>
+          <div class="stat-item-num-modern" id="stat-total-courts">5</div>
+          <div class="stat-item-label-modern">Sân thi đấu đạt chuẩn</div>
+        </div>
       </div>
-      <div>
-        <div class="stat-item-num">06:00 - 22:00</div>
-        <div class="stat-item-label">Thời gian mở cửa mỗi ngày</div>
+
+      <div class="stat-item-modern">
+        <div class="stat-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="stat-item-num-modern">06:00 - 22:00</div>
+          <div class="stat-item-label-modern">Mở cửa tất cả các ngày</div>
+        </div>
       </div>
-      <div>
-        <div class="stat-item-num">100%</div>
-        <div class="stat-item-label">Tự động xác nhận & QR Code</div>
+
+      <div class="stat-item-modern">
+        <div class="stat-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <div class="stat-item-num-modern">100%</div>
+          <div class="stat-item-label-modern">Tự động duyệt & QR Code</div>
+        </div>
       </div>
-      <div>
-        <div class="stat-item-num">24/7</div>
-        <div class="stat-item-label">Hỗ trợ khách hàng trực tuyến</div>
+
+      <div class="stat-item-modern">
+        <div class="stat-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="stat-item-num-modern">24/7</div>
+          <div class="stat-item-label-modern">Hỗ trợ & Tra cứu liên tục</div>
+        </div>
       </div>
+
     </div>
 
-    <!-- Feature Highlights -->
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">🔍</span>
-        <h3 class="feature-title">Tra cứu lịch trống</h3>
-        <p class="feature-desc">
-          Kiểm tra tình trạng từng sân theo ngày và khung giờ chính xác đến từng 30 phút.
+    <!-- Gallery Section: Sử dụng trọn vẹn images/index1, index2, index3 -->
+    <section id="co-so-vat-chat" style="margin-bottom: 3.5rem;">
+      
+      <div class="section-header-centered">
+        <div class="section-pill-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Cơ sở vật chất chuẩn quốc tế</span>
+        </div>
+        <h2 class="section-title-large">Không Gian Tập Luyện & Thi Đấu Đỉnh Cao</h2>
+        <p class="section-subtitle-muted">
+          Hình ảnh thực tế tại các cụm sân trong hệ thống — Mang đến trải nghiệm thi đấu chuyên nghiệp, an toàn và tràn đầy năng lượng.
         </p>
       </div>
 
-      <div class="feature-card">
-        <span class="feature-icon">💳</span>
-        <h3 class="feature-title">Thanh toán linh hoạt</h3>
-        <p class="feature-desc">
-          Hỗ trợ thanh toán nhanh qua mã QR tự động hoặc thanh toán trực tiếp bằng tiền mặt tại sân.
+      <div class="gallery-grid">
+        
+        <!-- Card 1: index1.webp -->
+        <div class="gallery-card">
+          <div class="gallery-img-wrap">
+            <img src="/assets/images/index1.webp" alt="Mặt sân thảm PVC cao cấp" class="gallery-img">
+            <div class="gallery-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Chuẩn BWF</span>
+            </div>
+          </div>
+          <div class="gallery-body">
+            <h3 class="gallery-title">Mặt Sân Thảm PVC Chuyên Dụng</h3>
+            <p class="gallery-desc">
+              Mặt thảm độ dày chuẩn, chống trơn trượt tối đa, độ nảy đều và giảm chấn xung lực bảo vệ khớp gối, cổ chân người chơi.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: index2.webp -->
+        <div class="gallery-card">
+          <div class="gallery-img-wrap">
+            <img src="/assets/images/index2.webp" alt="Hệ thống chiếu sáng LED chống lóa" class="gallery-img">
+            <div class="gallery-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Chiếu sáng LED 500+ Lux</span>
+            </div>
+          </div>
+          <div class="gallery-body">
+            <h3 class="gallery-title">Hệ Thống Đèn Chống Lóa Hiện Đại</h3>
+            <p class="gallery-desc">
+              Dàn đèn LED chuyên nghiệp treo góc gián tiếp, không gây chói mắt khi ngửa đầu đập cầu, đảm bảo đường cầu rõ nét ở mọi điểm rơi.
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 3: index3.jpg -->
+        <div class="gallery-card">
+          <div class="gallery-img-wrap">
+            <img src="/assets/images/index3.jpg" alt="Không gian tiện ích và giải khát" class="gallery-img">
+            <div class="gallery-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>
+              <span>Tiện ích & Dịch vụ</span>
+            </div>
+          </div>
+          <div class="gallery-body">
+            <h3 class="gallery-title">Khu Nghỉ Ngơi & Dịch Vụ Đầy Đủ</h3>
+            <p class="gallery-desc">
+              Khu vực khán đài chờ thoáng đãng, hệ thống quạt mát công nghiệp, wifi tốc độ cao, nước giải khát lạnh và dịch vụ cho thuê vợt/cầu.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Features Highlights (Modern SVG Icons) -->
+    <section class="features-section">
+      
+      <div class="section-header-centered">
+        <div class="section-pill-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span>Trải nghiệm vượt trội</span>
+        </div>
+        <h2 class="section-title-large">Tại Sao Bạn Nên Chọn Đặt Sân Cùng Chúng Tôi?</h2>
+        <p class="section-subtitle-muted">
+          Ứng dụng quy trình số hóa toàn diện giúp bạn tối ưu thời gian, kiểm soát đơn đặt linh hoạt và trải nghiệm thi đấu trọn vẹn nhất.
         </p>
       </div>
 
-      <div class="feature-card">
-        <span class="feature-icon">🏆</span>
-        <h3 class="feature-title">Cơ sở vật chất chuẩn</h3>
-        <p class="feature-desc">
-          Thảm PVC cao cấp chống trơn trượt, đèn LED chống lóa, trần cao thoáng mát tiêu chuẩn thi đấu.
-        </p>
+      <div class="features-grid-modern">
+        
+        <!-- Feature 1: Tra cứu lịch trống -->
+        <div class="feature-card-modern">
+          <div class="feature-icon-box-modern">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <path d="M9 16l2 2 4-4"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title-modern">Tra cứu lịch trống tức thời</h3>
+          <p class="feature-desc-modern">
+            Theo dõi sơ đồ khung giờ còn trống hoặc đã có người đặt theo từng mốc 30 phút mà không cần gọi điện thoại xác nhận.
+          </p>
+        </div>
+
+        <!-- Feature 2: Thanh toán VietQR -->
+        <div class="feature-card-modern">
+          <div class="feature-icon-box-modern">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+              <line x1="2" y1="10" x2="22" y2="10"></line>
+              <circle cx="16" cy="15" r="1"></circle>
+            </svg>
+          </div>
+          <h3 class="feature-title-modern">Thanh toán VietQR tiện lợi</h3>
+          <p class="feature-desc-modern">
+            Mã QR tự sinh chính xác số tiền và nội dung, quét trên mọi ứng dụng ngân hàng, bảo lưu giữ chỗ an toàn trong 10 phút.
+          </p>
+        </div>
+
+        <!-- Feature 3: Chính sách minh bạch -->
+        <div class="feature-card-modern">
+          <div class="feature-icon-box-modern">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </div>
+          <h3 class="feature-title-modern">Chính sách hủy minh bạch</h3>
+          <p class="feature-desc-modern">
+            Dễ dàng yêu cầu hủy đơn và hoàn tiền theo các mốc thời gian rõ ràng (hoàn 100% trước 24h, 50% từ 12-24h) bảo vệ tối đa quyền lợi.
+          </p>
+        </div>
+
+        <!-- Feature 4: Lịch sử & Tiến trình -->
+        <div class="feature-card-modern">
+          <div class="feature-icon-box-modern">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <h3 class="feature-title-modern">Theo dõi tiến trình & Đơn</h3>
+          <p class="feature-desc-modern">
+            Lưu vết toàn bộ các đơn đặt sân, hóa đơn điện tử và dịch vụ đã dùng kèm hệ thống chuông thông báo trạng thái tức thì.
+          </p>
+        </div>
+
       </div>
 
-      <div class="feature-card">
-        <span class="feature-icon">📱</span>
-        <h3 class="feature-title">Theo dõi tiến trình</h3>
-        <p class="feature-desc">
-          Dễ dàng xem lại lịch sử đặt sân, tiến trình xử lý đơn và nhận thông báo cập nhật mới nhất.
-        </p>
-      </div>
-    </div>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner-modern">
+      <h2 class="cta-title-modern">Sẵn Sàng Cho Trận Cầu Đỉnh Cao Tiếp Theo?</h2>
+      <p class="cta-subtitle-modern">
+        Đặt sân ngay bây giờ để chọn được khung giờ vàng đẹp nhất cùng đồng đội tại các cơ sở hiện đại trong hệ thống.
+      </p>
+      <a href="/pages/user/courts.html" class="cta-btn-primary">
+        <span>Xem danh sách sân & Đặt ngay</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </section>
 
   </main>
 
   <!-- Footer -->
-  <footer class="footer">
-    © 2026 Quản Lý Đặt Sân Cầu Lông. Đồ án Phát triển phần mềm mã nguồn mở.
+  <footer class="footer" style="padding: 2.5rem 1.5rem; background: #ffffff; border-top: 1px solid var(--border);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.25rem;">
+      <a href="/index.html" class="brand">
+        <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="brand-logo-img">
+        <span class="brand-text">Sân Cầu Lông</span>
+      </a>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        © 2026 Quản Lý Đặt Sân Cầu Lông. Đồ án Phát triển phần mềm mã nguồn mở.
+      </div>
+    </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/api.js?v=2.8"></script>
+  <script src="/assets/js/utils.js?v=2.8"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const locations = await api.get('/public/courts');
+        if (Array.isArray(locations) && locations.length > 0) {
+          let total = 0;
+          let ready = 0;
+          locations.forEach(loc => {
+            const courts = loc.danhSachSan || [];
+            total += courts.length;
+            ready += courts.filter(s => s.tinhTrang === 'HoatDong').length;
+          });
+
+          const badgeText = document.getElementById('hero-ready-courts-text');
+          const badgeDot = document.getElementById('hero-courts-dot');
+          const totalStat = document.getElementById('stat-total-courts');
+
+          if (badgeText && total > 0) {
+            badgeText.textContent = `${ready}/${total} Sân sẵn sàng`;
+          }
+          if (badgeDot && total > 0) {
+            if (ready === total) {
+              badgeDot.style.background = '#16a34a';
+              badgeDot.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.3)';
+            } else {
+              badgeDot.style.background = '#f59e0b';
+              badgeDot.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.3)';
+            }
+          }
+          if (totalStat && total > 0) {
+            totalStat.textContent = `${total}`;
+          }
+        }
+      } catch (err) {
+        console.warn('Không thể đồng bộ số sân từ API:', err);
+      }
+    });
+  </script>
 </body>
 </html>

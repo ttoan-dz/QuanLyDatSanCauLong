@@ -102,15 +102,24 @@ class BaoCaoSyncIntegrationTest {
         assertEquals("DaXacNhan", paidRes.getTrangThaiDat());
         assertEquals("DaThanhToan", paidRes.getTrangThaiThanhToan());
 
-        // 3. Khách hủy đơn trước > 24h -> hoàn tiền 100%
+        // 3. Khách gửi yêu cầu hủy đơn trước > 24h -> Chuyển sang ChoHuy (chờ duyệt)
         HuyDatSanRequest huyReq = new HuyDatSanRequest();
         huyReq.setLyDoHuy("Bận việc đột xuất trước 2 ngày");
 
         DatSanResponse cancelRes = bookingService.huyDatSan(res.getMaDatSan(), 1, huyReq);
-        assertEquals("DaHuy", cancelRes.getTrangThaiDat());
+        assertEquals("ChoHuy", cancelRes.getTrangThaiDat(), "Đơn đã thanh toán khi khách hủy chuyển sang trạng thái ChoHuy");
         assertNotNull(cancelRes.getThongTinHoanTien(), "Bản ghi hoàn tiền phải được tạo");
-        assertEquals(100, cancelRes.getThongTinHoanTien().getTyLeHoan(), "Hủy trước >= 24h phải hoàn 100%");
-        assertEquals(0, cancelRes.getThongTinHoanTien().getSoTienHoan().compareTo(BigDecimal.valueOf(paidRes.getSoTien())),
+        assertEquals(100, cancelRes.getThongTinHoanTien().getTyLeHoan(), "Hủy trước >= 24h dự kiến hoàn 100%");
+        assertEquals("ChoDuyet", cancelRes.getThongTinHoanTien().getTrangThai(), "Bản ghi hoàn tiền ở trạng thái ChoDuyet");
+
+        // 4. Quản trị viên duyệt chấp thuận yêu cầu hủy -> Chuyển sang DaHuy và DaHoan
+        com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest duyetReq = new com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest();
+        duyetReq.setDongY(true);
+        duyetReq.setGhiChu("Đồng ý hoàn 100% tiền sân");
+        DatSanResponse approvedRes = adminService.duyetYeuCauHuy(res.getMaDatSan(), duyetReq);
+        assertEquals("DaHuy", approvedRes.getTrangThaiDat(), "Sau khi duyệt, đơn chuyển sang DaHuy");
+        assertEquals("DaHoan", approvedRes.getThongTinHoanTien().getTrangThai(), "Bản ghi hoàn tiền chuyển sang DaHoan");
+        assertEquals(0, approvedRes.getThongTinHoanTien().getSoTienHoan().compareTo(BigDecimal.valueOf(paidRes.getSoTien())),
                 "Số tiền hoàn phải bằng 100% tiền sân đã trả");
     }
 
@@ -118,8 +127,8 @@ class BaoCaoSyncIntegrationTest {
     @Transactional
     @DisplayName("Kịch bản 2: Khách đến sân Check-in, thêm dịch vụ, tính tiền quá giờ theo block 15p và xuất hóa đơn")
     void testScenario2_CounterServiceAndInvoice() {
-        // 1. Tạo và xác nhận đơn đặt sân
-        LocalDate ngayChoi = LocalDate.now();
+        // 1. Tạo và xác nhận đơn đặt sân (đặt cho ngày mai để tránh qua giờ hiện tại)
+        LocalDate ngayChoi = LocalDate.now().plusDays(1);
         LocalTime batDau = LocalTime.of(14, 0);
         LocalTime ketThuc = LocalTime.of(15, 0);
 
@@ -170,8 +179,8 @@ class BaoCaoSyncIntegrationTest {
     @Transactional
     @DisplayName("Kịch bản 2 mở rộng: Khách quá giờ hẹn > 30 phút không đến (No-Show), ghi nhận DaHuy, KhongDen và không hoàn tiền")
     void testScenario2_NoShowHandling() {
-        // 1. Tạo đơn đặt sân
-        LocalDate ngayChoi = LocalDate.now();
+        // 1. Tạo đơn đặt sân (ngày mai để tránh quá giờ)
+        LocalDate ngayChoi = LocalDate.now().plusDays(1);
         LocalTime batDau = LocalTime.of(16, 0);
         LocalTime ketThuc = LocalTime.of(17, 0);
 

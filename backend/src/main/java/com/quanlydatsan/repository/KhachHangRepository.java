@@ -13,5 +13,11 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Integer> {
     Optional<KhachHang> findBySdt(String sdt);
 
     boolean existsBySdtAndMaKHNot(String sdt, Integer maKH);
+
+    Optional<KhachHang> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByEmailAndMaKHNot(String email, Integer maKH);
 }
 

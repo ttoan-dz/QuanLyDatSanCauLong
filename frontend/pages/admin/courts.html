@@ -3,73 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản Lý Sân — Admin Portal</title>
+  <title>Quản Lý Sân & Địa Điểm — Admin Portal</title>
+  <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body data-require-role="ADMIN">
 
-  <!-- Navigation Bar -->
-  <nav class="admin-navbar">
-    <a href="/pages/admin/dashboard.html" class="brand">
-      <span>🏸</span> Admin Portal
-    </a>
-    <ul class="nav-links">
-      <li><a href="/pages/admin/dashboard.html" class="nav-link">Dashboard</a></li>
-      <li><a href="/pages/admin/courts.html" class="nav-link active">Quản lý sân</a></li>
-      <li><a href="/pages/admin/bookings.html" class="nav-link">Quản lý đặt sân</a></li>
-      <li><a href="/pages/admin/services.html" class="nav-link">Dịch vụ</a></li>
-      <li><a href="/pages/admin/cancel-requests.html" class="nav-link">Yêu cầu hủy</a></li>
-      <li><a href="/pages/admin/users.html" class="nav-link">Người dùng</a></li>
-    </ul>
-    <div class="user-controls">
-      <span class="admin-name">Xin chào, <strong id="admin-display-name">Admin</strong></span>
-      <button id="btn-logout" class="btn-logout">Đăng xuất</button>
+  <div class="admin-layout">
+    <!-- Master Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-brand-wrapper">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <div class="sidebar-logo-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-title">SÂN CẦU LÔNG</span>
+            <span class="sidebar-brand-subtitle">ADMIN PORTAL</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Navigation Menus -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Tổng quan</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/dashboard.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+              </span>
+              <span>Dashboard & Báo cáo</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Vận hành sân bãi</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/bookings.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <span>Quản lý đặt sân</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/cancel-requests.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </span>
+              <span>Yêu cầu hủy & hoàn</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/courts.html" class="active">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </span>
+              <span>Danh sách sân & bảo trì</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Cơ sở & Dịch vụ</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/services.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+              </span>
+              <span>Quản lý dịch vụ & kho</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-section-title">Hệ thống</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="/pages/admin/users.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </span>
+              <span>Quản lý người dùng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="admin-user-profile">
+          <div class="user-avatar-badge" id="admin-avatar-initials">AD</div>
+          <div class="user-meta-info">
+            <span class="user-meta-name" id="admin-display-name">Quản trị viên</span>
+            <span class="user-meta-role">Hệ thống Quản trị</span>
+          </div>
+        </div>
+        <div class="sidebar-actions-row">
+          <a href="/pages/user/courts.html" class="sidebar-action-btn view-site" title="Xem giao diện người dùng">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            Cổng User
+          </a>
+          <button type="button" class="sidebar-action-btn logout btn-logout" id="btn-logout" title="Đăng xuất">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Thoát
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="admin-main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Toggle menu">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <div class="breadcrumbs">
+            <a href="/pages/admin/dashboard.html">Vận hành sân bãi</a>
+            <span class="separator">/</span>
+            <span class="current">Danh sách sân & bảo trì</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-badge-time">
+            <span class="topbar-pulse-dot"></span>
+            <span id="admin-live-clock">Hệ thống đang hoạt động</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Page Content -->
+      <main class="admin-content">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="page-header-info">
+            <h1 class="page-title">Sơ đồ Sân & Quản lý Địa điểm</h1>
+            <p class="page-subtitle">Sơ đồ sân trực quan, chuyển đổi nhanh trạng thái hoạt động / bảo trì 1-click và cập nhật ảnh thực tế.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-outline" onclick="loadCourts()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Làm mới
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-toggle-create-court" onclick="openCreateCourtModal()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Thêm địa điểm mới
+            </button>
+          </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Danh sách cơ sở & Sơ đồ sân trực quan -->
+        <div id="courts-list-container">
+          <p style="text-align: center; padding: 3rem; color: var(--text-muted);">Đang tải sơ đồ sân bãi...</p>
+        </div>
+      </main>
     </div>
-  </nav>
+  </div>
 
-  <!-- Main Content -->
-  <main class="container">
-    <div class="page-header">
-      <h1 class="page-title">Quản lý địa điểm & Sân cầu lông</h1>
-    </div>
-
-    <div id="alert-container"></div>
-
-    <!-- Nút mở form Thêm mới -->
-    <div style="margin-bottom: 1.25rem; display: flex; justify-content: flex-start;">
-      <button type="button" class="btn btn-primary" id="btn-toggle-create-court" onclick="toggleCreateCourtForm()" style="font-size: 0.95rem; font-weight: 600; padding: 0.6rem 1.25rem;">
-        ➕ Thêm sân mới
-      </button>
-    </div>
-
-    <!-- Form Thêm mới Địa điểm + Sân (Mặc định ẩn) -->
-    <div class="card hidden" id="card-create-court">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 class="card-title" style="margin-bottom: 0;">➕ Thêm cụm sân / Địa điểm mới</h2>
-        <button type="button" class="btn btn-outline btn-sm" onclick="toggleCreateCourtForm()">✖ Đóng</button>
+  <!-- ======================== MODAL 1: THÊM ĐỊA ĐIỂM / CƠ SỞ MỚI ======================== -->
+  <div id="modal-create-court" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Thêm cụm cơ sở & Địa điểm mới
+        </h3>
+        <button type="button" class="modal-close" onclick="closeCreateCourtModal()">&times;</button>
       </div>
       <form id="form-create-court" onsubmit="createCourt(event)">
         <div class="form-grid">
-          <div class="form-group">
-            <label for="create-tenDiaDiem">Tên địa điểm / cơ sở (*)</label>
-            <input type="text" id="create-tenDiaDiem" class="form-control" placeholder="VD: Sân Cầu Lông Hà Đông" required>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="create-tenDiaDiem">Tên địa điểm / cơ sở (*):</label>
+            <input type="text" id="create-tenDiaDiem" class="form-control" placeholder="VD: Sân Cầu Lông Hà Đông Pro" required>
           </div>
           <div class="form-group">
-            <label for="create-gioMo">Giờ mở cửa (*)</label>
+            <label for="create-gioMo">Giờ mở cửa (*):</label>
             <input type="time" id="create-gioMo" class="form-control" value="06:00" step="1800" required>
           </div>
           <div class="form-group">
-            <label for="create-gioDong">Giờ đóng cửa (*)</label>
+            <label for="create-gioDong">Giờ đóng cửa (*):</label>
             <input type="time" id="create-gioDong" class="form-control" value="23:00" step="1800" required>
           </div>
           <div class="form-group">
-            <label for="create-soSanNho">Số lượng sân con (*)</label>
+            <label for="create-soSanNho">Số lượng sân con khởi tạo (*):</label>
             <input type="number" id="create-soSanNho" class="form-control" min="1" max="50" value="4" required>
           </div>
           <div class="form-group">
-            <label for="create-hinhAnh">Hình ảnh sân mặc định</label>
+            <label for="create-hinhAnh">Hình ảnh sân mặc định:</label>
             <select id="create-hinhAnh" class="form-control">
-              <option value="">-- Mặc định (/assets/images/courts.jpg) --</option>
               <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
               <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
               <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
@@ -81,63 +234,69 @@
               <option value="/images/san-thanh-xuan-2.jpg">/images/san-thanh-xuan-2.jpg</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="create-mapLink">Link Google Maps (không bắt buộc)</label>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="create-mapLink">Link Google Maps (tuỳ chọn):</label>
             <div style="display: flex; gap: 0.5rem;">
-              <input type="url" id="create-mapLink" class="form-control" placeholder="https://maps.app.goo.gl/... (để trống sẽ tự sinh theo tên)" style="flex: 1;">
-              <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">🗺️ Mở Google Maps</button>
+              <input type="url" id="create-mapLink" class="form-control" placeholder="https://maps.app.goo.gl/... (để trống hệ thống sẽ tự sinh link)" style="flex: 1;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Google Maps
+              </button>
             </div>
           </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="toggleCreateCourtForm()">Hủy</button>
-          <button type="submit" class="btn btn-primary">Tạo mới cơ sở & sân</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeCreateCourtModal()">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create-court">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Tạo mới cơ sở & sân
+          </button>
         </div>
       </form>
     </div>
+  </div>
 
-    <!-- Danh sách cơ sở & sân con -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 class="card-title" style="margin-bottom: 0;">Danh sách địa điểm & sân hiện có</h2>
-        <button type="button" class="btn btn-outline" onclick="loadCourts()">🔄 Làm mới</button>
-      </div>
-      <div id="courts-list-container">
-        <p style="text-align: center;">Đang tải danh sách sân...</p>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal Chỉnh sửa Địa điểm -->
+  <!-- ======================== MODAL 2: CHỈNH SỬA ĐỊA ĐIỂM ======================== -->
   <div id="modal-edit-court" class="modal-backdrop hidden">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 600px;">
       <div class="modal-header">
-        <h3 class="modal-title">Chỉnh sửa địa điểm</h3>
+        <h3 class="modal-title">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Chỉnh sửa thông tin cơ sở
+        </h3>
         <button type="button" class="modal-close" onclick="closeEditCourtModal()">&times;</button>
       </div>
       <form id="form-edit-court" onsubmit="updateCourt(event)">
         <input type="hidden" id="edit-maDiaDiem">
         <div class="form-group">
-          <label for="edit-tenMoi">Tên địa điểm (*)</label>
+          <label for="edit-tenMoi">Tên địa điểm / cơ sở (*):</label>
           <input type="text" id="edit-tenMoi" class="form-control" required>
         </div>
-        <div class="form-group">
-          <label for="edit-gioMo">Giờ mở cửa (*)</label>
-          <input type="time" id="edit-gioMo" class="form-control" step="1800" required>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="edit-gioMo">Giờ mở cửa (*):</label>
+            <input type="time" id="edit-gioMo" class="form-control" step="1800" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-gioDong">Giờ đóng cửa (*):</label>
+            <input type="time" id="edit-gioDong" class="form-control" step="1800" required>
+          </div>
         </div>
         <div class="form-group">
-          <label for="edit-gioDong">Giờ đóng cửa (*)</label>
-          <input type="time" id="edit-gioDong" class="form-control" step="1800" required>
-        </div>
-        <div class="form-group">
-          <label for="edit-soSanNhoMoi">Số lượng sân con mới (*)</label>
+          <label for="edit-soSanNhoMoi">Số lượng sân con (*):</label>
           <input type="number" id="edit-soSanNhoMoi" class="form-control" min="1" max="50" required>
-          <small style="color: var(--text-muted);">Nếu giảm sân, hệ thống sẽ kiểm tra xem sân có đơn đặt chưa trước khi xóa.</small>
+          <small style="color: var(--text-muted); font-size: 0.8rem;">Nếu giảm số sân, hệ thống sẽ kiểm tra xem sân có lịch đặt chưa trước khi cho phép giảm.</small>
         </div>
         <div class="form-group">
-          <label for="edit-hinhAnh">Hình ảnh sân (khi thêm sân mới)</label>
+          <label for="edit-hinhAnh">Hình ảnh sân mặc định:</label>
           <select id="edit-hinhAnh" class="form-control">
-            <option value="">-- Mặc định (/assets/images/courts.jpg) --</option>
             <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
             <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
             <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
@@ -150,29 +309,126 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="edit-mapLink">Link Google Maps (không bắt buộc)</label>
+          <label for="edit-mapLink">Link Google Maps:</label>
           <div style="display: flex; gap: 0.5rem;">
             <input type="url" id="edit-mapLink" class="form-control" placeholder="https://maps.app.goo.gl/... (để trống sẽ tự sinh theo tên)" style="flex: 1;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">🗺️ Mở Google Maps</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.open('https://www.google.com/maps', '_blank')" style="white-space: nowrap;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Google Maps
+            </button>
           </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <div class="modal-footer">
           <button type="button" class="btn btn-outline" onclick="closeEditCourtModal()">Hủy</button>
-          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          <button type="submit" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Lưu thay đổi
+          </button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- ======================== MODAL 3: BỘ SƯU TẬP ẢNH SÂN TRỰC QUAN ======================== -->
+  <div id="modal-court-photo" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Chọn hình ảnh cho <span id="photo-modal-court-title" style="color: var(--primary-dark);">Sân</span>
+        </h3>
+        <button type="button" class="modal-close" onclick="closeCourtPhotoModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="photo-modal-court-id">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Nhấp vào một trong các hình ảnh sân thực tế dưới đây để gán ảnh đại diện cho sân này:
+        </p>
+        <div class="court-photo-gallery-grid" id="court-photo-gallery-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeCourtPhotoModal()">Hủy</button>
+        <button type="button" class="btn btn-primary" id="btn-save-court-photo" onclick="saveCourtPhotoSelection()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Cập nhật ảnh này
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== MODAL 4: CẢNH BÁO XUNG ĐỘT ĐẶT SÂN KHI BẢO TRÌ / TẠM NGƯNG ======================== -->
+  <div id="modal-maintenance-conflict" class="modal-backdrop hidden">
+    <div class="modal-content" style="max-width: 780px;">
+      <div class="modal-header" style="background: #fffbeb; border-bottom: 1px solid #fde68a;">
+        <h3 class="modal-title" style="color: #b45309; display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="22" height="22" fill="none" stroke="#d97706" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <span id="conflict-action-title">Cảnh báo: Sân đang có khách đặt trước</span>
+        </h3>
+        <button type="button" class="modal-close" onclick="closeMaintenanceConflictModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <input type="hidden" id="conflict-court-id">
+        <input type="hidden" id="conflict-target-status" value="BaoTri">
+        <div style="margin-bottom: 0.85rem; font-size: 0.88rem; line-height: 1.5; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+          <strong id="conflict-modal-court-name">Sân này</strong> hiện đang có 
+          <strong id="conflict-count-badge" style="color: #b91c1c;">0</strong> đơn đặt trước từ hôm nay trở đi. 
+          Chuyển sang trạng thái <strong id="conflict-action-label" style="color: #b45309;">Bảo trì</strong> sẽ tự động hủy các đơn này, hoàn trả 100% tiền cọc cho khách hàng và gửi thông báo đến người dùng:
+        </div>
+
+        <!-- Banner tài chính hoàn tiền 100% & thông báo tự động cho user -->
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 0.85rem 1.15rem; margin-bottom: 1.15rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <span style="font-size: 0.78rem; color: #991b1b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Tổng tiền hoàn 100% cho khách:</span>
+            <div id="conflict-total-refund-val" style="font-size: 1.35rem; font-weight: 800; color: #b91c1c; line-height: 1.2;">0 đ</div>
+          </div>
+          <div style="font-size: 0.82rem; color: #7f1d1d; display: flex; align-items: center; gap: 0.4rem; background: #fff; padding: 0.35rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid #fecaca;">
+            <svg width="16" height="16" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            Tự động hoàn tiền & gửi thông báo đến khách hàng
+          </div>
+        </div>
+
+        <div id="conflict-bookings-list" style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.85rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <button type="button" class="btn btn-outline" onclick="closeMaintenanceConflictModal()">
+          Hủy bỏ (Giữ sân hoạt động)
+        </button>
+        <button type="button" class="btn btn-danger" id="btn-force-maintenance" onclick="submitForceMaintenanceWithRefund()" style="background: #dc2626; border-color: #dc2626; color: #fff;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <span id="btn-force-action-text">Hủy tất cả đơn & Chuyển Bảo trì ngay</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="/assets/js/api.js?v=2.1"></script>
-  <script src="/assets/js/utils.js?v=2.1"></script>
-  <script src="/assets/js/admin.js?v=2.1"></script>
+  <script src="/assets/js/api.js?v=2.8"></script>
+  <script src="/assets/js/utils.js?v=2.8"></script>
+  <script src="/assets/js/admin.js?v=2.8"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initAdminLayout === 'function') initAdminLayout();
       loadCourts();
     });
   </script>
 </body>
 </html>
-

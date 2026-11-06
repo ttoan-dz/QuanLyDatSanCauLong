@@ -13,6 +13,7 @@ public class DatSanResponse {
 
     private Integer maDatSan;
     private Integer maSan;
+    private Integer maDiaDiem;
     private String tenDiaDiem;
     private String tenSan;
     private String hoTenKhachHang;
