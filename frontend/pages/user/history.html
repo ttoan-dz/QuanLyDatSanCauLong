@@ -163,14 +163,14 @@
 
   <!-- Modal Hủy Đặt Sân -->
   <div id="modal-cancel-booking" class="modal-backdrop hidden" onclick="if(event.target===this) closeCancelBookingModal()">
-    <div class="modal-dialog" style="max-width: 540px;" onclick="event.stopPropagation()">
+    <div class="modal-dialog modal-content" style="max-width: 540px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
           Hủy đơn đặt sân <span id="cancel-modal-booking-id">#</span>
         </h3>
-        <button type="button" class="modal-close-btn" onclick="closeCancelBookingModal()">✕</button>
+        <button type="button" class="modal-close-btn modal-close" onclick="closeCancelBookingModal()">✕</button>
       </div>
-      <div class="modal-body" style="padding: 1.25rem;">
+      <div class="modal-body">
         <div id="cancel-modal-policy-box" style="margin-bottom: 1.25rem;">
           <!-- Dynamic info from JS -->
         </div>
@@ -199,20 +199,20 @@
 
   <!-- Modal Thanh Toán QR -->
   <div id="modal-qr-pay" class="modal-backdrop hidden" onclick="if(event.target===this) closeHistoryQRModal()">
-    <div class="modal-dialog" style="max-width: 440px; text-align: center;" onclick="event.stopPropagation()">
+    <div class="modal-dialog modal-content" style="max-width: 440px; text-align: center;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
           Thanh toán đơn <span id="qr-modal-booking-id">#</span>
         </h3>
-        <button type="button" class="modal-close-btn" onclick="closeHistoryQRModal()">✕</button>
+        <button type="button" class="modal-close-btn modal-close" onclick="closeHistoryQRModal()">✕</button>
       </div>
-      <div class="modal-body" style="padding: 1.5rem;">
+      <div class="modal-body">
         <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
           Tổng số tiền thanh toán:
         </p>
         <div id="qr-modal-amount" style="color: var(--primary-dark); font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem;">0 đ</div>
-        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; display: inline-block; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
-          <img id="qr-modal-img" src="/assets/images/qr.jpg" alt="QR Payment" style="width: 200px; height: 200px; object-fit: contain; display: block;" onerror="this.src='/assets/images/qr.jpg'">
+        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto; width: fit-content; box-shadow: var(--shadow-sm);">
+          <img id="qr-modal-img" src="/assets/images/qr.jpg" alt="QR Payment" style="width: 220px; height: 220px; object-fit: contain; object-position: center; display: block;" onerror="this.src='/assets/images/qr.jpg'">
         </div>
         <p style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 1.25rem;">
           Quét mã bằng ứng dụng ngân hàng và nhấn xác nhận sau khi chuyển khoản.
@@ -230,17 +230,17 @@
 
   <!-- Modal Chi Tiết Đơn Đặt Sân (5 Khối Rõ Ràng) -->
   <div id="modal-booking-detail" class="modal-backdrop hidden" onclick="if(event.target===this) closeBookingDetailModal()">
-    <div class="modal-dialog" style="max-width: 680px;" onclick="event.stopPropagation()">
+    <div class="modal-dialog modal-content" style="max-width: 680px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
           Chi tiết đơn đặt sân <span id="detail-modal-id">#</span>
         </h3>
-        <button type="button" class="modal-close-btn" onclick="closeBookingDetailModal()">✕</button>
+        <button type="button" class="modal-close-btn modal-close" onclick="closeBookingDetailModal()">✕</button>
       </div>
-      <div class="modal-body" id="detail-modal-body" style="padding: 1.25rem;">
+      <div class="modal-body" id="detail-modal-body">
         <!-- Rendered dynamically by history.js -->
       </div>
-      <div style="display: flex; justify-content: flex-end; padding: 1rem 1.25rem; border-top: 1px solid var(--border-light);">
+      <div style="display: flex; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid var(--border-light); margin-top: 1rem;">
         <button type="button" class="btn btn-outline" onclick="closeBookingDetailModal()">Đóng</button>
       </div>
     </div>

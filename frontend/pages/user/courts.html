@@ -212,14 +212,14 @@
 
   <!-- Modal Chi Tiết Sân Nâng Cấp -->
   <div id="modal-court-detail" class="modal-backdrop hidden" onclick="if(event.target===this) closeCourtDetailModal()">
-    <div class="modal-dialog" style="max-width: 680px;" onclick="event.stopPropagation()">
+    <div class="modal-dialog modal-content" style="max-width: 680px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 id="modal-court-title" class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
           Chi tiết sân
         </h3>
-        <button type="button" class="modal-close-btn" onclick="closeCourtDetailModal()">✕</button>
+        <button type="button" class="modal-close-btn modal-close" onclick="closeCourtDetailModal()">✕</button>
       </div>
-      <div id="modal-court-body" class="modal-body" style="padding: 1.25rem;">
+      <div id="modal-court-body" class="modal-body">
         <!-- Dynamic content inserted by script -->
       </div>
     </div>
@@ -734,8 +734,8 @@
       if (title) title.textContent = `Thông tin chi tiết: ${court.tenSan}`;
 
       body.innerHTML = `
-        <div style="border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1.25rem; aspect-ratio: 16/9; max-height: 240px; background: #e2e8f0;">
-          <img src="${courtImg}" alt="${court.tenSan}" onerror="this.src='${fallbackImg}'" style="width: 100%; height: 100%; object-fit: cover;">
+        <div class="modal-court-hero-wrap">
+          <img src="${courtImg}" alt="${court.tenSan}" onerror="this.src='${fallbackImg}'" class="modal-court-hero-img">
         </div>
 
         <div class="modal-section-box">

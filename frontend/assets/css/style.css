@@ -907,15 +907,24 @@ body {
   display: none;
 }
 
-.modal-content {
+.modal-content,
+.modal-dialog {
   background: #ffffff;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   max-width: 540px;
   width: 100%;
   padding: 1.75rem;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  animation: modalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.96) translateY(8px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -923,23 +932,56 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--border);
 }
 
 .modal-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+.modal-close,
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  font-size: 1.15rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: var(--text-muted);
-  line-height: 1;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.modal-close:hover,
+.modal-close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.modal-body {
+  margin-bottom: 0.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .modal-detail-row {
@@ -1683,6 +1725,9 @@ body {
   width: 220px;
   height: 220px;
   object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.5rem;
@@ -2457,12 +2502,16 @@ body {
   height: 220px;
   overflow: hidden;
   background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .gallery-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   transition: transform 0.4s ease;
 }
@@ -3366,17 +3415,22 @@ body {
   aspect-ratio: 16 / 9;
   background: #e2e8f0;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .court-thumb-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
   transition: transform 0.35s ease;
 }
 
 .court-card-v2:hover .court-thumb-img {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .court-badge-code {
@@ -4002,5 +4056,40 @@ body {
 @media (max-width: 540px) {
   .modal-kv-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Modal Court Hero Image (User Court Details Modal) */
+.modal-court-hero-wrap {
+  width: 100%;
+  height: 280px;
+  max-height: 320px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 auto 1.5rem auto;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  position: relative;
+}
+
+.modal-court-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.modal-court-hero-wrap:hover .modal-court-hero-img {
+  transform: scale(1.03);
+}
+
+@media (max-width: 640px) {
+  .modal-court-hero-wrap {
+    height: 210px;
   }
 }

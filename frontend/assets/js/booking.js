@@ -229,8 +229,8 @@ function renderCourtInfoSidebar() {
   const isVip = (selectedCourt.loaiSan || '').toLowerCase().includes('vip') || (selectedCourt.loaiSan || '').toLowerCase().includes('thi đấu');
 
   container.innerHTML = `
-    <div style="position: relative; margin-bottom: 1rem;">
-      <img src="${courtImg}" alt="${selectedCourt.tenSan}" style="width: 100%; height: 165px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border);" onerror="this.src='${fallbackImg}'">
+    <div style="position: relative; margin: 0 auto 1rem auto; width: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+      <img src="${courtImg}" alt="${selectedCourt.tenSan}" style="width: 100%; height: 185px; object-fit: cover; object-position: center; display: block;" onerror="this.src='${fallbackImg}'">
       <div style="position: absolute; top: 8px; left: 8px; background: rgba(15, 23, 42, 0.75); color: #ffffff; backdrop-filter: blur(4px); font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
         #SAN-${selectedCourt.maSan}
       </div>
