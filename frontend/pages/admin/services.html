@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Quản Lý Dịch Vụ & Kho — Admin Portal</title>
   <link rel="icon" type="image/png" href="/assets/images/logo.png">
-  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=4.2">
 </head>
 <body data-require-role="ADMIN">
 
@@ -28,7 +31,7 @@
 
       <!-- Navigation Menus -->
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
+        <div class="nav-section-title">TỔNG QUAN</div>
         <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/dashboard.html">
@@ -42,7 +45,7 @@
           </li>
         </ul>
 
-        <div class="nav-section-title">Vận hành sân bãi</div>
+        <div class="nav-section-title">VẬN HÀNH</div>
         <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/bookings.html">
@@ -74,10 +77,6 @@
               <span>Danh sách sân & bảo trì</span>
             </a>
           </li>
-        </ul>
-
-        <div class="nav-section-title">Cơ sở & Dịch vụ</div>
-        <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/services.html" class="active">
               <span class="nav-icon">
@@ -90,16 +89,26 @@
           </li>
         </ul>
 
-        <div class="nav-section-title">Hệ thống</div>
+        <div class="nav-section-title">HỆ THỐNG</div>
         <ul class="nav-menu">
-          <li class="nav-menu-item">
+          <li class="nav-menu-item" id="sidebar-nav-users">
             <a href="/pages/admin/users.html">
               <span class="nav-icon">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
               </span>
-              <span>Quản lý người dùng</span>
+              <span>Tài khoản & Phân quyền</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/profile.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </span>
+              <span>Tài khoản của tôi</span>
             </a>
           </li>
         </ul>
@@ -107,13 +116,13 @@
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="admin-user-profile">
+        <a href="/pages/admin/profile.html" class="admin-user-profile" title="Xem hồ sơ quản trị cá nhân" style="text-decoration: none;">
           <div class="user-avatar-badge" id="admin-avatar-initials">AD</div>
           <div class="user-meta-info">
             <span class="user-meta-name" id="admin-display-name">Quản trị viên</span>
-            <span class="user-meta-role">Hệ thống Quản trị</span>
+            <span class="user-meta-role" id="admin-display-role">Hệ thống Quản trị</span>
           </div>
-        </div>
+        </a>
         <div class="sidebar-actions-row">
           <a href="/pages/user/courts.html" class="sidebar-action-btn view-site" title="Xem giao diện người dùng">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +134,7 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
-            Thoát
+            Đăng xuất
           </button>
         </div>
       </div>
@@ -284,9 +293,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/utils.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <script src="/assets/js/api.js?v=4.2"></script>
+  <script src="/assets/js/utils.js?v=4.2"></script>
+  <script src="/assets/js/admin.js?v=4.2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof initAdminLayout === 'function') initAdminLayout();

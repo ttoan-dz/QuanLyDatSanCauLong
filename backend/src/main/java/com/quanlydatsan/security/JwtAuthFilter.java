@@ -38,6 +38,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String tenDangNhap = jwtTokenProvider.getTenDangNhapFromToken(token);
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(tenDangNhap);
 
+                if (!userDetails.isEnabled()) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"status\":403,\"message\":\"Tài khoản của bạn đã bị khóa. Vui lòng liên hệ ban quản trị để được hỗ trợ!\"}");
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());

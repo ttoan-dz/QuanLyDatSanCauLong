@@ -130,6 +130,54 @@ const api = {
 
   delete(endpoint) {
     return this.request(endpoint, { method: 'DELETE' });
+  },
+
+  async upload(endpoint, formData) {
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    let path = endpoint;
+    if (path.startsWith('/api/')) {
+      path = path.substring(4);
+    }
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${path}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
+          sessionStorage.clear();
+          localStorage.clear();
+          window.location.href = '/pages/auth/login.html';
+        }
+      }
+
+      const contentType = response.headers.get('content-type');
+      let data = null;
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      }
+
+      if (!response.ok) {
+        const errorMsg = data && (data.message || data.error) ? (data.message || data.error) : `Lỗi ${response.status}: ${response.statusText}`;
+        throw new Error(errorMsg);
+      }
+      return data;
+    } catch (error) {
+      console.error(`API Upload Error [${url}]:`, error);
+      throw error;
+    }
   }
 };
 

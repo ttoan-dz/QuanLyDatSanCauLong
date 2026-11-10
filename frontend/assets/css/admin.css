@@ -804,9 +804,22 @@ select.form-control {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: #ffffff;
+}
+
+.data-table-accounts {
+  min-width: 1080px;
+}
+
+.data-table th.col-actions,
+.data-table td.col-actions {
+  text-align: right;
+  white-space: nowrap;
+  min-width: 180px;
+  width: 180px;
 }
 
 .table-responsive::-webkit-scrollbar {
@@ -1843,5 +1856,212 @@ select.form-control {
   align-items: center;
   justify-content: center;
 }
+
+/* ==========================================================================
+   ROLE BADGES & RBAC STYLING
+   ========================================================================== */
+.badge-role-admin {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-role-staff {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-role-customer {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ==========================================================================
+   IMAGE UPLOAD COMPONENT (Drag & Drop + Preview)
+   ========================================================================== */
+.court-upload-container {
+  margin-top: 0.5rem;
+}
+
+.court-upload-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md, 8px);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.court-upload-dropzone:hover,
+.court-upload-dropzone.dragover {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+
+.court-upload-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--primary);
+  background: rgba(16, 185, 129, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.court-upload-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.court-upload-subtext {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.court-upload-preview {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+}
+
+.court-preview-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+}
+
+.court-preview-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.court-preview-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.court-preview-size {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.court-preview-remove {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.court-preview-remove:hover {
+  background: #fee2e2;
+}
+
+/* ==========================================================================
+   VENUE REVENUE REPORT WIDGET
+   ========================================================================== */
+.venue-revenue-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  height: 180px;
+  padding: 1rem 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.venue-revenue-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.venue-bar-pillar {
+  width: 48px;
+  max-width: 100%;
+  background: linear-gradient(180deg, #10b981 0%, #047857 100%);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.venue-bar-pillar:hover {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+}
+
+.venue-bar-label {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.venue-revenue-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.venue-revenue-table th {
+  background: #f8fafc;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.venue-revenue-table td {
+  padding: 0.75rem 0.85rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 
 

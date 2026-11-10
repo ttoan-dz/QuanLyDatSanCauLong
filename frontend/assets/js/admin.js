@@ -7,13 +7,20 @@
 // ======================== MASTER ADMIN SHELL INITIALIZATION ========================
 
 function initAdminLayout() {
-  // 1. Gán thông tin hiển thị của Admin ở sidebar
+  // 1. Gán thông tin hiển thị của Admin ở sidebar & Phân quyền RBAC
   try {
     const user = typeof getUser === 'function' ? getUser() : null;
     const nameEl = document.getElementById('admin-display-name');
     const initialsEl = document.getElementById('admin-avatar-initials');
+    const roleEl = document.getElementById('admin-display-role');
+    const userRole = (user && (user.role || user.vaiTro || '')) ? (user.role || user.vaiTro).toUpperCase() : '';
+    const isStaff = userRole.includes('STAFF') || userRole.includes('NHANVIEN');
+
     if (user && nameEl) {
       nameEl.textContent = user.hoTen || user.tenDangNhap || 'Quản trị viên';
+    }
+    if (roleEl) {
+      roleEl.textContent = isStaff ? 'Nhân viên (STAFF)' : 'Quản trị viên (ADMIN)';
     }
     if (user && initialsEl) {
       const name = (user.hoTen || user.tenDangNhap || 'AD').trim();
@@ -23,11 +30,31 @@ function initAdminLayout() {
         : name.substring(0, 2).toUpperCase();
       initialsEl.textContent = initials;
     }
+
+    // RBAC: Nếu tài khoản đăng nhập là STAFF, ẩn các menu/nút chỉ dành riêng cho ADMIN
+    if (isStaff) {
+      const usersNav = document.getElementById('sidebar-nav-users');
+      if (usersNav) usersNav.style.display = 'none';
+      const createStaffBtn = document.getElementById('btn-create-staff');
+      if (createStaffBtn) createStaffBtn.style.display = 'none';
+      const auditBtn = document.getElementById('btn-view-audit-logs');
+      if (auditBtn) auditBtn.style.display = 'none';
+    }
   } catch (e) {
     console.warn('initAdminLayout profile warning:', e);
   }
 
-  // 2. Đồng hồ thời gian thực (Live Clock) trên Topbar
+  // 2. Gán sự kiện nút Đăng xuất
+  const logoutBtn = document.getElementById('btn-logout');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = '/pages/auth/login.html';
+    };
+  }
+
+  // 3. Đồng hồ thời gian thực (Live Clock) trên Topbar
   const clockEl = document.getElementById('admin-live-clock');
   if (clockEl) {
     const updateClock = () => {
@@ -42,7 +69,7 @@ function initAdminLayout() {
     setInterval(updateClock, 1000);
   }
 
-  // 3. Đóng mở Sidebar trên màn hình di động/tablet
+  // 4. Đóng mở Sidebar trên màn hình di động/tablet
   const toggleBtn = document.getElementById('sidebar-toggle-btn');
   const sidebar = document.getElementById('admin-sidebar');
   if (toggleBtn && sidebar) {
@@ -56,6 +83,9 @@ function initAdminLayout() {
       }
     });
   }
+
+  // 5. Khởi tạo drag & drop upload ảnh nếu có dropzone trên trang
+  setupCourtPhotoUpload();
 }
 
 // Dialog xác nhận hiện đại thay thế window.confirm()
@@ -428,6 +458,108 @@ function renderPaymentBreakdown(bookings) {
   container.innerHTML = html;
 }
 
+function renderVenueRevenueReport(locations) {
+  const container = document.getElementById('venue-revenue-report-container');
+  if (!container) return;
+
+  if (!locations || locations.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.9rem;">
+        Chưa có số liệu doanh thu theo cơ sở trong kỳ thống kê này.
+      </div>
+    `;
+    return;
+  }
+
+  // Sắp xếp doanh thu từ cao xuống thấp
+  const sorted = [...locations].sort((a, b) => (b.tongDoanhThu || 0) - (a.tongDoanhThu || 0));
+  const maxRevenue = Math.max(...sorted.map(l => l.tongDoanhThu || 0), 1);
+  const grandTotal = sorted.reduce((sum, l) => sum + (l.tongDoanhThu || 0), 0);
+
+  // Biểu đồ cột so sánh trực quan
+  const barsHtml = sorted.map(loc => {
+    const rev = loc.tongDoanhThu || 0;
+    const pct = Math.max(8, Math.min(100, Math.round((rev / maxRevenue) * 100)));
+    const tooltip = `${loc.tenDiaDiem}: ${formatTien(rev)} (Sân: ${formatTien(loc.doanhThuSan || 0)} | Dịch vụ: ${formatTien(loc.doanhThuDichVu || 0)})`;
+
+    return `
+      <div class="venue-revenue-bar-item" title="${tooltip}">
+        <div class="venue-bar-pillar" style="height: ${pct}%;" data-tooltip="${tooltip}"></div>
+        <span class="venue-bar-label" title="${loc.tenDiaDiem}">${loc.tenDiaDiem}</span>
+        <span style="font-size: 0.78rem; font-weight: 700; color: #047857; margin-top: 3px;">${formatTien(rev)}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Bảng chi tiết bên dưới
+  const tableRowsHtml = sorted.map((loc, idx) => {
+    const rev = loc.tongDoanhThu || 0;
+    const share = loc.tyTrongDoanhThu != null ? loc.tyTrongDoanhThu : (grandTotal > 0 ? ((rev / grandTotal) * 100).toFixed(1) : 0);
+
+    return `
+      <tr>
+        <td>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <span style="width: 22px; height: 22px; border-radius: 50%; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+              ${idx + 1}
+            </span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.92rem;">${loc.tenDiaDiem}</strong>
+              ${loc.diaChi ? `<br><small style="color: var(--text-muted); font-size: 0.78rem;">${loc.diaChi}</small>` : ''}
+            </div>
+          </div>
+        </td>
+        <td>
+          <strong style="color: #047857; font-size: 0.95rem;">${formatTien(rev)}</strong>
+        </td>
+        <td style="min-width: 140px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div class="breakdown-bar-track" style="flex: 1; height: 7px;">
+              <div class="breakdown-bar-fill" style="width: ${share}%; background: linear-gradient(90deg, #10b981 0%, #047857 100%);"></div>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); width: 45px; text-align: right;">${share}%</span>
+          </div>
+        </td>
+        <td style="text-align: center;"><strong>${loc.soDonTong || 0}</strong></td>
+        <td style="text-align: center;">
+          <span class="badge badge-success" style="font-size: 0.75rem; padding: 2px 7px;">${loc.soDonHoanThanh || 0}</span>
+        </td>
+        <td style="text-align: center;">
+          ${(loc.soDonHuy || 0) > 0 ? `<span class="badge badge-danger" style="font-size: 0.75rem; padding: 2px 7px;">${loc.soDonHuy}</span>` : `<span style="color: var(--text-muted);">-</span>`}
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">
+          Sân: <strong style="color: #047857;">${formatTien(loc.doanhThuSan || 0)}</strong><br>
+          DV: <strong style="color: #d97706;">${formatTien(loc.doanhThuDichVu || 0)}</strong>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="venue-revenue-chart-bars">
+      ${barsHtml}
+    </div>
+    <div class="table-responsive">
+      <table class="venue-revenue-table">
+        <thead>
+          <tr>
+            <th>Cơ sở / Địa điểm</th>
+            <th>Tổng Doanh thu</th>
+            <th>Tỷ trọng</th>
+            <th style="text-align: center;">Tổng đơn</th>
+            <th style="text-align: center;">Hoàn thành</th>
+            <th style="text-align: center;">Hủy / Quá hạn</th>
+            <th>Phân bổ nguồn thu</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderVenueCapacity(courts) {
   const container = document.getElementById('venue-capacity-container');
   const statCapacity = document.getElementById('stat-court-capacity');
@@ -576,11 +708,12 @@ async function loadDashboard() {
   if (yearInput && !yearInput.value) yearInput.value = nam;
 
   try {
-    const [monthData, yearData, courts, bookings] = await Promise.all([
+    const [monthData, yearData, courts, bookings, locationRevenues] = await Promise.all([
       api.get('/admin/revenue/month', { nam, thang }).catch(() => ({ nam, thang, tongDoanhThu: 0, doanhThuSan: 0, doanhThuDichVu: 0, doanhThuQuaGio: 0, doanhThuPhatHuy: 0, soDon: 0 })),
       api.get('/admin/revenue/year', { nam }).catch(() => ({ nam, tongDoanhThu: 0, doanhThuSan: 0, doanhThuDichVu: 0, doanhThuQuaGio: 0, doanhThuPhatHuy: 0, soDon: 0 })),
       api.get('/admin/courts').catch(() => []),
-      api.get('/admin/bookings').catch(() => [])
+      api.get('/admin/bookings').catch(() => []),
+      api.get('/admin/revenue/by-location', { nam, thang }).catch(() => [])
     ]);
 
     const tongThang = monthData ? (monthData.tongDoanhThu || 0) : 0;
@@ -658,6 +791,7 @@ async function loadDashboard() {
     const monthlyRevenues = monthsData.map(d => (d && d.tongDoanhThu) ? d.tongDoanhThu : 0);
 
     renderDashboardRevenueChart(nam, thang, monthlyRevenues, tongNam, monthsData);
+    renderVenueRevenueReport(locationRevenues);
     renderPaymentBreakdown(bookings);
     renderVenueCapacity(courts);
     renderRecentBookings(bookings);
@@ -1547,7 +1681,7 @@ async function toggleServiceStatus(maDV) {
   }
 }
 
-// ======================== 5. QUẢN LÝ SÂN ========================
+// ======================== 5. QUẢN LÝ SÂN & UPLOAD ẢNH ========================
 
 const availableCourtImages = [
   '/assets/images/courts.jpg',
@@ -1563,8 +1697,146 @@ const availableCourtImages = [
 
 let activeCourtIdForPhoto = null;
 let selectedCourtPhotoUrl = null;
+let selectedCreateCourtFile = null;
+let selectedEditCourtFile = null;
+
+function setupCourtPhotoUpload() {
+  const dropzones = [
+    { id: 'create-court-dropzone', mode: 'create' },
+    { id: 'edit-court-dropzone', mode: 'edit' }
+  ];
+
+  dropzones.forEach(({ id, mode }) => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.uploadInitialized) return;
+    el.dataset.uploadInitialized = 'true';
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      el.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      el.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.remove('dragover');
+      }, false);
+    });
+
+    el.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files.length > 0) {
+        handleCourtFileSelect({ target: { files, value: '' } }, mode);
+      }
+    }, false);
+  });
+}
+
+function handleCourtFileSelect(event, mode) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showAlert('Định dạng file không hợp lệ! Vui lòng chọn ảnh JPG, PNG hoặc WEBP.', 'warning');
+    event.target.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showAlert('Dung lượng ảnh vượt quá 5MB! Vui lòng chọn ảnh nhỏ hơn.', 'warning');
+    event.target.value = '';
+    return;
+  }
+
+  const previewBox = document.getElementById(`${mode}-court-preview-box`);
+  const previewThumb = document.getElementById(`${mode}-court-preview-thumb`);
+  const previewName = document.getElementById(`${mode}-court-preview-name`);
+  const previewSize = document.getElementById(`${mode}-court-preview-size`);
+
+  if (mode === 'create') selectedCreateCourtFile = file;
+  if (mode === 'edit') selectedEditCourtFile = file;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (previewThumb) previewThumb.src = e.target.result;
+    if (previewName) previewName.textContent = file.name;
+    if (previewSize) previewSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+    if (previewBox) previewBox.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeSelectedCourtFile(mode) {
+  if (mode === 'create') {
+    selectedCreateCourtFile = null;
+    const input = document.getElementById('create-court-file-input');
+    if (input) input.value = '';
+    const box = document.getElementById('create-court-preview-box');
+    if (box) box.style.display = 'none';
+  } else if (mode === 'edit') {
+    selectedEditCourtFile = null;
+    const input = document.getElementById('edit-court-file-input');
+    if (input) input.value = '';
+    const box = document.getElementById('edit-court-preview-box');
+    if (box) box.style.display = 'none';
+  }
+}
+
+async function uploadCourtPhotoFile(file) {
+  if (!file) return null;
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await api.upload('/admin/courts/upload-image', formData);
+  return res && res.url ? res.url : null;
+}
+
+async function handleModalCourtPhotoUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file || !activeCourtIdForPhoto) return;
+
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showAlert('Vui lòng chọn ảnh JPG, PNG hoặc WEBP.', 'warning');
+    event.target.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showAlert('Dung lượng ảnh tối đa 5MB.', 'warning');
+    event.target.value = '';
+    return;
+  }
+
+  const statusEl = document.getElementById('modal-court-upload-status');
+  if (statusEl) {
+    statusEl.textContent = 'Đang tải ảnh lên...';
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--primary)';
+  }
+
+  try {
+    const uploadedUrl = await uploadCourtPhotoFile(file);
+    if (uploadedUrl) {
+      await api.put(`/admin/courts/court/${activeCourtIdForPhoto}/image`, { hinhAnh: uploadedUrl });
+      showAlert(`Tải ảnh lên sân #${activeCourtIdForPhoto} thành công!`, 'success');
+      closeCourtPhotoModal();
+      loadCourts();
+    }
+  } catch (e) {
+    showAlert(`Lỗi upload ảnh: ${e.message}`, 'danger');
+  } finally {
+    if (statusEl) statusEl.style.display = 'none';
+    event.target.value = '';
+  }
+}
 
 function openCreateCourtModal() {
+  removeSelectedCourtFile('create');
   const modal = document.getElementById('modal-create-court');
   if (modal) modal.classList.remove('hidden');
 }
@@ -1585,8 +1857,6 @@ async function createCourt(event) {
   let gioMo = (document.getElementById('create-gioMo') || document.getElementById('input-gioMo')).value.trim();
   let gioDong = (document.getElementById('create-gioDong') || document.getElementById('input-gioDong')).value.trim();
   const soSanNho = parseInt((document.getElementById('create-soSanNho') || document.getElementById('input-soSanNho')).value) || 1;
-  const hinhAnhEl = document.getElementById('create-hinhAnh') || document.getElementById('input-hinhAnh');
-  const hinhAnh = hinhAnhEl ? hinhAnhEl.value.trim() : '/assets/images/courts.jpg';
   const mapLinkEl = document.getElementById('create-mapLink') || document.getElementById('input-mapLink');
   const mapLink = mapLinkEl ? mapLinkEl.value.trim() : null;
 
@@ -1602,6 +1872,16 @@ async function createCourt(event) {
   if (btn) btn.disabled = true;
 
   try {
+    // Nếu có chọn file ảnh từ máy, tải file lên backend trước
+    let hinhAnh = '/assets/images/courts.jpg';
+    if (selectedCreateCourtFile) {
+      const uploadedUrl = await uploadCourtPhotoFile(selectedCreateCourtFile);
+      if (uploadedUrl) hinhAnh = uploadedUrl;
+    } else {
+      const hinhAnhEl = document.getElementById('create-hinhAnh');
+      if (hinhAnhEl && hinhAnhEl.value) hinhAnh = hinhAnhEl.value.trim();
+    }
+
     await api.post('/admin/courts', {
       tenDiaDiem,
       gioMo,
@@ -1614,6 +1894,7 @@ async function createCourt(event) {
     closeCreateCourtModal();
     const form = document.getElementById('form-create-court');
     if (form) form.reset();
+    removeSelectedCourtFile('create');
     loadCourts();
   } catch (error) {
     showAlert(`Lỗi tạo sân: ${error.message}`, 'danger');
@@ -1830,12 +2111,22 @@ async function saveCourtPhotoSelection() {
 }
 
 function openEditCourtModal(diaDiem) {
+  removeSelectedCourtFile('edit');
+
   document.getElementById('edit-maDiaDiem').value = diaDiem.maDiaDiem;
   document.getElementById('edit-tenMoi').value = diaDiem.tenDiaDiem || '';
   document.getElementById('edit-gioMo').value = formatGio(diaDiem.gioMo);
   document.getElementById('edit-gioDong').value = formatGio(diaDiem.gioDong);
   document.getElementById('edit-soSanNhoMoi').value = (diaDiem.danhSachSan || []).length;
-  document.getElementById('edit-hinhAnh').value = (diaDiem.danhSachSan && diaDiem.danhSachSan[0]) ? (diaDiem.danhSachSan[0].hinhAnh || '') : '';
+  
+  const currentImg = (diaDiem.danhSachSan && diaDiem.danhSachSan[0]) ? (diaDiem.danhSachSan[0].hinhAnh || '/assets/images/courts.jpg') : '/assets/images/courts.jpg';
+  document.getElementById('edit-hinhAnh').value = currentImg;
+
+  const currentThumb = document.getElementById('edit-court-current-thumb');
+  if (currentThumb) currentThumb.src = currentImg;
+  const currentPath = document.getElementById('edit-court-current-path');
+  if (currentPath) currentPath.textContent = currentImg;
+
   document.getElementById('edit-mapLink').value = diaDiem.mapLink || '';
 
   document.getElementById('modal-edit-court').classList.remove('hidden');
@@ -1843,6 +2134,7 @@ function openEditCourtModal(diaDiem) {
 
 function closeEditCourtModal() {
   document.getElementById('modal-edit-court').classList.add('hidden');
+  removeSelectedCourtFile('edit');
 }
 
 async function updateCourt(event) {
@@ -1853,13 +2145,19 @@ async function updateCourt(event) {
   let gioMo = document.getElementById('edit-gioMo').value.trim();
   let gioDong = document.getElementById('edit-gioDong').value.trim();
   const soSanNhoMoi = parseInt(document.getElementById('edit-soSanNhoMoi').value);
-  const hinhAnh = document.getElementById('edit-hinhAnh').value.trim();
+  let hinhAnh = document.getElementById('edit-hinhAnh').value.trim();
   const mapLink = document.getElementById('edit-mapLink').value.trim() || null;
 
   if (gioMo.length === 5) gioMo += ':00';
   if (gioDong.length === 5) gioDong += ':00';
 
   try {
+    // Nếu có chọn ảnh mới từ máy, upload lên backend trước
+    if (selectedEditCourtFile) {
+      const uploadedUrl = await uploadCourtPhotoFile(selectedEditCourtFile);
+      if (uploadedUrl) hinhAnh = uploadedUrl;
+    }
+
     await api.put(`/admin/courts/${maDiaDiem}`, {
       tenMoi,
       gioMo,
@@ -2098,147 +2396,685 @@ async function submitForceMaintenanceWithRefund() {
   }
 }
 
-// ======================== 6. NGƯỜI DÙNG ========================
+// ======================== 6. QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (3 ROLES) ========================
 
-async function loadUsers() {
-  const tableBody = document.getElementById('users-table-body');
-  if (!tableBody) return;
+let allLoadedAccounts = [];
+let allVenuesForStaff = [];
 
-  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Đang tải danh sách người dùng...</td></tr>`;
+async function loadAccounts() {
+  const tableBody = document.getElementById('accounts-table-body');
+  if (!tableBody && !document.getElementById('users-table-body')) return;
+
+  const targetBody = tableBody || document.getElementById('users-table-body');
+  targetBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 3rem; color: var(--text-muted);"><div class="spinner-sm" style="display:inline-block; margin-right:8px; vertical-align:middle;"></div> Đang tải danh sách tài khoản & phân quyền...</td></tr>`;
 
   try {
-    const users = await api.get('/admin/users');
+    const [accounts, venues] = await Promise.all([
+      api.get('/admin/accounts'),
+      api.get('/admin/courts').catch(() => [])
+    ]);
 
-    if (!users || users.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Không có người dùng nào.</td></tr>`;
-      return;
+    allLoadedAccounts = accounts || [];
+    allVenuesForStaff = venues || [];
+
+    // Populate dropdown cơ sở trong modal tạo nhân viên và modal sửa
+    const venueSelectCreate = document.getElementById('create-staff-venue');
+    const venueSelectEdit = document.getElementById('edit-acc-venue');
+
+    if (venueSelectCreate) {
+      venueSelectCreate.innerHTML = `<option value="">-- Chọn chi nhánh sân làm việc --</option>` +
+        allVenuesForStaff.map(v => `<option value="${v.maDiaDiem}">${v.tenDiaDiem}</option>`).join('');
+    }
+    if (venueSelectEdit) {
+      venueSelectEdit.innerHTML = `<option value="">-- Chưa phân công --</option>` +
+        allVenuesForStaff.map(v => `<option value="${v.maDiaDiem}">${v.tenDiaDiem}</option>`).join('');
     }
 
-    tableBody.innerHTML = users.map(u => {
-      const hasAccount = !!u.maTK;
-      const isLocked = u.trangThaiTaiKhoan === 'Khoa';
-      const btnClass = !hasAccount ? 'btn-secondary' : (isLocked ? 'btn-success' : 'btn-danger');
-      const btnText = !hasAccount ? 'Chưa tạo TK' : (isLocked ? 'Mở khóa' : 'Khóa tài khoản');
-      const safeName = (u.hoTen || u.tenDangNhap || 'Khách hàng').replace(/'/g, "\\'");
+    // Cập nhật 4 thẻ KPI thống kê
+    const totalCount = allLoadedAccounts.length;
+    const adminCount = allLoadedAccounts.filter(a => a.role === 'ADMIN').length;
+    const staffCount = allLoadedAccounts.filter(a => a.role === 'STAFF').length;
+    const customerCount = allLoadedAccounts.filter(a => a.role === 'CUSTOMER').length;
 
-      return `
-        <tr>
-          <td><strong>#${u.maKH}</strong></td>
-          <td>
-            <strong>${u.hoTen}</strong>
-            ${u.tenDangNhap ? `<br><small style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">@${u.tenDangNhap}</small>` : ''}
-          </td>
-          <td>${u.sdt}</td>
-          <td>${u.email || '<span style="color: var(--text-muted); font-size: 0.8rem;">Chưa có</span>'}</td>
-          <td><span class="badge ${u.soLanNoShow > 0 ? 'badge-danger' : 'badge-secondary'}">${u.soLanNoShow} lần</span></td>
-          <td>${hasAccount ? badgeTrangThai(u.trangThaiTaiKhoan) : '<span class="badge badge-secondary">Chưa có TK</span>'}</td>
-          <td style="text-align: right;">
-            <button class="btn btn-sm btn-outline" style="margin-right: 0.25rem;" onclick='openEditUserModal(${JSON.stringify(u)})'>Sửa</button>
-            <button class="btn btn-sm ${btnClass}" ${!hasAccount ? 'disabled title="Khách hàng chưa đăng ký tài khoản đăng nhập"' : ''} onclick="toggleUserStatus(${u.maTK}, '${u.trangThaiTaiKhoan || 'HoatDong'}', '${safeName}')">${btnText}</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    const statTotalEl = document.getElementById('stat-acc-total');
+    const statAdminEl = document.getElementById('stat-acc-admin');
+    const statStaffEl = document.getElementById('stat-acc-staff');
+    const statCustEl = document.getElementById('stat-acc-customer');
+
+    if (statTotalEl) statTotalEl.textContent = totalCount;
+    if (statAdminEl) statAdminEl.textContent = adminCount;
+    if (statStaffEl) statStaffEl.textContent = staffCount;
+    if (statCustEl) statCustEl.textContent = customerCount;
+
+    filterAccountsList();
   } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--danger);">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+    targetBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--danger); padding: 3rem;">
+      <div style="font-weight: 700; margin-bottom: 0.5rem; font-size: 1rem;">Không thể tải dữ liệu tài khoản</div>
+      <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">${error.message}</div>
+      <button type="button" class="btn btn-sm btn-outline" onclick="loadAccounts()">Thử lại</button>
+    </td></tr>`;
   }
 }
 
-function openEditUserModal(user) {
-  document.getElementById('edit-user-maKH').value = user.maKH;
-  document.getElementById('edit-user-maKH-display').value = `#${user.maKH}`;
-  const elTenDangNhap = document.getElementById('edit-user-tenDangNhap');
-  if (elTenDangNhap) {
-    elTenDangNhap.value = user.tenDangNhap ? `@${user.tenDangNhap}` : 'Chưa tạo tài khoản';
-  }
-  document.getElementById('edit-user-hoTen').value = user.hoTen || '';
-  document.getElementById('edit-user-sdt').value = user.sdt || '';
-  document.getElementById('edit-user-email').value = user.email || '';
-
-  const elMatKhau = document.getElementById('edit-user-matKhau');
-  if (elMatKhau) {
-    elMatKhau.value = '';
-    elMatKhau.type = 'password';
-  }
-  const btnToggle = document.getElementById('btn-toggle-edit-password');
-  if (btnToggle) {
-    btnToggle.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="7" r="3"/></svg>`;
-  }
-
-  document.getElementById('edit-user-noShow').value = `${user.soLanNoShow || 0} lần`;
-  document.getElementById('edit-user-status').value = !user.trangThaiTaiKhoan 
-    ? 'Chưa có tài khoản' 
-    : (user.trangThaiTaiKhoan === 'Khoa' ? 'Đã khóa' : 'Hoạt động');
-
-  document.getElementById('modal-edit-user').classList.remove('hidden');
+// Giữ lại alias loadUsers để tương thích ngược nếu có trang gọi
+async function loadUsers() {
+  return loadAccounts();
 }
 
-function closeEditUserModal() {
-  document.getElementById('modal-edit-user').classList.add('hidden');
-}
+function filterAccountsList() {
+  const tableBody = document.getElementById('accounts-table-body') || document.getElementById('users-table-body');
+  if (!tableBody) return;
 
-function toggleEditUserPasswordVisibility() {
-  const input = document.getElementById('edit-user-matKhau');
-  if (!input) return;
-  const isPass = input.type === 'password';
-  input.type = isPass ? 'text' : 'password';
-  const btn = document.getElementById('btn-toggle-edit-password');
-  if (btn) {
-    btn.innerHTML = isPass 
-      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="7" r="3"/></svg>`;
-  }
-}
+  const keyword = (document.getElementById('input-account-search') ? document.getElementById('input-account-search').value : '').toLowerCase().trim();
+  const roleFilter = (document.getElementById('select-role-filter') ? document.getElementById('select-role-filter').value : '').toUpperCase();
+  const statusFilter = (document.getElementById('select-status-filter') ? document.getElementById('select-status-filter').value : '');
 
-async function updateUser(event) {
-  if (event) event.preventDefault();
+  let filtered = allLoadedAccounts.filter(acc => {
+    // 1. Lọc theo vai trò
+    if (roleFilter && acc.role !== roleFilter) return false;
 
-  const maKH = document.getElementById('edit-user-maKH').value;
-  const hoTen = document.getElementById('edit-user-hoTen').value.trim();
-  const sdt = document.getElementById('edit-user-sdt').value.trim();
-  const email = document.getElementById('edit-user-email').value.trim();
-  const elMatKhau = document.getElementById('edit-user-matKhau');
-  const matKhau = elMatKhau ? elMatKhau.value.trim() : '';
+    // 2. Lọc theo trạng thái
+    if (statusFilter && acc.trangThai !== statusFilter) return false;
 
-  if (matKhau && matKhau.length < 6) {
-    showAlert('Mật khẩu mới phải có tối thiểu 6 ký tự trở lên!', 'warning');
-    if (elMatKhau) elMatKhau.focus();
+    // 3. Lọc theo từ khóa tìm kiếm (Username, Họ tên, SĐT, Email, Cơ sở)
+    if (keyword) {
+      const uName = (acc.tenDangNhap || '').toLowerCase();
+      const fName = (acc.hoTen || '').toLowerCase();
+      const phone = (acc.sdt || '').toLowerCase();
+      const mail = (acc.email || '').toLowerCase();
+      const venue = (acc.tenDiaDiemPhuTrach || acc.tenDiaDiem || '').toLowerCase();
+
+      return uName.includes(keyword) || fName.includes(keyword) || phone.includes(keyword) || mail.includes(keyword) || venue.includes(keyword);
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 3.5rem;">
+      <svg width="44" height="44" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block; opacity: 0.35;">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+      Không tìm thấy tài khoản nào khớp với bộ lọc tìm kiếm.
+    </td></tr>`;
     return;
   }
 
-  const payload = { hoTen, sdt, email };
-  if (matKhau) {
-    payload.matKhau = matKhau;
-  }
+  // Thông tin user hiện tại đang đăng nhập để kiểm soát quyền
+  const currentUser = typeof getUser === 'function' ? getUser() : null;
+  const currentUsername = currentUser ? (currentUser.tenDangNhap || '').toLowerCase() : '';
+  const currentUserRole = currentUser ? (currentUser.role || currentUser.vaiTro || '').toUpperCase() : '';
+  const isCurrentStaff = currentUserRole.includes('STAFF') || currentUserRole.includes('NHANVIEN');
 
-  try {
-    await api.put(`/admin/users/${maKH}`, payload);
-    const msg = matKhau 
-      ? `Cập nhật thông tin và đặt lại mật khẩu cho khách hàng #${maKH} thành công!` 
-      : `Cập nhật thông tin khách hàng #${maKH} thành công!`;
-    showAlert(msg, 'success');
-    closeEditUserModal();
-    loadUsers();
-  } catch (error) {
-    showAlert(`Lỗi cập nhật người dùng: ${error.message}`, 'danger');
-  }
+  tableBody.innerHTML = filtered.map(acc => {
+    const isLocked = acc.trangThai === 'Khoa';
+    const isSelf = (acc.tenDangNhap || '').toLowerCase() === currentUsername;
+    const isTargetAdmin = acc.role === 'ADMIN';
+    const isTargetStaff = acc.role === 'STAFF';
+
+    // Xác định vai trò badge
+    let roleBadge = `<span class="badge badge-role-customer">CUSTOMER</span>`;
+    if (acc.role === 'ADMIN') {
+      roleBadge = `<span class="badge badge-role-admin">ADMIN</span>`;
+    } else if (acc.role === 'STAFF') {
+      roleBadge = `<span class="badge badge-role-staff">STAFF</span>`;
+    }
+
+    // Hiển thị cơ sở làm việc
+    let venueDisplay = `<span style="color: var(--text-muted); font-size: 0.8rem;">Toàn hệ thống</span>`;
+    const venueName = acc.tenDiaDiemPhuTrach || acc.tenDiaDiem;
+    if (acc.role === 'STAFF') {
+      venueDisplay = venueName 
+        ? `<strong style="color: #047857; font-size: 0.85rem;">${venueName}</strong>` 
+        : `<span style="color: #b45309; font-size: 0.8rem;">Chưa phân công</span>`;
+    } else if (acc.role === 'CUSTOMER') {
+      venueDisplay = `<span style="color: var(--text-muted); font-size: 0.8rem;">Khách đặt sân</span>`;
+    }
+
+    // Quyền khóa:
+    // - Không được khóa chính mình
+    // - Không được khóa ADMIN
+    // - STAFF không được khóa ADMIN hay STAFF khác
+    let disableLock = false;
+    let lockTooltip = isLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản này';
+
+    if (isSelf) {
+      disableLock = true;
+      lockTooltip = 'Không thể tự khóa tài khoản của chính bạn';
+    } else if (isTargetAdmin) {
+      disableLock = true;
+      lockTooltip = 'Không thể khóa tài khoản Quản trị viên (ADMIN)';
+    } else if (isCurrentStaff && (isTargetStaff || isTargetAdmin)) {
+      disableLock = true;
+      lockTooltip = 'Nhân viên không có quyền khóa tài khoản Quản trị hoặc Nhân viên khác';
+    }
+
+    // Quyền sửa:
+    // - STAFF không được sửa ADMIN hoặc STAFF khác
+    let disableEdit = false;
+    let editTooltip = 'Chỉnh sửa thông tin';
+    if (isCurrentStaff && (isTargetStaff || isTargetAdmin) && !isSelf) {
+      disableEdit = true;
+      editTooltip = 'Nhân viên không có quyền chỉnh sửa tài khoản Quản trị hoặc Nhân viên khác';
+    }
+
+    const safeUsername = (acc.tenDangNhap || '').replace(/'/g, "\\'");
+    const lockBtnClass = isLocked ? 'btn-success' : 'btn-danger';
+    const lockBtnText = isLocked ? 'Mở khóa' : 'Khóa';
+
+    return `
+      <tr>
+        <td>
+          <strong style="color: var(--text-main); font-size: 0.92rem;">@${acc.tenDangNhap}</strong><br>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">ID: #${acc.maTK}</small>
+        </td>
+        <td>
+          <strong>${acc.hoTen || '--'}</strong>
+          ${acc.soLanNoShow > 0 ? `<br><small class="badge badge-danger" style="font-size: 0.7rem; padding: 1px 5px;">No-Show: ${acc.soLanNoShow} lần</small>` : ''}
+        </td>
+        <td>${acc.sdt || '<span style="color:var(--text-muted); font-size:0.8rem;">Chưa có</span>'}</td>
+        <td>${acc.email || '<span style="color:var(--text-muted); font-size:0.8rem;">Chưa có</span>'}</td>
+        <td>${roleBadge}</td>
+        <td>${venueDisplay}</td>
+        <td>${badgeTrangThai(acc.trangThai)}</td>
+        <td><small style="color: var(--text-muted); font-weight: 500;">${formatNgayGio(acc.ngayTao)}</small></td>
+        <td class="col-actions" style="text-align: right; white-space: nowrap; min-width: 180px;">
+          <button type="button" class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; margin-right: 0.25rem;" onclick='openViewAccountModal(${JSON.stringify(acc)})' title="Xem chi tiết">
+            Xem
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" style="padding: 0.25rem 0.5rem; margin-right: 0.25rem;" ${disableEdit ? `disabled title="${editTooltip}"` : `title="${editTooltip}"`} onclick='openEditAccountModal(${JSON.stringify(acc)})'>
+            Sửa
+          </button>
+          <button type="button" class="btn btn-sm ${lockBtnClass}" style="padding: 0.25rem 0.5rem;" ${disableLock ? `disabled title="${lockTooltip}"` : `title="${lockTooltip}"`} onclick="toggleAccountStatusSafe(${acc.maTK}, '${safeUsername}', '${acc.role}', '${acc.trangThai}')">
+            ${lockBtnText}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-async function toggleUserStatus(targetId, currentStatus, userName = '') {
-  const action = currentStatus === 'Khoa' ? 'mở khóa' : 'khóa';
-  const nameDisplay = userName ? ` cho người dùng "${userName}"` : '';
+// ----------------- Thao tác khóa / mở khóa an toàn -----------------
+async function toggleAccountStatusSafe(maTK, username, role, currentStatus) {
+  const isLocked = currentStatus === 'Khoa';
+  const actionText = isLocked ? 'MỞ KHÓA' : 'KHÓA';
+  const actionLower = isLocked ? 'mở khóa' : 'khóa';
+
   const confirmed = await showConfirmDialog(
-    `${action.charAt(0).toUpperCase() + action.slice(1)} tài khoản`,
-    `Bạn có chắc chắn muốn ${action} tài khoản${nameDisplay}?`,
-    { danger: action === 'khóa', confirmText: `Xác nhận ${action}` }
+    `Xác nhận ${actionLower} tài khoản`,
+    `Bạn có chắc chắn muốn ${actionLower} tài khoản @${username} (Vai trò: ${role})?\n${!isLocked ? 'Sau khi khóa, người dùng sẽ không thể đăng nhập vào hệ thống.' : 'Sau khi mở khóa, người dùng có thể đăng nhập bình thường.'}`,
+    { danger: !isLocked, confirmText: `Xác nhận ${actionText}`, cancelText: 'Hủy' }
   );
   if (!confirmed) return;
 
   try {
-    await api.put(`/admin/users/${targetId}/toggle-status`);
-    showAlert(`Đã ${action} tài khoản${nameDisplay} thành công!`, 'success');
-    loadUsers();
+    await api.put(`/admin/accounts/${maTK}/status`);
+    showAlert(`Đã ${actionLower} tài khoản @${username} thành công!`, 'success');
+    loadAccounts();
   } catch (error) {
     showAlert(`Lỗi: ${error.message}`, 'danger');
+  }
+}
+
+// ----------------- Modal Tạo Nhân Viên (Staff) -----------------
+function openCreateStaffModal() {
+  const form = document.getElementById('form-create-staff');
+  if (form) form.reset();
+
+  const venueSelect = document.getElementById('create-staff-venue');
+  if (venueSelect && allVenuesForStaff.length > 0 && venueSelect.options.length <= 1) {
+    venueSelect.innerHTML = `<option value="">-- Chọn chi nhánh sân làm việc --</option>` +
+      allVenuesForStaff.map(v => `<option value="${v.maDiaDiem}">${v.tenDiaDiem}</option>`).join('');
+  }
+
+  const modal = document.getElementById('modal-create-staff');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeCreateStaffModal() {
+  const modal = document.getElementById('modal-create-staff');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitCreateStaff(event) {
+  if (event) event.preventDefault();
+
+  const tenDangNhap = document.getElementById('create-staff-username').value.trim();
+  const matKhau = document.getElementById('create-staff-password').value.trim();
+  const confirmEl = document.getElementById('create-staff-confirm-password');
+  const matKhauXacNhan = confirmEl ? confirmEl.value.trim() : matKhau;
+  const hoTen = document.getElementById('create-staff-fullname').value.trim();
+  const sdt = document.getElementById('create-staff-phone').value.trim();
+  const emailVal = document.getElementById('create-staff-email') ? document.getElementById('create-staff-email').value.trim() : '';
+  const email = emailVal || null;
+  const venueEl = document.getElementById('create-staff-venue');
+  const maDiaDiemVal = venueEl ? venueEl.value : '';
+  const maDiaDiem = maDiaDiemVal ? parseInt(maDiaDiemVal) : null;
+
+  if (!tenDangNhap || !matKhau || !hoTen || !sdt) {
+    showAlert('Vui lòng điền đầy đủ các thông tin bắt buộc (*)', 'warning');
+    return;
+  }
+
+  if (tenDangNhap.length < 3) {
+    showAlert('Tên đăng nhập phải có tối thiểu 3 ký tự trở lên', 'warning');
+    return;
+  }
+
+  if (matKhau.length < 6) {
+    showAlert('Mật khẩu ban đầu phải từ 6 ký tự trở lên', 'warning');
+    return;
+  }
+
+  if (confirmEl && matKhau !== matKhauXacNhan) {
+    showAlert('Mật khẩu xác nhận không khớp với mật khẩu ban đầu!', 'warning');
+    confirmEl.focus();
+    return;
+  }
+
+  if (!/^0[0-9]{9}$/.test(sdt)) {
+    showAlert('Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0 (VD: 0912345678)!', 'warning');
+    document.getElementById('create-staff-phone').focus();
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAlert('Email không đúng định dạng (VD: staff@example.com)!', 'warning');
+    document.getElementById('create-staff-email').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-create-staff');
+  if (btn) btn.disabled = true;
+
+  try {
+    await api.post('/admin/staff', {
+      tenDangNhap,
+      matKhau,
+      hoTen,
+      sdt,
+      email,
+      maDiaDiem
+    });
+    showAlert(`Tạo tài khoản nhân viên @${tenDangNhap} (${hoTen}) thành công!`, 'success');
+    closeCreateStaffModal();
+    await loadAccounts();
+  } catch (error) {
+    showAlert(`Lỗi tạo nhân viên: ${error.message}`, 'danger');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ----------------- Modal Xem Chi Tiết Tài Khoản -----------------
+function openViewAccountModal(account) {
+  const modal = document.getElementById('modal-view-account');
+  const container = document.getElementById('view-account-content');
+  if (!modal || !container) return;
+
+  let roleBadge = `<span class="badge badge-role-customer">CUSTOMER</span>`;
+  if (account.role === 'ADMIN') roleBadge = `<span class="badge badge-role-admin">ADMIN</span>`;
+  else if (account.role === 'STAFF') roleBadge = `<span class="badge badge-role-staff">STAFF</span>`;
+
+  const venueName = account.tenDiaDiemPhuTrach || account.tenDiaDiem;
+  let venueDisplay = 'Khách đặt sân';
+  if (account.role === 'ADMIN') venueDisplay = 'Toàn quyền hệ thống (Admin)';
+  else if (account.role === 'STAFF') venueDisplay = venueName || 'Chưa phân công cơ sở';
+
+  container.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Mã tài khoản (ID):</span>
+        <strong>#${account.maTK}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Tên đăng nhập:</span>
+        <strong style="color: var(--primary-dark);">@${account.tenDangNhap}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Vai trò:</span>
+        <div>${roleBadge}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Họ và tên:</span>
+        <strong>${account.hoTen || '--'}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Số điện thoại:</span>
+        <strong>${account.sdt || '--'}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Email:</span>
+        <span>${account.email || 'Chưa cung cấp'}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Cơ sở phân công:</span>
+        <strong style="color: #047857;">${venueDisplay}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+        <span style="color: var(--text-muted);">Trạng thái tài khoản:</span>
+        <div>${badgeTrangThai(account.trangThai)}</div>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);">Ngày đăng ký / tạo:</span>
+        <span>${formatNgayGio(account.ngayTao)}</span>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeViewAccountModal() {
+  const modal = document.getElementById('modal-view-account');
+  if (modal) modal.classList.add('hidden');
+}
+
+// ----------------- Modal Chỉnh Sửa Tài Khoản -----------------
+function openEditAccountModal(account) {
+  document.getElementById('edit-acc-maTK').value = account.maTK;
+  document.getElementById('edit-acc-username').value = `@${account.tenDangNhap}`;
+  document.getElementById('edit-acc-role').value = account.role;
+  document.getElementById('edit-acc-fullname').value = account.hoTen || '';
+  document.getElementById('edit-acc-phone').value = account.sdt || '';
+  document.getElementById('edit-acc-email').value = account.email || '';
+  document.getElementById('edit-acc-password').value = '';
+
+  const venueContainer = document.getElementById('edit-acc-venue-container');
+  const venueSelect = document.getElementById('edit-acc-venue');
+
+  // Chỉ hiển thị phân công cơ sở nếu tài khoản là STAFF
+  if (account.role === 'STAFF') {
+    if (venueContainer) venueContainer.style.display = 'block';
+    if (venueSelect) {
+      if (allVenuesForStaff.length > 0 && venueSelect.options.length <= 1) {
+        venueSelect.innerHTML = `<option value="">-- Chưa phân công --</option>` +
+          allVenuesForStaff.map(v => `<option value="${v.maDiaDiem}">${v.tenDiaDiem}</option>`).join('');
+      }
+      venueSelect.value = account.maDiaDiemPhuTrach || account.maDiaDiem || '';
+    }
+  } else {
+    if (venueContainer) venueContainer.style.display = 'none';
+    if (venueSelect) venueSelect.value = '';
+  }
+
+  const modal = document.getElementById('modal-edit-account');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeEditAccountModal() {
+  const modal = document.getElementById('modal-edit-account');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitEditAccount(event) {
+  if (event) event.preventDefault();
+
+  const maTK = document.getElementById('edit-acc-maTK').value;
+  const role = document.getElementById('edit-acc-role').value;
+  const hoTen = document.getElementById('edit-acc-fullname').value.trim();
+  const sdt = document.getElementById('edit-acc-phone').value.trim();
+  const emailVal = document.getElementById('edit-acc-email') ? document.getElementById('edit-acc-email').value.trim() : '';
+  const email = emailVal || null;
+  const matKhau = document.getElementById('edit-acc-password').value.trim();
+  const venueSelect = document.getElementById('edit-acc-venue');
+  const maDiaDiem = (role === 'STAFF' && venueSelect && venueSelect.value) ? parseInt(venueSelect.value) : null;
+
+  if (!hoTen || !sdt) {
+    showAlert('Họ tên và Số điện thoại là bắt buộc!', 'warning');
+    return;
+  }
+
+  if (!/^0[0-9]{9}$/.test(sdt)) {
+    showAlert('Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0 (VD: 0912345678)!', 'warning');
+    document.getElementById('edit-acc-phone').focus();
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAlert('Email không đúng định dạng (VD: example@email.com)!', 'warning');
+    document.getElementById('edit-acc-email').focus();
+    return;
+  }
+
+  if (matKhau && matKhau.length < 6) {
+    showAlert('Mật khẩu mới phải có tối thiểu 6 ký tự trở lên!', 'warning');
+    document.getElementById('edit-acc-password').focus();
+    return;
+  }
+
+  const payload = {
+    hoTen,
+    sdt,
+    email,
+    maDiaDiem,
+    matKhau: matKhau || null
+  };
+
+  const btn = document.getElementById('btn-submit-edit-account');
+  if (btn) btn.disabled = true;
+
+  try {
+    await api.put(`/admin/accounts/${maTK}`, payload);
+    showAlert(`Cập nhật thông tin tài khoản #${maTK} thành công!`, 'success');
+    closeEditAccountModal();
+    await loadAccounts();
+  } catch (error) {
+    showAlert(`Lỗi cập nhật: ${error.message}`, 'danger');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ======================== 7. HỒ SƠ QUẢN TRỊ ("TÀI KHOẢN CỦA TÔI") ========================
+
+async function loadAdminProfile() {
+  try {
+    const profile = await api.get('/admin/profile');
+    if (!profile) return;
+
+    // Header info
+    const fullnameEl = document.getElementById('profile-header-fullname');
+    const usernameEl = document.getElementById('profile-header-username');
+    const roleBadgeEl = document.getElementById('profile-header-role-badge');
+    const avatarLargeEl = document.getElementById('profile-avatar-large');
+
+    if (fullnameEl) fullnameEl.textContent = profile.hoTen || profile.tenDangNhap;
+    if (usernameEl) usernameEl.textContent = `@${profile.tenDangNhap}`;
+
+    if (roleBadgeEl) {
+      if (profile.role === 'ADMIN') {
+        roleBadgeEl.innerHTML = `<span class="badge badge-role-admin">ADMIN</span>`;
+      } else {
+        roleBadgeEl.innerHTML = `<span class="badge badge-role-staff">STAFF</span>`;
+      }
+    }
+
+    if (avatarLargeEl) {
+      const name = (profile.hoTen || profile.tenDangNhap || 'AD').trim();
+      const parts = name.split(/\s+/);
+      const initials = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : name.substring(0, 2).toUpperCase();
+      avatarLargeEl.textContent = initials;
+    }
+
+    // Metadata box
+    const metaIdEl = document.getElementById('profile-meta-id');
+    const metaVenueEl = document.getElementById('profile-meta-venue');
+    const metaCreatedEl = document.getElementById('profile-meta-created');
+
+    if (metaIdEl) metaIdEl.textContent = `#${profile.maTK}`;
+    if (metaVenueEl) {
+      metaVenueEl.textContent = profile.tenDiaDiem ? profile.tenDiaDiem : (profile.role === 'ADMIN' ? 'Toàn hệ thống (Admin)' : 'Chưa phân công');
+    }
+    if (metaCreatedEl) metaCreatedEl.textContent = formatNgayGio(profile.ngayTao || profile.ngayVaoLam);
+
+    // Form inputs
+    const inputFullname = document.getElementById('profile-input-fullname');
+    const inputPhone = document.getElementById('profile-input-phone');
+    const inputEmail = document.getElementById('profile-input-email');
+
+    if (inputFullname) inputFullname.value = profile.hoTen || '';
+    if (inputPhone) inputPhone.value = profile.sdt || '';
+    if (inputEmail) inputEmail.value = profile.email || '';
+  } catch (error) {
+    showAlert(`Không thể tải thông tin hồ sơ: ${error.message}`, 'danger');
+  }
+}
+
+async function submitUpdateProfile(event) {
+  if (event) event.preventDefault();
+
+  const hoTen = document.getElementById('profile-input-fullname').value.trim();
+  const sdt = document.getElementById('profile-input-phone').value.trim();
+  const emailVal = document.getElementById('profile-input-email') ? document.getElementById('profile-input-email').value.trim() : '';
+  const email = emailVal || null;
+
+  if (!hoTen || !sdt) {
+    showAlert('Họ tên và Số điện thoại là bắt buộc!', 'warning');
+    return;
+  }
+
+  if (!/^0[0-9]{9}$/.test(sdt)) {
+    showAlert('Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0 (VD: 0912345678)!', 'warning');
+    document.getElementById('profile-input-phone').focus();
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAlert('Email không đúng định dạng (VD: example@email.com)!', 'warning');
+    document.getElementById('profile-input-email').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-profile');
+  if (btn) btn.disabled = true;
+
+  try {
+    const updated = await api.put('/admin/profile', { hoTen, sdt, email });
+    showAlert('Cập nhật thông tin hồ sơ cá nhân thành công!', 'success');
+    
+    // Cập nhật lại session user hiện tại
+    try {
+      const user = typeof getUser === 'function' ? getUser() : {};
+      if (user) {
+        user.hoTen = hoTen;
+        user.sdt = sdt;
+        user.email = email;
+        sessionStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      sessionStorage.setItem('hoTen', hoTen);
+      localStorage.setItem('hoTen', hoTen);
+    } catch (e) {}
+
+    // Cập nhật ngay lập tức thông tin trên Header & Sidebar
+    const nameEl = document.getElementById('admin-display-name');
+    if (nameEl) nameEl.textContent = hoTen;
+    const initialsEl = document.getElementById('admin-avatar-initials');
+    if (initialsEl) {
+      const parts = hoTen.split(/\s+/);
+      initialsEl.textContent = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : hoTen.substring(0, 2).toUpperCase();
+    }
+
+    if (typeof initAdminLayout === 'function') initAdminLayout();
+    await loadAdminProfile();
+  } catch (error) {
+    showAlert(`Lỗi cập nhật hồ sơ: ${error.message}`, 'danger');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function submitChangePassword(event) {
+  if (event) event.preventDefault();
+
+  const matKhauHienTai = document.getElementById('pwd-current').value;
+  const matKhauMoi = document.getElementById('pwd-new').value;
+  const matKhauXacNhan = document.getElementById('pwd-confirm').value;
+
+  if (!matKhauHienTai || !matKhauMoi) {
+    showAlert('Vui lòng nhập mật khẩu hiện tại và mật khẩu mới!', 'warning');
+    return;
+  }
+
+  if (matKhauMoi.length < 6) {
+    showAlert('Mật khẩu mới phải có tối thiểu 6 ký tự trở lên!', 'warning');
+    return;
+  }
+
+  if (matKhauMoi !== matKhauXacNhan) {
+    showAlert('Mật khẩu xác nhận không khớp với mật khẩu mới!', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-password');
+  if (btn) btn.disabled = true;
+
+  try {
+    await api.put('/admin/profile/password', {
+      matKhauHienTai,
+      matKhauMoi
+    });
+    showAlert('Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.', 'success');
+    document.getElementById('form-change-password').reset();
+  } catch (error) {
+    showAlert(`Lỗi đổi mật khẩu: ${error.message}`, 'danger');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ======================== 8. NHẬT KÝ HOẠT ĐỘNG (AUDIT LOGS) ========================
+
+function openAuditLogModal() {
+  const modal = document.getElementById('modal-audit-log');
+  if (modal) {
+    modal.classList.remove('hidden');
+    loadAuditLogs();
+  }
+}
+
+function closeAuditLogModal() {
+  const modal = document.getElementById('modal-audit-log');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function loadAuditLogs() {
+  const tableBody = document.getElementById('audit-logs-table-body');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">Đang tải 50 hoạt động gần nhất...</td></tr>`;
+
+  try {
+    const logs = await api.get('/admin/audit-logs');
+    if (!logs || logs.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">Chưa có nhật ký hoạt động nào được ghi nhận.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = logs.map(l => {
+      let roleBadge = `<span class="badge badge-secondary" style="font-size:0.7rem;">${l.vaiTro || 'USER'}</span>`;
+      if ((l.vaiTro || '').toUpperCase() === 'ADMIN') roleBadge = `<span class="badge badge-role-admin" style="font-size:0.7rem;">ADMIN</span>`;
+      else if ((l.vaiTro || '').toUpperCase() === 'STAFF') roleBadge = `<span class="badge badge-role-staff" style="font-size:0.7rem;">STAFF</span>`;
+
+      return `
+        <tr>
+          <td><small style="color:var(--text-muted); font-weight:600;">${formatNgayGio(l.thoiGian)}</small></td>
+          <td>
+            <strong>${l.nguoiThucHien}</strong><br>
+            ${roleBadge}
+          </td>
+          <td><strong style="color: var(--primary-dark);">${l.hanhDong}</strong></td>
+          <td>${l.doiTuong || '--'}</td>
+          <td><span class="badge badge-success" style="font-size:0.75rem;">${l.ketQua || 'Thành công'}</span></td>
+          <td><small style="color:var(--text-secondary);">${l.chiTiet || '--'}</small></td>
+        </tr>
+      `;
+    }).join('');
+  } catch (error) {
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--danger); padding: 1.5rem;">Không thể tải nhật ký: ${error.message}</td></tr>`;
   }
 }

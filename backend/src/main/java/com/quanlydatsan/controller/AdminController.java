@@ -3,6 +3,7 @@ package com.quanlydatsan.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,26 +17,37 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.quanlydatsan.dto.request.CapNhatAdminProfileRequest;
 import com.quanlydatsan.dto.request.CapNhatAnhSanRequest;
 import com.quanlydatsan.dto.request.CapNhatDichVuRequest;
 import com.quanlydatsan.dto.request.CapNhatKhachHangRequest;
+import com.quanlydatsan.dto.request.CapNhatTaiKhoanRequest;
 import com.quanlydatsan.dto.request.CapNhatTrangThaiSanRequest;
 import com.quanlydatsan.dto.request.CheckOutRequest;
+import com.quanlydatsan.dto.request.DoiMatKhauRequest;
 import com.quanlydatsan.dto.request.DoiSanRequest;
 import com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest;
 import com.quanlydatsan.dto.request.HuyDatSanRequest;
 import com.quanlydatsan.dto.request.SuaSanRequest;
 import com.quanlydatsan.dto.request.TaoDichVuRequest;
+import com.quanlydatsan.dto.request.TaoNhanVienRequest;
 import com.quanlydatsan.dto.request.TaoSanRequest;
 import com.quanlydatsan.dto.request.ThemDichVuRequest;
+import com.quanlydatsan.dto.response.AdminProfileResponse;
 import com.quanlydatsan.dto.response.DatSanResponse;
 import com.quanlydatsan.dto.response.DiaDiemResponse;
 import com.quanlydatsan.dto.response.DichVuResponse;
+import com.quanlydatsan.dto.response.DoanhThuCoSoResponse;
 import com.quanlydatsan.dto.response.DonXungDotBaoTriResponse;
 import com.quanlydatsan.dto.response.KhachHangResponse;
+import com.quanlydatsan.dto.response.NhatKyHoatDongResponse;
 import com.quanlydatsan.dto.response.SanResponse;
+import com.quanlydatsan.dto.response.TaiKhoanResponse;
 import com.quanlydatsan.dto.response.ThongKeDoanhThuResponse;
+import com.quanlydatsan.dto.response.UploadResponse;
 import com.quanlydatsan.service.AdminService;
 
 import jakarta.validation.Valid;
@@ -263,5 +275,102 @@ public class AdminController {
     @GetMapping("/revenue/year")
     public ResponseEntity<ThongKeDoanhThuResponse> thongKeTheoNam(@RequestParam int nam) {
         return ResponseEntity.ok(adminService.thongKeDoanhThuTheoNam(nam));
+    }
+
+    @GetMapping("/revenue/by-location")
+    public ResponseEntity<List<DoanhThuCoSoResponse>> thongKeTheoCoSo(
+            @RequestParam int nam,
+            @RequestParam(required = false) Integer thang) {
+        return ResponseEntity.ok(adminService.thongKeDoanhThuTheoCoSo(nam, thang));
+    }
+
+    // ======================== 6. QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN ========================
+
+    @GetMapping("/accounts")
+    public ResponseEntity<List<TaiKhoanResponse>> danhSachTaiKhoan() {
+        return ResponseEntity.ok(adminService.danhSachTaiKhoan());
+    }
+
+    @PostMapping("/staff")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TaiKhoanResponse> taoNhanVien(
+            @Valid @RequestBody TaoNhanVienRequest req,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String username = getAuthenticatedUsername(userDetails);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(adminService.taoNhanVien(req, username));
+    }
+
+    @PutMapping("/accounts/{maTK}")
+    public ResponseEntity<TaiKhoanResponse> suaTaiKhoan(
+            @PathVariable Integer maTK,
+            @Valid @RequestBody CapNhatTaiKhoanRequest req,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String username = getAuthenticatedUsername(userDetails);
+        String role = getAuthenticatedRole(userDetails);
+        return ResponseEntity.ok(adminService.suaTaiKhoan(maTK, req, username, role));
+    }
+
+    @PutMapping("/accounts/{maTK}/status")
+    public ResponseEntity<Void> doiTrangThaiTaiKhoanAnToan(
+            @PathVariable Integer maTK,
+            @RequestParam(required = false) String lyDo,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String username = getAuthenticatedUsername(userDetails);
+        String role = getAuthenticatedRole(userDetails);
+        adminService.doiTrangThaiTaiKhoanAnToan(maTK, username, role, lyDo);
+        return ResponseEntity.ok().build();
+    }
+
+    // ======================== 7. HỒ SƠ QUẢN TRỊ ("TÀI KHOẢN CỦA TÔI") ========================
+
+    @GetMapping("/profile")
+    public ResponseEntity<AdminProfileResponse> layProfileAdmin(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = getAuthenticatedUsername(userDetails);
+        return ResponseEntity.ok(adminService.layProfileAdmin(username));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<AdminProfileResponse> capNhatProfileAdmin(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody CapNhatAdminProfileRequest req) {
+        String username = getAuthenticatedUsername(userDetails);
+        return ResponseEntity.ok(adminService.capNhatProfileAdmin(username, req));
+    }
+
+    @PutMapping("/profile/password")
+    public ResponseEntity<Void> doiMatKhauAdmin(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody DoiMatKhauRequest req) {
+        String username = getAuthenticatedUsername(userDetails);
+        adminService.doiMatKhauAdmin(username, req);
+        return ResponseEntity.ok().build();
+    }
+
+    private String getAuthenticatedUsername(UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện tính năng này!");
+        }
+        return userDetails.getUsername();
+    }
+
+    private String getAuthenticatedRole(UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện tính năng này!");
+        }
+        return userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().contains("ADMIN")) ? "ADMIN" : "STAFF";
+    }
+
+    // ======================== 8. UPLOAD ẢNH & NHẬT KÝ ========================
+
+    @PostMapping(value = "/courts/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UploadResponse> uploadCourtImage(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(adminService.uploadCourtImage(file));
+    }
+
+    @GetMapping("/audit-logs")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<NhatKyHoatDongResponse>> layDanhSachNhatKy() {
+        return ResponseEntity.ok(adminService.layDanhSachNhatKy());
     }
 }

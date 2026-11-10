@@ -342,3 +342,18 @@ INSERT INTO DichVu (MaDiaDiem, TenDV, LoaiDV, DonGia, SoLuongTon) VALUES
 (2, 'Nước khoáng Lavie 500ml', 'Ban', 10000, 100),
 (2, 'Thuê vợt Victor (cây/ca)', 'ChoThue', 30000, 15)
 ON DUPLICATE KEY UPDATE DonGia = VALUES(DonGia), SoLuongTon = VALUES(SoLuongTon);
+
+-- 3.8 Nhật ký hoạt động quản trị (Admin & Staff)
+CREATE TABLE IF NOT EXISTS NhatKyHoatDong (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    NguoiThucHien   VARCHAR(50) NOT NULL,
+    VaiTro          VARCHAR(30) NULL,
+    HanhDong        VARCHAR(100) NOT NULL,
+    DoiTuong        VARCHAR(200) NULL,
+    KetQua          VARCHAR(50) NULL,
+    ChiTiet         VARCHAR(1000) NULL,
+    ThoiGian        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX IDX_NhatKy_ThoiGian (ThoiGian DESC),
+    INDEX IDX_NhatKy_NguoiThucHien (NguoiThucHien)
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+

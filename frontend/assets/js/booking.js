@@ -8,48 +8,202 @@ let startBlockIdx = null;
 let endBlockIdx = null;
 let allTimeBlocks = [];
 let bookedTimeSlots = [];
+let allLocations = []; // Danh sách toàn bộ cơ sở địa điểm
+let allAvailableCourts = []; // Danh sách toàn bộ các sân khả dụng
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Kiểm tra selectedCourt từ sessionStorage
-  const courtData = sessionStorage.getItem('selectedCourt');
-  if (!courtData) {
+  // 1. Tải danh sách tất cả các sân & cơ sở từ API (hoặc cache)
+  await loadAllCourtsData();
+
+  // 2. Thử lấy từ sessionStorage hoặc localStorage
+  let courtData = sessionStorage.getItem('selectedCourt') || 
+                  sessionStorage.getItem('selectedCourtForBooking') ||
+                  localStorage.getItem('selectedCourt') || 
+                  localStorage.getItem('selectedCourtForBooking');
+  if (courtData) {
+    try {
+      const parsed = JSON.parse(courtData);
+      if (parsed && (parsed.maSan || parsed.id)) {
+        selectedCourt = parsed;
+        if (!selectedCourt.maSan && selectedCourt.id) {
+          selectedCourt.maSan = selectedCourt.id;
+        }
+      }
+    } catch (e) {
+      selectedCourt = null;
+    }
+  }
+
+  // 3. Kiểm tra URL query parameter: ?maSan=... hoặc ?id=... hoặc ?courtId=...
+  const urlParams = new URLSearchParams(window.location.search);
+  const maSanParam = urlParams.get('maSan') || urlParams.get('id') || urlParams.get('courtId');
+  if (maSanParam && allAvailableCourts.length > 0) {
+    const foundByUrl = allAvailableCourts.find(c => c.maSan == maSanParam);
+    if (foundByUrl) {
+      selectedCourt = foundByUrl;
+    }
+  }
+
+  // 4. Nếu có selectedCourt, làm giàu dữ liệu từ allAvailableCourts (đảm bảo đủ gioMo, gioDong, tenDiaDiem)
+  if (selectedCourt && selectedCourt.maSan && allAvailableCourts.length > 0) {
+    const fullCourt = allAvailableCourts.find(c => c.maSan == selectedCourt.maSan);
+    if (fullCourt) {
+      selectedCourt = { ...fullCourt, ...selectedCourt };
+    }
+  }
+
+  // 5. Nếu chưa có selectedCourt hoặc selectedCourt không hợp lệ:
+  // TỰ ĐỘNG CHỌN SÂN HOẠT ĐỘNG ĐẦU TIÊN để người dùng có thể đặt ngay, KHÔNG BAO GIỜ BỊ CHẶN!
+  if ((!selectedCourt || !selectedCourt.maSan) && allAvailableCourts.length > 0) {
+    const activeCourt = allAvailableCourts.find(c => c.tinhTrang === 'HoatDong') || allAvailableCourts[0];
+    selectedCourt = activeCourt;
+  }
+
+  // 6. Xử lý trường hợp không có dữ liệu sân nào (Backend chưa chạy hoặc chưa có DB)
+  if (!selectedCourt || !selectedCourt.maSan) {
+    showAlert('Không thể tải dữ liệu sân từ máy chủ Backend (http://localhost:8080/api). Vui lòng kiểm tra backend đang chạy.', 'warning');
     showNoCourtSelected();
     return;
   }
 
-  try {
-    selectedCourt = JSON.parse(courtData);
-  } catch (e) {
-    showNoCourtSelected();
-    return;
+  // Đồng bộ lại vào cả sessionStorage và localStorage
+  sessionStorage.setItem('selectedCourt', JSON.stringify(selectedCourt));
+  sessionStorage.setItem('selectedCourtForBooking', JSON.stringify(selectedCourt));
+  localStorage.setItem('selectedCourt', JSON.stringify(selectedCourt));
+  localStorage.setItem('selectedCourtForBooking', JSON.stringify(selectedCourt));
+
+  // Cập nhật URL sạch đẹp
+  if (window.history && window.history.replaceState) {
+    const cleanUrl = `${window.location.pathname}?maSan=${selectedCourt.maSan}${selectedCourt.maDiaDiem ? `&maDiaDiem=${selectedCourt.maDiaDiem}` : ''}`;
+    window.history.replaceState(null, '', cleanUrl);
   }
 
-  // 2. Fetch giá hiện hành
+  // 7. Fetch bảng giá hiện hành
   await fetchGiaHienHanh();
 
-  // 3. Render Step 1
+  // 8. Render các thành phần Step 1
+  initCourtSelectors();
   renderCourtInfoSidebar();
   initStep1Form();
 });
+
+async function loadAllCourtsData() {
+  try {
+    const locations = await api.get('/public/courts');
+    if (Array.isArray(locations) && locations.length > 0) {
+      allLocations = locations;
+      try {
+        localStorage.setItem('cachedCourtsData', JSON.stringify(locations));
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.warn('Không tải được danh sách sân từ API:', err);
+    try {
+      const cached = localStorage.getItem('cachedCourtsData');
+      if (cached) {
+        allLocations = JSON.parse(cached) || [];
+      }
+    } catch (e) {}
+  }
+
+  allAvailableCourts = [];
+  if (Array.isArray(allLocations)) {
+    allLocations.forEach(loc => {
+      (loc.danhSachSan || []).forEach(court => {
+        allAvailableCourts.push({
+          ...court,
+          maDiaDiem: loc.maDiaDiem,
+          tenDiaDiem: loc.tenDiaDiem,
+          diaChi: loc.diaChi || loc.tenDiaDiem,
+          gioMo: loc.gioMo || '05:00:00',
+          gioDong: loc.gioDong || '23:00:00',
+          giaThamKhao: court.giaThamKhao || 50000
+        });
+      });
+    });
+  }
+}
+
+/**
+ * Khởi tạo Bộ chọn Cơ sở & Sân trực tiếp ngay trên form đặt sân
+ */
+function initCourtSelectors() {
+  const facilitySelect = document.getElementById('select-facility');
+  if (!facilitySelect || allLocations.length === 0) return;
+
+  const currentLocId = selectedCourt ? selectedCourt.maDiaDiem : allLocations[0].maDiaDiem;
+
+  facilitySelect.innerHTML = allLocations.map(loc => `
+    <option value="${loc.maDiaDiem}" ${loc.maDiaDiem == currentLocId ? 'selected' : ''}>
+      ${loc.tenDiaDiem} (${(loc.danhSachSan || []).length} sân)
+    </option>
+  `).join('');
+
+  updateCourtDropdownOptions(currentLocId);
+}
+
+function updateCourtDropdownOptions(maDiaDiem) {
+  const courtSelect = document.getElementById('select-court');
+  if (!courtSelect) return;
+
+  const loc = allLocations.find(l => l.maDiaDiem == maDiaDiem) || allLocations[0];
+  const courts = loc ? (loc.danhSachSan || []) : [];
+
+  if (courts.length === 0) {
+    courtSelect.innerHTML = '<option value="">Không có sân nào tại cơ sở này</option>';
+    return;
+  }
+
+  courtSelect.innerHTML = courts.map(c => `
+    <option value="${c.maSan}" ${selectedCourt && selectedCourt.maSan == c.maSan ? 'selected' : ''} ${c.tinhTrang !== 'HoatDong' ? 'disabled' : ''}>
+      ${c.tenSan} (${c.loaiSan || 'Tiêu chuẩn'}) ${c.tinhTrang !== 'HoatDong' ? (c.tinhTrang === 'BaoTri' ? '[Bảo trì]' : '[Tạm ngưng]') : ''}
+    </option>
+  `).join('');
+}
+
+async function handleFacilitySelectChange(maDiaDiem) {
+  updateCourtDropdownOptions(maDiaDiem);
+  const loc = allLocations.find(l => l.maDiaDiem == maDiaDiem);
+  if (!loc) return;
+  const courts = loc.danhSachSan || [];
+  const activeCourt = courts.find(c => c.tinhTrang === 'HoatDong') || courts[0];
+  if (activeCourt) {
+    const courtSelect = document.getElementById('select-court');
+    if (courtSelect) courtSelect.value = activeCourt.maSan;
+    await switchCourtOnTheFly(activeCourt.maSan);
+  }
+}
+
+async function handleCourtSelectChange(maSan) {
+  await switchCourtOnTheFly(maSan);
+}
 
 function showNoCourtSelected() {
   const container = document.getElementById('booking-app-container');
   if (container) {
     container.innerHTML = `
-      <div class="section-box" style="text-align: center; padding: 3.5rem 1.5rem; max-width: 520px; margin: 2rem auto;">
-        <div style="width: 72px; height: 72px; margin: 0 auto 1.25rem; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);">
+      <div class="section-box" style="text-align: center; padding: 3.5rem 1.5rem; max-width: 540px; margin: 2rem auto;">
+        <div style="width: 72px; height: 72px; margin: 0 auto 1.25rem; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #dc2626; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="3" y1="9" x2="21" y2="9"/>
-            <line x1="3" y1="15" x2="21" y2="15"/>
-            <line x1="12" y1="3" x2="12" y2="21"/>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
         </div>
-        <h2 style="font-size: 1.35rem; margin: 1rem 0 0.5rem; color: var(--dark); font-weight: 700;">Vui lòng chọn sân trước</h2>
+        <h2 style="font-size: 1.35rem; margin: 1rem 0 0.5rem; color: var(--dark); font-weight: 700;">Chưa thể kết nối danh sách sân</h2>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.75rem; line-height: 1.5;">
-          Bạn cần chọn một sân cầu lông cụ thể từ danh sách để tiến hành chọn ngày và khung giờ đặt sân.
+          Hệ thống chưa tải được danh sách sân từ máy chủ Backend (http://localhost:8080/api). Bạn vui lòng đảm bảo Backend đang chạy hoặc tải lại trang.
         </p>
-        <a href="/pages/user/courts.html" class="btn btn-primary">Xem danh sách sân</a>
+        <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" onclick="window.location.reload()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            Tải lại kết nối
+          </button>
+          <a href="/pages/user/courts.html" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Về danh sách sân
+          </a>
+        </div>
       </div>
     `;
   }
@@ -70,54 +224,117 @@ function renderCourtInfoSidebar() {
   const container = document.getElementById('step1-court-info');
   if (!container || !selectedCourt) return;
 
-  const fallbackImg = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60';
+  const fallbackImg = '/assets/images/courts.jpg';
   const courtImg = selectedCourt.hinhAnh && selectedCourt.hinhAnh.startsWith('http') ? selectedCourt.hinhAnh : fallbackImg;
+  const isVip = (selectedCourt.loaiSan || '').toLowerCase().includes('vip') || (selectedCourt.loaiSan || '').toLowerCase().includes('thi đấu');
 
   container.innerHTML = `
-    <img src="${courtImg}" alt="${selectedCourt.tenSan}" style="width: 100%; height: 160px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 1rem;" onerror="this.src='${fallbackImg}'">
-    <div class="modal-detail-row">
-      <span class="modal-detail-label">Mã sân:</span>
-      <span class="modal-detail-value">#${selectedCourt.maSan}</span>
+    <div style="position: relative; margin-bottom: 1rem;">
+      <img src="${courtImg}" alt="${selectedCourt.tenSan}" style="width: 100%; height: 165px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border);" onerror="this.src='${fallbackImg}'">
+      <div style="position: absolute; top: 8px; left: 8px; background: rgba(15, 23, 42, 0.75); color: #ffffff; backdrop-filter: blur(4px); font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+        #SAN-${selectedCourt.maSan}
+      </div>
+      <div style="position: absolute; top: 8px; right: 8px;">
+        ${badgeTrangThai(selectedCourt.tinhTrang)}
+      </div>
     </div>
+
     <div class="modal-detail-row">
       <span class="modal-detail-label">Tên sân:</span>
-      <span class="modal-detail-value">${selectedCourt.tenSan}</span>
-    </div>
-    <div class="modal-detail-row">
-      <span class="modal-detail-label">Địa điểm:</span>
-      <span class="modal-detail-value">
-        ${selectedCourt.tenDiaDiem}
-        ${selectedCourt.mapLink ? `<br><a href="${selectedCourt.mapLink}" target="_blank" style="color: var(--primary); font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; margin-top: 4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Xem trên Google Maps ↗</a>` : ''}
+      <span class="modal-detail-value" style="font-weight: 700; color: var(--dark); font-size: 0.95rem;">
+        ${selectedCourt.tenSan} 
+        <span class="court-tag-type ${isVip ? 'vip' : ''}" style="display: inline-block; font-size: 0.72rem; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">
+          ${selectedCourt.loaiSan || 'Tiêu chuẩn'}
+        </span>
       </span>
     </div>
     <div class="modal-detail-row">
-      <span class="modal-detail-label">Giờ mở cửa:</span>
-      <span class="modal-detail-value">${formatGio(selectedCourt.gioMo)} - ${formatGio(selectedCourt.gioDong)}</span>
+      <span class="modal-detail-label">Cơ sở địa điểm:</span>
+      <span class="modal-detail-value" style="font-weight: 600;">
+        ${selectedCourt.tenDiaDiem}
+        ${selectedCourt.mapLink ? `<br><a href="${selectedCourt.mapLink}" target="_blank" style="color: var(--primary); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; margin-top: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Xem trên Google Maps ↗</a>` : ''}
+      </span>
     </div>
     <div class="modal-detail-row">
-      <span class="modal-detail-label">Tình trạng:</span>
-      <span class="modal-detail-value">${badgeTrangThai(selectedCourt.tinhTrang)}</span>
+      <span class="modal-detail-label">Địa chỉ:</span>
+      <span class="modal-detail-value" style="font-size: 0.82rem; color: var(--text-muted);">
+        ${selectedCourt.diaChi || selectedCourt.tenDiaDiem}
+      </span>
     </div>
     <div class="modal-detail-row">
-      <span class="modal-detail-label">Đơn giá:</span>
-      <span class="modal-detail-value" style="color: var(--primary-dark);">${formatTien(currentPricePer30Min)} / 30 phút</span>
+      <span class="modal-detail-label">Giờ hoạt động:</span>
+      <span class="modal-detail-value" style="font-weight: 600; color: var(--dark);">
+        ${formatGio(selectedCourt.gioMo)} - ${formatGio(selectedCourt.gioDong)}
+      </span>
     </div>
-    <div style="margin-top: 1.25rem;">
-      <a href="/pages/user/courts.html" class="btn btn-outline btn-sm" style="width: 100%;">← Đổi sân khác</a>
+    <div class="modal-detail-row">
+      <span class="modal-detail-label">Đơn giá áp dụng:</span>
+      <span class="modal-detail-value" style="color: var(--primary-dark); font-weight: 800; font-size: 1rem;">
+        ${formatTien(currentPricePer30Min)} <small style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">/ 30 phút</small>
+      </span>
+    </div>
+
+    <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <a href="/pages/user/courts.html" class="btn btn-outline btn-sm" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Xem danh sách toàn bộ sân
+      </a>
     </div>
   `;
 }
 
+async function switchCourtOnTheFly(maSan) {
+  const court = allAvailableCourts.find(c => c.maSan == maSan);
+  if (!court) return;
+
+  selectedCourt = court;
+  sessionStorage.setItem('selectedCourt', JSON.stringify(court));
+  sessionStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+  localStorage.setItem('selectedCourt', JSON.stringify(court));
+  localStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+
+  // Đồng bộ lại 2 dropdown selector
+  const facilitySelect = document.getElementById('select-facility');
+  const courtSelect = document.getElementById('select-court');
+  if (facilitySelect && facilitySelect.value != court.maDiaDiem) {
+    facilitySelect.value = court.maDiaDiem;
+    updateCourtDropdownOptions(court.maDiaDiem);
+  }
+  if (courtSelect && courtSelect.value != court.maSan) {
+    courtSelect.value = court.maSan;
+  }
+
+  // Cập nhật URL mà không reload trang
+  const newUrl = `${window.location.pathname}?maSan=${court.maSan}${court.maDiaDiem ? `&maDiaDiem=${court.maDiaDiem}` : ''}`;
+  window.history.replaceState(null, '', newUrl);
+
+  renderCourtInfoSidebar();
+  resetTimeSlotSelection();
+  await loadAndGenerateTimeSlotsGrid();
+}
+
+function parseHourMinute(timeVal, defaultH = 6, defaultM = 0) {
+  if (!timeVal) return [defaultH, defaultM];
+  if (Array.isArray(timeVal)) {
+    return [Number(timeVal[0]) || defaultH, Number(timeVal[1]) || defaultM];
+  }
+  const parts = String(timeVal).split(':').map(Number);
+  return [isNaN(parts[0]) ? defaultH : parts[0], isNaN(parts[1]) ? defaultM : parts[1]];
+}
+
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
-  const parts = timeStr.split(':').map(Number);
-  return parts[0] * 60 + parts[1];
+  if (Array.isArray(timeStr)) {
+    return (Number(timeStr[0]) || 0) * 60 + (Number(timeStr[1]) || 0);
+  }
+  const parts = String(timeStr).split(':').map(Number);
+  return (Number(parts[0]) || 0) * 60 + (Number(parts[1]) || 0);
 }
 
 async function fetchBookedSlots(maSan, ngay) {
   try {
     const res = await api.get(`/public/courts/${maSan}/booked-slots?ngay=${ngay}`);
-    bookedTimeSlots = res || [];
+    bookedTimeSlots = Array.isArray(res) ? res : [];
   } catch (err) {
     console.warn('Không tải được danh sách khung giờ đã đặt:', err);
     bookedTimeSlots = [];
@@ -155,11 +372,8 @@ async function loadAndGenerateTimeSlotsGrid() {
   // Lấy các dải giờ đã đặt của sân trong ngày
   await fetchBookedSlots(selectedCourt.maSan, ngayChoi);
 
-  const gioMo = selectedCourt.gioMo || '06:00:00';
-  const gioDong = selectedCourt.gioDong || '22:00:00';
-
-  const [startH, startM] = gioMo.split(':').map(Number);
-  const [endH, endM] = gioDong.split(':').map(Number);
+  const [startH, startM] = parseHourMinute(selectedCourt.gioMo, 6, 0);
+  const [endH, endM] = parseHourMinute(selectedCourt.gioDong, 22, 0);
 
   // Tính toán thời gian thực và buffer 15 phút
   const now = new Date();
@@ -320,15 +534,38 @@ function updateTimeSlotsUI() {
   const startInput = document.getElementById('display-gioBatDau');
   const endInput = document.getElementById('display-gioKetThuc');
   const btnNext = document.getElementById('btn-step1-next');
+  const summaryStrip = document.getElementById('booking-slot-summary-strip');
+  const summaryDuration = document.getElementById('summary-duration-text');
+  const summaryPrice = document.getElementById('summary-price-text');
 
   if (startBlockIdx !== null && endBlockIdx !== null) {
-    startInput.value = allTimeBlocks[startBlockIdx].start;
-    endInput.value = allTimeBlocks[endBlockIdx].end;
+    const startStr = allTimeBlocks[startBlockIdx].start;
+    const endStr = allTimeBlocks[endBlockIdx].end;
+    startInput.value = startStr;
+    endInput.value = endStr;
     btnNext.disabled = false;
+
+    // Tính thời lượng và tạm tính số tiền
+    const sMin = timeToMinutes(startStr);
+    const eMin = timeToMinutes(endStr);
+    const totalMinutes = eMin - sMin;
+    const numBlocks = Math.round(totalMinutes / 30);
+    const estimatedPrice = numBlocks * currentPricePer30Min;
+
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    const timeFormatted = hours > 0 ? (mins > 0 ? `${hours} giờ ${mins} phút` : `${hours} giờ`) : `${mins} phút`;
+
+    if (summaryStrip && summaryDuration && summaryPrice) {
+      summaryDuration.textContent = `${timeFormatted} (${numBlocks} slot 30p)`;
+      summaryPrice.textContent = formatTien(estimatedPrice);
+      summaryStrip.style.display = 'flex';
+    }
   } else {
     startInput.value = '';
     endInput.value = '';
     btnNext.disabled = true;
+    if (summaryStrip) summaryStrip.style.display = 'none';
   }
 }
 

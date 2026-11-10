@@ -131,6 +131,7 @@ public class AuthService {
         DangNhapResponse res = new DangNhapResponse();
         res.setToken(token);
         res.setRole(roleMapped);
+        res.setTenDangNhap(tk.getTenDangNhap());
         res.setHoTen(hoTen);
         res.setMaKH(maKH);
         return res;

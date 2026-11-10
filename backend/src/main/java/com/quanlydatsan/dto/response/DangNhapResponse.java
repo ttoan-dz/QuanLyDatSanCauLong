@@ -7,6 +7,7 @@ public class DangNhapResponse {
 
     private String token;
     private String role;
+    private String tenDangNhap;
     private String hoTen;
     private Integer maKH;
 }

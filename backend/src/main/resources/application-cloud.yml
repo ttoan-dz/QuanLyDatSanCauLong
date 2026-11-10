@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:mysql://mysql-2a01ce42-quanlidatsancau.g.aivencloud.com:23691/QuanLyDatSan?sslMode=REQUIRED&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh}}
+    username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:avnadmin}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:AVNS_ZeyHsP4SGXN6ngbj6GV}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
