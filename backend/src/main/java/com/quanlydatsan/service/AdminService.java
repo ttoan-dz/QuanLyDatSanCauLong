@@ -13,31 +13,45 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.annotation.PostConstruct;
+
+import com.quanlydatsan.dto.request.CapNhatAdminProfileRequest;
 import com.quanlydatsan.dto.request.CapNhatAnhSanRequest;
 import com.quanlydatsan.dto.request.CapNhatDichVuRequest;
 import com.quanlydatsan.dto.request.CapNhatKhachHangRequest;
+import com.quanlydatsan.dto.request.CapNhatTaiKhoanRequest;
 import com.quanlydatsan.dto.request.CapNhatTrangThaiSanRequest;
 import com.quanlydatsan.dto.request.CheckOutRequest;
+import com.quanlydatsan.dto.request.DoiMatKhauRequest;
 import com.quanlydatsan.dto.request.DoiSanRequest;
 import com.quanlydatsan.dto.request.DuyetYeuCauHuyRequest;
 import com.quanlydatsan.dto.request.HuyDatSanRequest;
 import com.quanlydatsan.dto.request.SuaSanRequest;
 import com.quanlydatsan.dto.request.TaoDichVuRequest;
+import com.quanlydatsan.dto.request.TaoNhanVienRequest;
 import com.quanlydatsan.dto.request.TaoSanRequest;
 import com.quanlydatsan.dto.request.ThemDichVuRequest;
+import com.quanlydatsan.dto.response.AdminProfileResponse;
 import com.quanlydatsan.dto.response.DatSanResponse;
 import com.quanlydatsan.dto.response.DiaDiemResponse;
 import com.quanlydatsan.dto.response.DichVuResponse;
+import com.quanlydatsan.dto.response.DoanhThuCoSoResponse;
 import com.quanlydatsan.dto.response.DonXungDotBaoTriResponse;
 import com.quanlydatsan.dto.response.KhachHangResponse;
+import com.quanlydatsan.dto.response.NhatKyHoatDongResponse;
 import com.quanlydatsan.dto.response.SanResponse;
+import com.quanlydatsan.dto.response.TaiKhoanResponse;
 import com.quanlydatsan.dto.response.ThongKeDoanhThuResponse;
+import com.quanlydatsan.dto.response.UploadResponse;
 import com.quanlydatsan.entity.BangGia;
 import com.quanlydatsan.entity.ChiTietDatSan;
 import com.quanlydatsan.entity.ChiTietDichVu;
@@ -48,6 +62,8 @@ import com.quanlydatsan.entity.HoaDon;
 import com.quanlydatsan.entity.HoanTien;
 import com.quanlydatsan.entity.KhachHang;
 import com.quanlydatsan.entity.NhanVien;
+import com.quanlydatsan.entity.NhatKyHoatDong;
+import com.quanlydatsan.entity.Role;
 import com.quanlydatsan.entity.San;
 import com.quanlydatsan.entity.TaiKhoan;
 import com.quanlydatsan.entity.ThanhToan;
@@ -62,6 +78,8 @@ import com.quanlydatsan.repository.HoaDonRepository;
 import com.quanlydatsan.repository.HoanTienRepository;
 import com.quanlydatsan.repository.KhachHangRepository;
 import com.quanlydatsan.repository.NhanVienRepository;
+import com.quanlydatsan.repository.NhatKyHoatDongRepository;
+import com.quanlydatsan.repository.RoleRepository;
 import com.quanlydatsan.repository.SanRepository;
 import com.quanlydatsan.repository.TaiKhoanRepository;
 import com.quanlydatsan.repository.ThanhToanRepository;
@@ -87,8 +105,36 @@ public class AdminService {
     private final HoanTienRepository hoanTienRepository;
     private final NhanVienRepository nhanVienRepository;
     private final BangGiaRepository bangGiaRepository;
+    private final RoleRepository roleRepository;
+    private final NhatKyHoatDongRepository nhatKyHoatDongRepository;
     private final BookingService bookingService;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired(required = false)
+    private JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void initDatabaseTables() {
+        if (jdbcTemplate != null) {
+            try {
+                jdbcTemplate.execute(
+                    "CREATE TABLE IF NOT EXISTS NhatKyHoatDong (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "NguoiThucHien VARCHAR(50) NOT NULL, " +
+                    "VaiTro VARCHAR(30) NULL, " +
+                    "HanhDong VARCHAR(100) NOT NULL, " +
+                    "DoiTuong VARCHAR(200) NULL, " +
+                    "KetQua VARCHAR(50) NULL, " +
+                    "ChiTiet VARCHAR(1000) NULL, " +
+                    "ThoiGian DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "INDEX IDX_NhatKy_ThoiGian (ThoiGian DESC), " +
+                    "INDEX IDX_NhatKy_NguoiThucHien (NguoiThucHien)" +
+                    ") ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+                );
+            } catch (Exception ignored) {
+            }
+        }
+    }
 
     // ======================== 1. ĐƠN ĐẶT SÂN & NGHIỆP VỤ TẠI QUẦY (KỊCH BẢN 2) ========================
 
@@ -1162,6 +1208,545 @@ public class AdminService {
         res.setTongDoanhThu(doanhThuSanTong + doanhThuDichVu);
         res.setSoDon(datSanRepository.demSoDonTheoNam(nam));
         return res;
+    }
+
+    /**
+     * Báo cáo Doanh thu theo từng Cơ sở (đáp ứng mục 1.3)
+     */
+    public List<DoanhThuCoSoResponse> thongKeDoanhThuTheoCoSo(int nam, Integer thang) {
+        List<DiaDiem> diaDiems = diaDiemRepository.findAll();
+        List<DoanhThuCoSoResponse> results = new ArrayList<>();
+        long grandTotalAllLocations = 0L;
+
+        for (DiaDiem dd : diaDiems) {
+            DoanhThuCoSoResponse res = new DoanhThuCoSoResponse();
+            res.setMaDiaDiem(dd.getMaDiaDiem());
+            res.setTenDiaDiem(dd.getTenDiaDiem());
+            res.setDiaChi(dd.getDiaChi());
+
+            List<DatSan> dsList = datSanRepository.findAll().stream()
+                    .filter(ds -> ds.getSan() != null && ds.getSan().getDiaDiem() != null &&
+                            ds.getSan().getDiaDiem().getMaDiaDiem().equals(dd.getMaDiaDiem()))
+                    .filter(ds -> ds.getNgayChoi() != null && ds.getNgayChoi().getYear() == nam)
+                    .filter(ds -> (thang == null || ds.getNgayChoi().getMonthValue() == thang))
+                    .collect(Collectors.toList());
+
+            long soDonTong = dsList.size();
+            long soDonHoanThanh = dsList.stream()
+                    .filter(ds -> "HoanThanh".equalsIgnoreCase(ds.getTrangThaiDat()) || "DangChoi".equalsIgnoreCase(ds.getTrangThaiDat()) || "DaXacNhan".equalsIgnoreCase(ds.getTrangThaiDat()))
+                    .count();
+            long soDonHuy = dsList.stream()
+                    .filter(ds -> "DaHuy".equalsIgnoreCase(ds.getTrangThaiDat()) || "HetHan".equalsIgnoreCase(ds.getTrangThaiDat()))
+                    .count();
+
+            long doanhThuSan = dsList.stream()
+                    .filter(ds -> "DaThanhToan".equalsIgnoreCase(ds.getTrangThaiThanhToan()) && !"DaHuy".equalsIgnoreCase(ds.getTrangThaiDat()) && !"HetHan".equalsIgnoreCase(ds.getTrangThaiDat()))
+                    .mapToLong(ds -> (long) ds.getSoTien() + (ds.getTienQuaGio() != null ? ds.getTienQuaGio().longValue() : 0L))
+                    .sum();
+
+            long doanhThuDV = dsList.stream()
+                    .filter(ds -> "DaThanhToan".equalsIgnoreCase(ds.getTrangThaiThanhToan()) && !"DaHuy".equalsIgnoreCase(ds.getTrangThaiDat()))
+                    .flatMap(ds -> chiTietDichVuRepository.findByDatSan_MaDatSan(ds.getMaDatSan()).stream())
+                    .mapToLong(ct -> {
+                        long dg = ct.getDonGia() != null ? ct.getDonGia().longValue() : 0L;
+                        int sl = ct.getSoLuong() != null ? ct.getSoLuong() : 1;
+                        return dg * sl;
+                    })
+                    .sum();
+
+            long tongDoanhThu = doanhThuSan + doanhThuDV;
+            grandTotalAllLocations += tongDoanhThu;
+
+            res.setSoDonTong(soDonTong);
+            res.setSoDonHoanThanh(soDonHoanThanh);
+            res.setSoDonHuy(soDonHuy);
+            res.setDoanhThuSan(doanhThuSan);
+            res.setDoanhThuDichVu(doanhThuDV);
+            res.setTongDoanhThu(tongDoanhThu);
+
+            results.add(res);
+        }
+
+        for (DoanhThuCoSoResponse r : results) {
+            if (grandTotalAllLocations > 0) {
+                double pct = ((double) r.getTongDoanhThu() / grandTotalAllLocations) * 100.0;
+                r.setTyTrong(Math.round(pct * 10.0) / 10.0);
+            } else {
+                r.setTyTrong(0.0);
+            }
+        }
+
+        results.sort((a, b) -> Long.compare(b.getTongDoanhThu(), a.getTongDoanhThu()));
+        return results;
+    }
+
+    // ======================== 6. QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (MỤC 3) ========================
+
+    @Transactional(readOnly = true)
+    public List<TaiKhoanResponse> danhSachTaiKhoan() {
+        List<TaiKhoan> list = taiKhoanRepository.findAll();
+        List<TaiKhoanResponse> results = new ArrayList<>();
+
+        for (TaiKhoan tk : list) {
+            TaiKhoanResponse res = new TaiKhoanResponse();
+            res.setMaTK(tk.getMaTK());
+            res.setTenDangNhap(tk.getTenDangNhap());
+            res.setTrangThai(tk.getTrangThai());
+            res.setNgayTao(tk.getNgayTao());
+
+            String roleName = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+            if ("Admin".equalsIgnoreCase(roleName)) {
+                res.setRole("ADMIN");
+            } else if ("Staff".equalsIgnoreCase(roleName) || "NhanVien".equalsIgnoreCase(roleName)) {
+                res.setRole("STAFF");
+            } else {
+                res.setRole("CUSTOMER");
+            }
+
+            if (tk.getKhachHang() != null) {
+                res.setMaKH(tk.getKhachHang().getMaKH());
+                res.setHoTen(tk.getKhachHang().getHoTen());
+                res.setSdt(tk.getKhachHang().getSdt());
+                res.setEmail(tk.getKhachHang().getEmail());
+                res.setSoLanNoShow(tk.getKhachHang().getSoLanNoShow());
+            } else {
+                nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK()).ifPresent(nv -> {
+                    res.setMaNV(nv.getMaNV());
+                    res.setHoTen(nv.getHoTen());
+                    res.setSdt(nv.getSdt());
+                    res.setEmail(nv.getEmail());
+                    if (nv.getDiaDiem() != null) {
+                        res.setMaDiaDiemPhuTrach(nv.getDiaDiem().getMaDiaDiem());
+                        res.setTenDiaDiemPhuTrach(nv.getDiaDiem().getTenDiaDiem());
+                    }
+                });
+            }
+
+            if (res.getHoTen() == null || res.getHoTen().isEmpty()) {
+                res.setHoTen(tk.getTenDangNhap());
+            }
+
+            results.add(res);
+        }
+
+        results.sort((a, b) -> {
+            if (a.getNgayTao() == null || b.getNgayTao() == null) return 0;
+            return b.getNgayTao().compareTo(a.getNgayTao());
+        });
+
+        return results;
+    }
+
+    @Transactional
+    public TaiKhoanResponse taoNhanVien(TaoNhanVienRequest req, String adminUsername) {
+        String username = req.getTenDangNhap() != null ? req.getTenDangNhap().trim() : "";
+        String sdt = req.getSdt() != null ? req.getSdt().trim() : "";
+        String hoTen = req.getHoTen() != null ? req.getHoTen().trim() : "";
+        String email = (req.getEmail() != null && !req.getEmail().trim().isEmpty()) ? req.getEmail().trim() : null;
+
+        if (taiKhoanRepository.existsByTenDangNhap(username)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã tồn tại trong hệ thống");
+        }
+        if (nhanVienRepository.existsBySdt(sdt) || khachHangRepository.existsBySdt(sdt)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã được đăng ký cho tài khoản khác");
+        }
+        if (email != null) {
+            if (nhanVienRepository.existsByEmail(email) || khachHangRepository.existsByEmail(email)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng bởi tài khoản khác");
+            }
+        }
+
+        Role roleStaff = roleRepository.findByTenRole("Staff")
+                .or(() -> roleRepository.findByTenRole("NhanVien"))
+                .or(() -> roleRepository.findByTenRole("STAFF"))
+                .or(() -> roleRepository.findAll().stream()
+                        .filter(r -> "Staff".equalsIgnoreCase(r.getTenRole()) || "NhanVien".equalsIgnoreCase(r.getTenRole()))
+                        .findFirst())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không tìm thấy Role Staff trong hệ thống"));
+
+        TaiKhoan tk = new TaiKhoan();
+        tk.setTenDangNhap(username);
+        tk.setMatKhau(passwordEncoder.encode(req.getMatKhau().trim()));
+        tk.setRole(roleStaff);
+        tk.setTrangThai("HoatDong");
+        tk.setNgayTao(LocalDateTime.now());
+        taiKhoanRepository.save(tk);
+
+        NhanVien nv = new NhanVien();
+        nv.setHoTen(hoTen);
+        nv.setSdt(sdt);
+        nv.setEmail(email);
+        nv.setChucVu("NhanVien");
+        nv.setNgayVaoLam(LocalDate.now());
+        nv.setTaiKhoan(tk);
+
+        if (req.getMaDiaDiem() != null) {
+            DiaDiem dd = diaDiemRepository.findById(req.getMaDiaDiem())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy cơ sở chỉ định"));
+            nv.setDiaDiem(dd);
+        }
+        nhanVienRepository.save(nv);
+
+        ghiNhatKy(adminUsername, "ADMIN", "TaoNhanVien",
+                "Tài khoản: " + tk.getTenDangNhap() + " (" + nv.getHoTen() + ")",
+                "Thành công",
+                "Tạo nhân viên mới thuộc cơ sở: " + (nv.getDiaDiem() != null ? nv.getDiaDiem().getTenDiaDiem() : "Tất cả cơ sở"));
+
+        TaiKhoanResponse res = new TaiKhoanResponse();
+        res.setMaTK(tk.getMaTK());
+        res.setTenDangNhap(tk.getTenDangNhap());
+        res.setRole("STAFF");
+        res.setHoTen(nv.getHoTen());
+        res.setSdt(nv.getSdt());
+        res.setEmail(nv.getEmail());
+        res.setTrangThai(tk.getTrangThai());
+        res.setNgayTao(tk.getNgayTao());
+        res.setMaNV(nv.getMaNV());
+        if (nv.getDiaDiem() != null) {
+            res.setMaDiaDiemPhuTrach(nv.getDiaDiem().getMaDiaDiem());
+            res.setTenDiaDiemPhuTrach(nv.getDiaDiem().getTenDiaDiem());
+        }
+        return res;
+    }
+
+    @Transactional
+    public TaiKhoanResponse suaTaiKhoan(Integer maTK, CapNhatTaiKhoanRequest req, String currentUsername, String currentUserRole) {
+        TaiKhoan tk = taiKhoanRepository.findById(maTK)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản"));
+
+        String targetRoleName = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+        boolean isTargetAdmin = "Admin".equalsIgnoreCase(targetRoleName);
+        boolean isTargetStaff = "Staff".equalsIgnoreCase(targetRoleName) || "NhanVien".equalsIgnoreCase(targetRoleName);
+
+        // RBAC Check: Staff không được sửa tài khoản Admin hoặc Staff khác
+        if ("STAFF".equalsIgnoreCase(currentUserRole)) {
+            if (isTargetAdmin || (isTargetStaff && !tk.getTenDangNhap().equalsIgnoreCase(currentUsername))) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nhân viên không có quyền chỉnh sửa tài khoản Quản trị hoặc Nhân viên khác");
+            }
+        }
+
+        // Cập nhật mật khẩu nếu có nhập
+        if (req.getMatKhau() != null && !req.getMatKhau().trim().isEmpty()) {
+            if (req.getMatKhau().trim().length() < 6) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải từ 6 ký tự trở lên");
+            }
+            tk.setMatKhau(passwordEncoder.encode(req.getMatKhau().trim()));
+            taiKhoanRepository.save(tk);
+        }
+
+        String sdtMoi = req.getSdt() != null ? req.getSdt().trim() : "";
+        String hoTenMoi = req.getHoTen() != null ? req.getHoTen().trim() : "";
+        String emailMoi = (req.getEmail() != null && !req.getEmail().trim().isEmpty()) ? req.getEmail().trim() : null;
+
+        // Cập nhật thông tin thực thể gắn liền
+        if (tk.getKhachHang() != null) {
+            KhachHang kh = tk.getKhachHang();
+            if (khachHangRepository.existsBySdtAndMaKHNot(sdtMoi, kh.getMaKH()) || nhanVienRepository.existsBySdt(sdtMoi)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã thuộc về tài khoản khác");
+            }
+            if (emailMoi != null) {
+                if (khachHangRepository.existsByEmailAndMaKHNot(emailMoi, kh.getMaKH()) || nhanVienRepository.existsByEmail(emailMoi)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã thuộc về tài khoản khác");
+                }
+            }
+            kh.setHoTen(hoTenMoi);
+            kh.setSdt(sdtMoi);
+            kh.setEmail(emailMoi);
+            khachHangRepository.save(kh);
+        } else {
+            NhanVien nv = nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK())
+                    .orElseGet(() -> {
+                        NhanVien newNv = new NhanVien();
+                        newNv.setTaiKhoan(tk);
+                        newNv.setChucVu("Admin".equalsIgnoreCase(targetRoleName) ? "QuanTri" : "NhanVien");
+                        newNv.setNgayVaoLam(LocalDate.now());
+                        return newNv;
+                    });
+
+            if (nv.getMaNV() != null) {
+                if (nhanVienRepository.existsBySdtAndMaNVNot(sdtMoi, nv.getMaNV()) || khachHangRepository.existsBySdt(sdtMoi)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã thuộc về tài khoản khác");
+                }
+                if (emailMoi != null) {
+                    if (nhanVienRepository.existsByEmailAndMaNVNot(emailMoi, nv.getMaNV()) || khachHangRepository.existsByEmail(emailMoi)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã thuộc về tài khoản khác");
+                    }
+                }
+            } else {
+                if (nhanVienRepository.existsBySdt(sdtMoi) || khachHangRepository.existsBySdt(sdtMoi)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã thuộc về tài khoản khác");
+                }
+                if (emailMoi != null) {
+                    if (nhanVienRepository.existsByEmail(emailMoi) || khachHangRepository.existsByEmail(emailMoi)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã thuộc về tài khoản khác");
+                    }
+                }
+            }
+
+            nv.setHoTen(hoTenMoi);
+            nv.setSdt(sdtMoi);
+            nv.setEmail(emailMoi);
+
+            // Admin được phân công cơ sở cho nhân viên
+            if ("ADMIN".equalsIgnoreCase(currentUserRole)) {
+                if (req.getMaDiaDiem() != null && req.getMaDiaDiem() > 0) {
+                    DiaDiem dd = diaDiemRepository.findById(req.getMaDiaDiem()).orElse(null);
+                    nv.setDiaDiem(dd);
+                } else if (req.getMaDiaDiem() == null) {
+                    // Nếu gửi null thì xóa phân công (chưa phân công)
+                    nv.setDiaDiem(null);
+                }
+            }
+            nhanVienRepository.save(nv);
+        }
+
+        ghiNhatKy(currentUsername, currentUserRole, "SuaTaiKhoan",
+                "Tài khoản #" + maTK + " (" + tk.getTenDangNhap() + ")",
+                "Thành công", "Cập nhật thông tin cá nhân/phân công");
+
+        return danhSachTaiKhoan().stream().filter(t -> t.getMaTK().equals(maTK)).findFirst().orElse(null);
+    }
+
+    @Transactional
+    public void doiTrangThaiTaiKhoanAnToan(Integer maTK, String currentUsername, String currentUserRole, String lyDo) {
+        TaiKhoan tk = taiKhoanRepository.findById(maTK)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản"));
+
+        String targetRole = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+        boolean isTargetAdmin = "Admin".equalsIgnoreCase(targetRole);
+        boolean isTargetStaff = "Staff".equalsIgnoreCase(targetRole) || "NhanVien".equalsIgnoreCase(targetRole);
+
+        // 1. Không tự khóa chính mình
+        if (tk.getTenDangNhap().equalsIgnoreCase(currentUsername)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể tự khóa tài khoản đang đăng nhập của chính bạn!");
+        }
+
+        // 2. Không được khóa tài khoản Admin
+        if (isTargetAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể khóa tài khoản Quản trị viên (ADMIN)!");
+        }
+
+        // 3. Nhân viên (STAFF) chỉ được khóa CUSTOMER
+        if ("STAFF".equalsIgnoreCase(currentUserRole)) {
+            if (isTargetStaff || isTargetAdmin) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nhân viên không có quyền khóa tài khoản Quản trị hoặc Nhân viên khác!");
+            }
+        }
+
+        boolean willLock = "HoatDong".equalsIgnoreCase(tk.getTrangThai());
+        tk.setTrangThai(willLock ? "Khoa" : "HoatDong");
+        taiKhoanRepository.save(tk);
+
+        String actionName = willLock ? "KhoaTaiKhoan" : "MoKhoaTaiKhoan";
+        String detailText = (lyDo != null && !lyDo.trim().isEmpty()) ? ("Lý do: " + lyDo) : "Thao tác bởi " + currentUserRole;
+        ghiNhatKy(currentUsername, currentUserRole, actionName,
+                "Tài khoản: " + tk.getTenDangNhap(),
+                "Thành công", detailText);
+    }
+
+    // ======================== 7. TÀI KHOẢN CỦA TÔI (ADMIN / STAFF PROFILE) ========================
+
+    @Transactional(readOnly = true)
+    public AdminProfileResponse layProfileAdmin(String username) {
+        TaiKhoan tk = taiKhoanRepository.findByTenDangNhap(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản"));
+
+        AdminProfileResponse res = new AdminProfileResponse();
+        res.setMaTK(tk.getMaTK());
+        res.setTenDangNhap(tk.getTenDangNhap());
+        res.setTrangThai(tk.getTrangThai());
+        res.setNgayTao(tk.getNgayTao());
+
+        String roleName = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+        res.setRole("Admin".equalsIgnoreCase(roleName) ? "ADMIN" : "STAFF");
+
+        nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK()).ifPresent(nv -> {
+            res.setMaNV(nv.getMaNV());
+            res.setHoTen(nv.getHoTen());
+            res.setSdt(nv.getSdt());
+            res.setEmail(nv.getEmail());
+            res.setChucVu(nv.getChucVu());
+            res.setNgayVaoLam(nv.getNgayVaoLam());
+            if (nv.getDiaDiem() != null) {
+                res.setMaDiaDiem(nv.getDiaDiem().getMaDiaDiem());
+                res.setTenDiaDiem(nv.getDiaDiem().getTenDiaDiem());
+            }
+        });
+
+        if (res.getHoTen() == null) res.setHoTen(tk.getTenDangNhap());
+        return res;
+    }
+
+    @Transactional
+    public AdminProfileResponse capNhatProfileAdmin(String username, CapNhatAdminProfileRequest req) {
+        TaiKhoan tk = taiKhoanRepository.findByTenDangNhap(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản"));
+
+        String targetRoleName = tk.getRole() != null ? tk.getRole().getTenRole() : "";
+        NhanVien nv = nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK())
+                .orElseGet(() -> {
+                    NhanVien newNv = new NhanVien();
+                    newNv.setTaiKhoan(tk);
+                    newNv.setChucVu("Admin".equalsIgnoreCase(targetRoleName) ? "QuanTri" : "NhanVien");
+                    newNv.setNgayVaoLam(LocalDate.now());
+                    return newNv;
+                });
+
+        String sdtMoi = req.getSdt() != null ? req.getSdt().trim() : "";
+        String hoTenMoi = req.getHoTen() != null ? req.getHoTen().trim() : "";
+        String emailMoi = (req.getEmail() != null && !req.getEmail().trim().isEmpty()) ? req.getEmail().trim() : null;
+
+        if (nv.getMaNV() != null) {
+            if (nhanVienRepository.existsBySdtAndMaNVNot(sdtMoi, nv.getMaNV()) || khachHangRepository.existsBySdt(sdtMoi)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã thuộc về tài khoản khác");
+            }
+            if (emailMoi != null) {
+                if (nhanVienRepository.existsByEmailAndMaNVNot(emailMoi, nv.getMaNV()) || khachHangRepository.existsByEmail(emailMoi)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã thuộc về tài khoản khác");
+                }
+            }
+        } else {
+            if (nhanVienRepository.existsBySdt(sdtMoi) || khachHangRepository.existsBySdt(sdtMoi)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã thuộc về tài khoản khác");
+            }
+            if (emailMoi != null) {
+                if (nhanVienRepository.existsByEmail(emailMoi) || khachHangRepository.existsByEmail(emailMoi)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã thuộc về tài khoản khác");
+                }
+            }
+        }
+
+        nv.setHoTen(hoTenMoi);
+        nv.setSdt(sdtMoi);
+        nv.setEmail(emailMoi);
+        nhanVienRepository.save(nv);
+
+        ghiNhatKy(username, tk.getRole() != null ? tk.getRole().getTenRole() : "ADMIN",
+                "CapNhatProfile", "Hồ sơ cá nhân", "Thành công", "Cập nhật họ tên/SĐT/Email");
+
+        return layProfileAdmin(username);
+    }
+
+    @Transactional
+    public void doiMatKhauAdmin(String username, DoiMatKhauRequest req) {
+        TaiKhoan tk = taiKhoanRepository.findByTenDangNhap(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản"));
+
+        if (!passwordEncoder.matches(req.getMatKhauHienTai(), tk.getMatKhau())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không chính xác");
+        }
+        if (req.getMatKhauMoi() == null || req.getMatKhauMoi().trim().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải từ 6 ký tự trở lên");
+        }
+
+        tk.setMatKhau(passwordEncoder.encode(req.getMatKhauMoi().trim()));
+        taiKhoanRepository.save(tk);
+
+        ghiNhatKy(username, tk.getRole() != null ? tk.getRole().getTenRole() : "ADMIN",
+                "DoiMatKhau", "Tài khoản cá nhân", "Thành công", "Đổi mật khẩu thành công");
+    }
+
+    // ======================== 8. UPLOAD ẢNH SÂN & NHẬT KÝ HOẠT ĐỘNG ========================
+
+    public UploadResponse uploadCourtImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn file hình ảnh hợp lệ");
+        }
+
+        long maxSizeBytes = 5 * 1024 * 1024; // 5MB
+        if (file.getSize() > maxSizeBytes) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dung lượng ảnh vượt quá giới hạn cho phép (Tối đa 5MB)");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+        }
+
+        List<String> allowedExtensions = List.of("jpg", "jpeg", "png", "webp");
+        if (!allowedExtensions.contains(extension)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Định dạng file không được hỗ trợ. Vui lòng chọn ảnh JPG, JPEG, PNG hoặc WEBP");
+        }
+
+        try {
+            java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads", "courts");
+            if (!java.nio.file.Files.exists(uploadDir)) {
+                java.nio.file.Files.createDirectories(uploadDir);
+            }
+
+            String newFilename = "court_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + "." + extension;
+            java.nio.file.Path targetPath = uploadDir.resolve(newFilename);
+            java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String relativeUrl = "/uploads/courts/" + newFilename;
+            return new UploadResponse(relativeUrl, originalFilename, file.getSize());
+        } catch (java.io.IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể lưu file hình ảnh: " + e.getMessage());
+        }
+    }
+
+    public List<NhatKyHoatDongResponse> layDanhSachNhatKy() {
+        try {
+            if (jdbcTemplate != null) {
+                return jdbcTemplate.query(
+                    "SELECT id, NguoiThucHien, VaiTro, HanhDong, DoiTuong, KetQua, ChiTiet, ThoiGian FROM NhatKyHoatDong ORDER BY ThoiGian DESC LIMIT 50",
+                    (rs, rowNum) -> {
+                        NhatKyHoatDongResponse res = new NhatKyHoatDongResponse();
+                        res.setId(rs.getLong("id"));
+                        res.setNguoiThucHien(rs.getString("NguoiThucHien"));
+                        res.setVaiTro(rs.getString("VaiTro"));
+                        res.setHanhDong(rs.getString("HanhDong"));
+                        res.setDoiTuong(rs.getString("DoiTuong"));
+                        res.setKetQua(rs.getString("KetQua"));
+                        res.setChiTiet(rs.getString("ChiTiet"));
+                        java.sql.Timestamp ts = rs.getTimestamp("ThoiGian");
+                        if (ts != null) res.setThoiGian(ts.toLocalDateTime());
+                        return res;
+                    }
+                );
+            }
+            return nhatKyHoatDongRepository.findTop50ByOrderByThoiGianDesc().stream()
+                    .map(nk -> {
+                        NhatKyHoatDongResponse res = new NhatKyHoatDongResponse();
+                        res.setId(nk.getId());
+                        res.setNguoiThucHien(nk.getNguoiThucHien());
+                        res.setVaiTro(nk.getVaiTro());
+                        res.setHanhDong(nk.getHanhDong());
+                        res.setDoiTuong(nk.getDoiTuong());
+                        res.setKetQua(nk.getKetQua());
+                        res.setChiTiet(nk.getChiTiet());
+                        res.setThoiGian(nk.getThoiGian());
+                        return res;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public void ghiNhatKy(String nguoiThucHien, String vaiTro, String hanhDong, String doiTuong, String ketQua, String chiTiet) {
+        try {
+            if (jdbcTemplate != null) {
+                jdbcTemplate.update(
+                    "INSERT INTO NhatKyHoatDong (NguoiThucHien, VaiTro, HanhDong, DoiTuong, KetQua, ChiTiet, ThoiGian) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    nguoiThucHien != null ? nguoiThucHien : "system",
+                    vaiTro, hanhDong, doiTuong, ketQua, chiTiet, java.sql.Timestamp.valueOf(LocalDateTime.now())
+                );
+                return;
+            }
+            NhatKyHoatDong nk = new NhatKyHoatDong();
+            nk.setNguoiThucHien(nguoiThucHien != null ? nguoiThucHien : "system");
+            nk.setVaiTro(vaiTro);
+            nk.setHanhDong(hanhDong);
+            nk.setDoiTuong(doiTuong);
+            nk.setKetQua(ketQua);
+            nk.setChiTiet(chiTiet);
+            nk.setThoiGian(LocalDateTime.now());
+            nhatKyHoatDongRepository.save(nk);
+        } catch (Exception ignored) {
+        }
     }
 
     // ======================== HELPER ========================

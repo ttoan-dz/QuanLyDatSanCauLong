@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Danh Sách Sân Cầu Lông — Quản Lý Đặt Sân</title>
   <link rel="icon" type="image/png" href="/assets/images/logo.png">
-  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/style.css?v=4.2">
 </head>
 <body>
 
@@ -22,7 +25,7 @@
       <li><a href="/pages/user/notifications.html" class="nav-link">Thông báo</a></li>
     </ul>
     <div id="auth-controls" class="user-info">
-      <!-- Sẽ được điền động bởi JS tùy theo trạng thái login -->
+      <!-- Sẽ được điền động bởi utils.js tùy theo trạng thái login -->
       <a href="/pages/auth/login.html" class="btn btn-outline btn-sm">Đăng nhập</a>
       <a href="/pages/auth/register.html" class="btn btn-primary btn-sm">Đăng ký</a>
     </div>
@@ -30,25 +33,86 @@
 
   <!-- Main Content -->
   <main class="container">
-    <div class="page-header">
+    <div class="page-header" style="margin-bottom: 1.5rem;">
       <h1 class="page-title">Hệ thống sân cầu lông</h1>
       <p class="page-subtitle">Xem thông tin sân bãi tiêu chuẩn, tình trạng hoạt động thực tế và đặt lịch trực tuyến</p>
     </div>
 
+    <!-- 4 THẺ THỐNG KÊ NHANH (TÍNH TỪ API THỰC TẾ) -->
+    <div class="stats-overview-grid" id="courts-stat-summary">
+      <div class="stat-card-pro">
+        <div class="stat-icon-wrap emerald">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-total-locations">0</div>
+          <div class="stat-title">Địa điểm</div>
+          <div class="stat-desc">Cơ sở trong hệ thống</div>
+        </div>
+      </div>
+
+      <div class="stat-card-pro">
+        <div class="stat-icon-wrap blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-total-courts">0</div>
+          <div class="stat-title">Tổng số sân</div>
+          <div class="stat-desc">Sân tiêu chuẩn & VIP</div>
+        </div>
+      </div>
+
+      <div class="stat-card-pro">
+        <div class="stat-icon-wrap emerald">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-active-courts" style="color: #059669;">0</div>
+          <div class="stat-title">Đang hoạt động</div>
+          <div class="stat-desc">Sẵn sàng nhận lịch đặt</div>
+        </div>
+      </div>
+
+      <div class="stat-card-pro">
+        <div class="stat-icon-wrap amber">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-paused-courts" style="color: #d97706;">0</div>
+          <div class="stat-title">Bảo trì / Tạm ngưng</div>
+          <div class="stat-desc">Tạm khóa lịch trực tuyến</div>
+        </div>
+      </div>
+    </div>
+
     <div id="alert-container"></div>
 
-    <!-- 2-Column Layout -->
+    <!-- Layout 2 Cột (Desktop) / Xếp chồng (Mobile) -->
     <div class="two-col-layout">
       
-      <!-- Cột Trái: Danh sách Địa điểm Filter -->
-      <aside class="section-box">
-        <div class="section-header">
-          <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+      <!-- Cột Trái: Sidebar Địa điểm -->
+      <aside class="section-box" style="align-self: flex-start; position: sticky; top: 85px;">
+        <div class="section-header" style="margin-bottom: 1rem;">
+          <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
-            Địa điểm
+            Địa điểm sân
           </h2>
         </div>
         <div id="location-filter-list" class="location-list">
@@ -56,162 +120,324 @@
         </div>
       </aside>
 
-      <!-- Cột Phải: Danh sách Sân Grid -->
-      <section class="section-box">
-        <div class="section-header">
-          <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-            Danh sách sân
-          </h2>
-          <span id="court-count-badge" class="badge badge-secondary">0 sân</span>
-        </div>
+      <!-- Cột Phải: Toolbar & Danh Sách Sân -->
+      <section style="display: flex; flex-direction: column;">
         
-        <!-- Thanh Tìm Kiếm & Lọc Nhanh Chuẩn UI/UX Pro Max -->
-        <div class="court-search-bar">
-          <div class="court-search-input-wrap">
-            <span class="court-search-icon" style="display: flex; align-items: center; justify-content: center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </span>
-            <input type="text" id="court-search-input" class="court-search-input" placeholder="Tìm kiếm nhanh tên sân hoặc địa chỉ..." oninput="handleSearchFilter(this.value)">
+        <!-- Search & Filter Card -->
+        <div class="search-filter-card">
+          <div class="search-filter-row">
+            <!-- Ô Tìm kiếm nhanh có nút clear (x) -->
+            <div class="search-input-wrap">
+              <span class="search-input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </span>
+              <input type="text" id="court-search-input" class="search-input-field" placeholder="Tìm theo tên sân, cơ sở hoặc địa chỉ..." oninput="handleSearchInput(this.value)">
+              <button type="button" id="btn-clear-search" class="search-clear-btn" onclick="clearSearchInput()" title="Xóa nội dung tìm kiếm">✕</button>
+            </div>
+
+            <!-- Chips Lọc Trạng thái -->
+            <div class="filter-chips-wrap">
+              <button type="button" class="filter-chip-item active" data-filter="ALL" onclick="setStatusFilter('ALL', this)">
+                Tất cả
+              </button>
+              <button type="button" class="filter-chip-item" data-filter="HoatDong" onclick="setStatusFilter('HoatDong', this)">
+                <span class="pulsing-dot" style="margin-right: 4px;"></span> Hoạt động
+              </button>
+              <button type="button" class="filter-chip-item" data-filter="BaoTri" onclick="setStatusFilter('BaoTri', this)">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b; margin-right:4px;"></span> Bảo trì
+              </button>
+              <button type="button" class="filter-chip-item" data-filter="TamNgung" onclick="setStatusFilter('TamNgung', this)">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; margin-right:4px;"></span> Tạm ngưng
+              </button>
+            </div>
           </div>
-          <div class="court-filter-chips">
-            <button type="button" class="filter-chip active" data-filter="ALL" onclick="setQuickFilter('ALL', this)">Tất cả</button>
-            <button type="button" class="filter-chip" data-filter="HoatDong" onclick="setQuickFilter('HoatDong', this)">
-              <span class="pulsing-dot" style="margin-right: 4px;"></span> Hoạt động
-            </button>
-            <button type="button" class="filter-chip" data-filter="BaoTri" onclick="setQuickFilter('BaoTri', this)">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f59e0b; margin-right:4px;"></span> Bảo trì
-            </button>
-            <button type="button" class="filter-chip" data-filter="TamNgung" onclick="setQuickFilter('TamNgung', this)">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#94a3b8; margin-right:4px;"></span> Tạm ngưng
-            </button>
+
+          <!-- Bộ lọc nâng cao (Loại sân & Sắp xếp) -->
+          <div class="advanced-filter-panel">
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">
+                Loại sân
+              </label>
+              <select id="filter-court-type" class="form-control" style="height: 38px; font-size: 0.85rem;" onchange="handleTypeFilter(this.value)">
+                <option value="ALL">-- Tất cả loại sân --</option>
+                <option value="Tiêu chuẩn">Sân Tiêu chuẩn</option>
+                <option value="VIP">Sân VIP / Thi đấu</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">
+                Sắp xếp danh sách
+              </label>
+              <select id="sort-court-by" class="form-control" style="height: 38px; font-size: 0.85rem;" onchange="handleSortChange(this.value)">
+                <option value="default">Mặc định (Theo cơ sở)</option>
+                <option value="name-asc">Tên sân (A - Z)</option>
+                <option value="name-desc">Tên sân (Z - A)</option>
+                <option value="price-asc">Giá thuê (Thấp đến Cao)</option>
+                <option value="price-desc">Giá thuê (Cao đến Thấp)</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetAllFilters()" style="height: 38px; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                Xóa bộ lọc
+              </button>
+            </div>
           </div>
         </div>
 
+        <!-- Section Header Result Count -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.5rem;">
+            <span>Danh sách sân</span>
+            <span id="court-count-badge" class="badge badge-secondary" style="font-size: 0.78rem;">0 sân</span>
+          </div>
+        </div>
+
+        <!-- Grid Cards -->
         <div id="courts-grid" class="courts-grid-container">
-          <p style="color: var(--text-muted); font-size: 0.9rem; grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <p style="color: var(--text-muted); font-size: 0.9rem; grid-column: 1 / -1; text-align: center; padding: 3rem;">
             Đang tải dữ liệu sân...
           </p>
         </div>
+
       </section>
 
     </div>
   </main>
 
-  <!-- Modal Chi Tiết Sân -->
-  <div id="modal-court-detail" class="modal-backdrop hidden">
-    <div class="modal-content">
+  <!-- Modal Chi Tiết Sân Nâng Cấp -->
+  <div id="modal-court-detail" class="modal-backdrop hidden" onclick="if(event.target===this) closeCourtDetailModal()">
+    <div class="modal-dialog" style="max-width: 680px;" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <h3 id="modal-court-title" class="modal-title">Chi tiết sân</h3>
-        <button type="button" class="modal-close" onclick="closeCourtDetailModal()">&times;</button>
+        <h3 id="modal-court-title" class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
+          Chi tiết sân
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeCourtDetailModal()">✕</button>
       </div>
-      <div id="modal-court-body">
-        <!-- Dynamic content -->
+      <div id="modal-court-body" class="modal-body" style="padding: 1.25rem;">
+        <!-- Dynamic content inserted by script -->
       </div>
     </div>
   </div>
 
+  <!-- Footer Chuyên Nghiệp 4 Cột -->
+  <footer class="footer-pro">
+    <div class="footer-pro-container">
+      <div class="footer-pro-grid">
+        <!-- Cột 1 -->
+        <div class="footer-col-intro">
+          <a href="/index.html" class="footer-brand-wrap">
+            <img src="/assets/images/logo.png" alt="Logo Sân Cầu Lông" class="footer-brand-logo">
+            <span class="footer-brand-name">Sân Cầu Lông</span>
+          </a>
+          <span class="footer-brand-slogan">Nâng tầm đam mê - Thỏa sức bứt phá</span>
+          <p class="footer-brand-desc">
+            Nền tảng đặt sân cầu lông trực tuyến chuẩn thi đấu hàng đầu. Hệ thống kết nối người chơi với các sân tập hiện đại, cung cấp lịch trống theo thời gian thực và quản lý đơn đặt chuyên nghiệp, tiện lợi.
+          </p>
+          <div class="footer-social-links">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="Facebook">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="YouTube">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+            <a href="https://zalo.me" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="Zalo">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Cột 2 -->
+        <div>
+          <h4 class="footer-col-title">Liên kết nhanh</h4>
+          <ul class="footer-nav-list">
+            <li><a href="/index.html" class="footer-nav-link"><span>→</span> Trang chủ</a></li>
+            <li><a href="/pages/user/courts.html" class="footer-nav-link"><span>→</span> Danh sách sân</a></li>
+            <li><a href="/pages/user/history.html" class="footer-nav-link"><span>→</span> Lịch sử đặt sân</a></li>
+            <li><a href="/pages/user/notifications.html" class="footer-nav-link"><span>→</span> Thông báo</a></li>
+            <li><a href="/pages/user/profile.html" class="footer-nav-link"><span>→</span> Tài khoản cá nhân</a></li>
+          </ul>
+        </div>
+
+        <!-- Cột 3 -->
+        <div>
+          <h4 class="footer-col-title">Hỗ trợ khách hàng</h4>
+          <ul class="footer-nav-list">
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('guide-booking')" class="footer-nav-link"><span>•</span> Hướng dẫn đặt sân</a></li>
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('guide-payment')" class="footer-nav-link"><span>•</span> Hướng dẫn thanh toán</a></li>
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('policy-cancel')" class="footer-nav-link"><span>•</span> Chính sách hủy sân</a></li>
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('policy-refund')" class="footer-nav-link"><span>•</span> Chính sách hoàn tiền</a></li>
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('faq')" class="footer-nav-link"><span>•</span> Câu hỏi thường gặp</a></li>
+            <li><a href="javascript:void(0)" onclick="openFooterPolicyModal('terms')" class="footer-nav-link"><span>•</span> Điều khoản sử dụng</a></li>
+          </ul>
+        </div>
+
+        <!-- Cột 4 -->
+        <div>
+          <h4 class="footer-col-title">Thông tin liên hệ</h4>
+          <ul class="footer-contact-list">
+            <li class="footer-contact-item">
+              <svg class="footer-contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <div>Hotline: <br><a href="tel:19006868">1900 6868</a> (24/7)</div>
+            </li>
+            <li class="footer-contact-item">
+              <svg class="footer-contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <div>Email: <br><a href="mailto:hotro@datsancaulong.vn">hotro@datsancaulong.vn</a></div>
+            </li>
+            <li class="footer-contact-item">
+              <svg class="footer-contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div>Giờ mở cửa: 05:00 - 23:00 tất cả các ngày</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-pro-bottom">
+        <div>Copyright © 2026 <strong>Sân Cầu Lông</strong>. Đồ án Phát triển phần mềm nguồn mở.</div>
+        <div class="footer-legal-links">
+          <a href="javascript:void(0)" onclick="openFooterPolicyModal('privacy')">Chính sách bảo mật</a>
+          <span style="opacity: 0.3;">|</span>
+          <a href="javascript:void(0)" onclick="openFooterPolicyModal('terms')">Điều khoản dịch vụ</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
   <!-- Scripts -->
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/utils.js"></script>
+  <script src="/assets/js/api.js?v=4.2"></script>
+  <script src="/assets/js/utils.js?v=4.2"></script>
   <script>
     let allLocations = [];
+    let allFlatCourts = [];
     let selectedLocationId = 'ALL';
     let currentSearchKeyword = '';
-    let currentQuickFilter = 'ALL';
+    let currentStatusFilter = 'ALL';
+    let currentTypeFilter = 'ALL';
+    let currentSortBy = 'default';
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchCourtsData();
     });
 
     async function fetchCourtsData() {
+      const grid = document.getElementById('courts-grid');
       try {
+        if (grid) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem;">
+              <div class="spinner" style="margin: 0 auto 1rem;"></div>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">Đang tải danh sách sân và cơ sở...</p>
+            </div>
+          `;
+        }
+
         const data = await api.get('/public/courts');
-        allLocations = data || [];
+        allLocations = Array.isArray(data) ? data : [];
+        updateQuickStats();
         renderLocationSidebar();
         renderCourtsGrid();
       } catch (error) {
         console.error('Lỗi tải danh sách sân:', error);
-        showAlert(`Không thể tải danh sách sân: ${error.message}`, 'danger');
-        const grid = document.getElementById('courts-grid');
+        showAlert(`Không thể tải dữ liệu sân: ${error.message}`, 'danger');
         if (grid) {
           grid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: var(--radius); border: 1.5px dashed var(--border);">
-              <div style="margin-bottom: 0.75rem; color: var(--danger);">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1.5rem; background: #ffffff; border-radius: var(--radius); border: 1.5px dashed #fca5a5;">
+              <div style="margin-bottom: 0.75rem; color: #ef4444;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               </div>
-              <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 0.35rem;">Không thể tải dữ liệu sân</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 400px; margin: 0 auto 1rem;">${error.message}</p>
-              <button type="button" class="btn btn-outline btn-sm" onclick="fetchCourtsData()">Thử lại</button>
+              <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 0.35rem;">Không thể tải dữ liệu sân</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 420px; margin: 0 auto 1.25rem;">${error.message || 'Hệ thống gặp lỗi kết nối với máy chủ API.'}</p>
+              <button type="button" class="btn btn-primary btn-sm" onclick="fetchCourtsData()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                Thử tải lại dữ liệu
+              </button>
             </div>
           `;
         }
       }
     }
 
-    function handleSearchFilter(val) {
-      currentSearchKeyword = (val || '').trim();
-      renderCourtsGrid();
+    // Cập nhật 4 thẻ thống kê từ dữ liệu thực tế
+    function updateQuickStats() {
+      let totalCourts = 0;
+      let activeCourts = 0;
+      let pausedCourts = 0;
+
+      allLocations.forEach(loc => {
+        const courts = loc.danhSachSan || [];
+        totalCourts += courts.length;
+        courts.forEach(c => {
+          if (c.tinhTrang === 'HoatDong') {
+            activeCourts++;
+          } else {
+            pausedCourts++;
+          }
+        });
+      });
+
+      const elLoc = document.getElementById('stat-total-locations');
+      const elCourts = document.getElementById('stat-total-courts');
+      const elActive = document.getElementById('stat-active-courts');
+      const elPaused = document.getElementById('stat-paused-courts');
+
+      if (elLoc) elLoc.textContent = allLocations.length;
+      if (elCourts) elCourts.textContent = totalCourts;
+      if (elActive) elActive.textContent = activeCourts;
+      if (elPaused) elPaused.textContent = pausedCourts;
     }
 
-    function setQuickFilter(filter, el) {
-      currentQuickFilter = filter;
-      document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
-      if (el) el.classList.add('active');
-      renderCourtsGrid();
-    }
-
+    // Render danh sách cơ sở địa điểm bên Sidebar
     function renderLocationSidebar() {
       const container = document.getElementById('location-filter-list');
       if (!container) return;
 
       let totalCourtsAll = 0;
-
       allLocations.forEach(loc => {
-        const courts = loc.danhSachSan || [];
-        totalCourtsAll += courts.length;
+        totalCourtsAll += (loc.danhSachSan || []).length;
       });
 
       let html = `
-        <div class="location-item ${selectedLocationId === 'ALL' ? 'active' : ''}" onclick="filterByLocation('ALL')">
-          <div class="location-item-top">
-            <span class="location-name" style="display: flex; align-items: center; gap: 0.4rem;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <div class="loc-item-v2 ${selectedLocationId === 'ALL' ? 'active' : ''}" onclick="filterByLocation('ALL')">
+          <div class="loc-item-header">
+            <span class="loc-item-name" style="display: flex; align-items: center; gap: 0.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
               Tất cả địa điểm
             </span>
-            <span class="location-badge">${totalCourtsAll} sân</span>
+            <span class="loc-badge-count">${totalCourtsAll} sân</span>
           </div>
-          <div class="location-hours" style="display: flex; align-items: center; gap: 0.35rem;">
+          <div class="loc-item-address">Toàn bộ các cụm sân trong hệ thống</div>
+          <div class="loc-item-hours">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Hoạt động toàn thời gian
+            Phục vụ hàng ngày
           </div>
         </div>
       `;
 
       allLocations.forEach(loc => {
         const courts = loc.danhSachSan || [];
-        const total = courts.length;
         const isSelected = selectedLocationId === loc.maDiaDiem;
+        const address = loc.diaChi || loc.tenDiaDiem || 'Hà Nội';
 
         html += `
-          <div class="location-item ${isSelected ? 'active' : ''}" onclick="filterByLocation(${loc.maDiaDiem})">
-            <div class="location-item-top">
-              <span class="location-name" style="display: flex; align-items: center; gap: 0.4rem;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="loc-item-v2 ${isSelected ? 'active' : ''}" onclick="filterByLocation(${loc.maDiaDiem})">
+            <div class="loc-item-header">
+              <span class="loc-item-name" style="display: flex; align-items: center; gap: 0.4rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 ${loc.tenDiaDiem}
               </span>
-              <span class="location-badge">${total} sân</span>
+              <span class="loc-badge-count">${courts.length} sân</span>
             </div>
-            <div class="location-hours" style="display: flex; align-items: center; gap: 0.35rem;">
+            <div class="loc-item-address" title="${address}">
+              ${address}
+            </div>
+            <div class="loc-item-hours">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${formatGio(loc.gioMo)} - ${formatGio(loc.gioDong)}
+              ${formatGio(loc.gioMo) || '05:00'} - ${formatGio(loc.gioDong) || '23:00'}
             </div>
           </div>
         `;
@@ -226,6 +452,62 @@
       renderCourtsGrid();
     }
 
+    function handleSearchInput(val) {
+      currentSearchKeyword = (val || '').trim();
+      const clearBtn = document.getElementById('btn-clear-search');
+      if (clearBtn) {
+        clearBtn.style.display = currentSearchKeyword ? 'flex' : 'none';
+      }
+      renderCourtsGrid();
+    }
+
+    function clearSearchInput() {
+      const input = document.getElementById('court-search-input');
+      if (input) input.value = '';
+      currentSearchKeyword = '';
+      const clearBtn = document.getElementById('btn-clear-search');
+      if (clearBtn) clearBtn.style.display = 'none';
+      renderCourtsGrid();
+    }
+
+    function setStatusFilter(filter, el) {
+      currentStatusFilter = filter;
+      document.querySelectorAll('.filter-chip-item').forEach(btn => btn.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderCourtsGrid();
+    }
+
+    function handleTypeFilter(val) {
+      currentTypeFilter = val;
+      renderCourtsGrid();
+    }
+
+    function handleSortChange(val) {
+      currentSortBy = val;
+      renderCourtsGrid();
+    }
+
+    function resetAllFilters() {
+      clearSearchInput();
+      selectedLocationId = 'ALL';
+      currentStatusFilter = 'ALL';
+      currentTypeFilter = 'ALL';
+      currentSortBy = 'default';
+
+      const typeSelect = document.getElementById('filter-court-type');
+      if (typeSelect) typeSelect.value = 'ALL';
+
+      const sortSelect = document.getElementById('sort-court-by');
+      if (sortSelect) sortSelect.value = 'default';
+
+      const firstChip = document.querySelector('.filter-chip-item[data-filter="ALL"]');
+      if (firstChip) setStatusFilter('ALL', firstChip);
+
+      renderLocationSidebar();
+      renderCourtsGrid();
+    }
+
+    // Render danh sách sân với bộ lọc đa điều kiện
     function renderCourtsGrid() {
       const grid = document.getElementById('courts-grid');
       const countBadge = document.getElementById('court-count-badge');
@@ -241,104 +523,141 @@
               ...court,
               maDiaDiem: loc.maDiaDiem,
               tenDiaDiem: loc.tenDiaDiem,
+              diaChi: loc.diaChi || loc.tenDiaDiem,
               gioMo: loc.gioMo,
-              gioDong: loc.gioDong
+              gioDong: loc.gioDong,
+              giaThamKhao: court.giaThamKhao || 50000
             });
           });
         }
       });
 
-      // Lọc theo từ khóa tìm kiếm và Trạng thái hoạt động
-      const filteredCourts = flatCourts.filter(c => {
+      // Lọc từ khóa
+      allFlatCourts = flatCourts;
+      let filtered = flatCourts.filter(c => {
         if (currentSearchKeyword) {
           const kw = currentSearchKeyword.toLowerCase();
           const matchName = (c.tenSan || '').toLowerCase().includes(kw);
           const matchLoc = (c.tenDiaDiem || '').toLowerCase().includes(kw);
-          if (!matchName && !matchLoc) return false;
+          const matchAddr = (c.diaChi || '').toLowerCase().includes(kw);
+          const matchCode = String(c.maSan || '').toLowerCase().includes(kw);
+          if (!matchName && !matchLoc && !matchAddr && !matchCode) return false;
         }
-        if (currentQuickFilter !== 'ALL') {
-          if (c.tinhTrang !== currentQuickFilter) return false;
+
+        // Lọc trạng thái
+        if (currentStatusFilter !== 'ALL') {
+          if (c.tinhTrang !== currentStatusFilter) return false;
         }
+
+        // Lọc loại sân
+        if (currentTypeFilter !== 'ALL') {
+          const loai = (c.loaiSan || '').toLowerCase();
+          if (currentTypeFilter === 'VIP' && !loai.includes('vip') && !loai.includes('thi đấu')) return false;
+          if (currentTypeFilter === 'Tiêu chuẩn' && (loai.includes('vip') || loai.includes('thi đấu'))) return false;
+        }
+
         return true;
       });
 
-      if (countBadge) {
-        countBadge.textContent = `${filteredCourts.length} sân`;
+      // Sắp xếp
+      if (currentSortBy === 'name-asc') {
+        filtered.sort((a, b) => (a.tenSan || '').localeCompare(b.tenSan || '', 'vi'));
+      } else if (currentSortBy === 'name-desc') {
+        filtered.sort((a, b) => (b.tenSan || '').localeCompare(a.tenSan || '', 'vi'));
+      } else if (currentSortBy === 'price-asc') {
+        filtered.sort((a, b) => (a.giaThamKhao || 0) - (b.giaThamKhao || 0));
+      } else if (currentSortBy === 'price-desc') {
+        filtered.sort((a, b) => (b.giaThamKhao || 0) - (a.giaThamKhao || 0));
       }
 
-      if (filteredCourts.length === 0) {
+      if (countBadge) {
+        countBadge.textContent = `${filtered.length} sân`;
+      }
+
+      if (filtered.length === 0) {
         grid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: var(--radius); border: 1.5px dashed var(--border);">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1.5rem; background: #ffffff; border-radius: var(--radius); border: 1.5px dashed var(--border);">
             <div style="margin-bottom: 0.75rem; color: var(--text-sub);">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
-            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--dark); margin-bottom: 0.35rem;">Không tìm thấy sân phù hợp</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 400px; margin: 0 auto 1rem;">
-              Vui lòng thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc để hiển thị toàn bộ sân khả dụng.
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 0.35rem;">Không tìm thấy sân phù hợp</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 440px; margin: 0 auto 1.25rem;">
+              Không có sân nào phù hợp với bộ lọc hiện tại. Bạn có thể xóa bộ lọc hoặc tìm với từ khóa khác.
             </p>
-            <button type="button" class="btn btn-outline btn-sm" onclick="resetFilters()">Đặt lại bộ lọc</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="resetAllFilters()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Đặt lại toàn bộ bộ lọc
+            </button>
           </div>
         `;
         return;
       }
 
-      grid.innerHTML = filteredCourts.map(c => {
-        const fallbackImg = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60';
-        const courtImg = c.hinhAnh && c.hinhAnh.startsWith('http') ? c.hinhAnh : fallbackImg;
+      grid.innerHTML = filtered.map(c => {
+        const fallbackImg = '/assets/images/courts.jpg';
+        const courtImg = (c.hinhAnh && c.hinhAnh.startsWith('http')) ? c.hinhAnh : fallbackImg;
+        const isVip = (c.loaiSan || '').toLowerCase().includes('vip') || (c.loaiSan || '').toLowerCase().includes('thi đấu');
 
         let primaryBtn = '';
         if (c.tinhTrang !== 'HoatDong') {
-          primaryBtn = `<button class="btn btn-sm" disabled style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; cursor: not-allowed; font-weight: 600;">${c.tinhTrang === 'BaoTri' ? 'Đang bảo trì' : 'Tạm ngưng'}</button>`;
+          primaryBtn = `
+            <button class="btn btn-sm" disabled style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; cursor: not-allowed; font-weight: 600; font-size: 0.82rem;">
+              ${c.tinhTrang === 'BaoTri' ? 'Sân bảo trì' : 'Tạm ngưng'}
+            </button>`;
         } else if (token) {
           primaryBtn = `
-            <button type="button" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:0.35rem;" onclick='selectCourtAndBook(${JSON.stringify(c)})'>
+            <button type="button" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; justify-content:center; gap:0.35rem; font-weight:700;" onclick="selectCourtAndBookById(${c.maSan})">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Đặt sân
+              Đặt sân ngay
             </button>`;
         } else {
-          primaryBtn = `<a href="/pages/auth/login.html?redirect=/pages/user/booking.html" class="btn btn-outline btn-sm">Đăng nhập để đặt</a>`;
+          const redirectTarget = encodeURIComponent(`/pages/user/booking.html?maSan=${c.maSan}`);
+          primaryBtn = `
+            <a href="/pages/auth/login.html?redirect=${redirectTarget}" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; justify-content:center; font-weight:600;">
+              Đăng nhập để đặt
+            </a>`;
         }
 
         return `
-          <div class="court-card-item">
-            <div class="court-card-thumb">
-              <img class="court-card-img" src="${courtImg}" alt="${c.tenSan}" onerror="this.src='${fallbackImg}'">
-              <div class="court-card-thumb-overlay"></div>
-              <div class="court-card-badge-pos">
+          <div class="court-card-v2">
+            <div class="court-thumb-wrap">
+              <img class="court-thumb-img" src="${courtImg}" alt="${c.tenSan}" onerror="this.src='${fallbackImg}'">
+              <div class="court-badge-code">#SAN-${c.maSan}</div>
+              <div class="court-badge-status">
                 ${badgeTrangThai(c.tinhTrang)}
               </div>
             </div>
-            <div class="court-card-content">
-              <div class="court-card-header-row">
-                <div class="court-card-title" style="display: flex; align-items: center; gap: 0.4rem;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                  ${c.tenSan}
+            <div class="court-body-v2">
+              <div class="court-title-row">
+                <h3 class="court-name-v2">${c.tenSan}</h3>
+                <span class="court-tag-type ${isVip ? 'vip' : ''}">
+                  ${c.loaiSan || 'Tiêu chuẩn'}
+                </span>
+              </div>
+              <div class="court-loc-line">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${c.tenDiaDiem}</span>
+              </div>
+              <div class="court-address-line">
+                ${c.diaChi}
+              </div>
+
+              <div class="court-meta-specs">
+                <div class="court-price-box">
+                  <span class="court-price-label">Giá thuê theo slot</span>
+                  <span class="court-price-value">50.000 đ <small style="font-size: 0.72rem; font-weight: 500; color: var(--text-muted);">/ 30 phút</small></span>
                 </div>
-                <span class="badge badge-secondary" style="font-size: 0.7rem; font-weight: 600;">${c.loaiSan || 'Tiêu chuẩn'}</span>
-              </div>
-              <div class="court-card-loc" style="display: flex; align-items: center; gap: 0.35rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                ${c.tenDiaDiem}
-              </div>
-              
-              <div class="court-price-row">
-                <span class="court-price-label">Giá thuê theo ca:</span>
-                <span class="court-price-val">50.000đ <small style="font-size: 0.72rem; font-weight: normal; color: var(--text-muted);">/ 30 phút</small></span>
+                <div class="court-hours-box">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>${formatGio(c.gioMo) || '05:00'} - ${formatGio(c.gioDong) || '23:00'}</span>
+                </div>
               </div>
 
-              <div class="court-card-meta">
-                <div><strong>Mã sân:</strong> #${c.maSan}</div>
-                <div><strong>Giờ phục vụ:</strong> ${formatGio(c.gioMo)} - ${formatGio(c.gioDong)}</div>
-              </div>
-
-              <div class="court-card-desc">
-                ${c.ghiChu || 'Mặt sân thảm tiêu chuẩn thi đấu BWF, hệ thống đèn chống lóa hiện đại, trần cao thoáng mát.'}
-              </div>
-
-              <div class="court-card-actions">
+              <div class="court-actions-v2">
+                <button type="button" class="btn btn-outline btn-sm" onclick="openCourtDetailModalById(${c.maSan})">
+                  Xem chi tiết
+                </button>
                 ${primaryBtn}
-                <button type="button" class="btn btn-outline btn-sm" onclick='openCourtDetailModal(${JSON.stringify(c)})'>Chi tiết</button>
-                ${c.mapLink ? `<a href="${c.mapLink}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex; align-items:center; gap:0.35rem; color: var(--primary-dark); border-color: var(--primary-border);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Bản đồ</a>` : ''}
               </div>
             </div>
           </div>
@@ -346,127 +665,150 @@
       }).join('');
     }
 
-    function resetFilters() {
-      currentSearchKeyword = '';
-      currentQuickFilter = 'ALL';
-      const searchInput = document.getElementById('court-search-input');
-      if (searchInput) searchInput.value = '';
-      document.querySelectorAll('.filter-chip').forEach(btn => {
-        if (btn.getAttribute('data-filter') === 'ALL') btn.classList.add('active');
-        else btn.classList.remove('active');
+    // Helper: Tìm sân theo ID trong allFlatCourts hoặc allLocations
+    function findCourtById(maSan) {
+      let court = allFlatCourts.find(c => c.maSan == maSan);
+      if (court) return court;
+
+      allLocations.forEach(loc => {
+        (loc.danhSachSan || []).forEach(s => {
+          if (s.maSan == maSan) {
+            court = {
+              ...s,
+              maDiaDiem: loc.maDiaDiem,
+              tenDiaDiem: loc.tenDiaDiem,
+              diaChi: loc.diaChi || loc.tenDiaDiem,
+              gioMo: loc.gioMo,
+              gioDong: loc.gioDong,
+              giaThamKhao: s.giaThamKhao || 50000
+            };
+          }
+        });
       });
-      renderCourtsGrid();
+      return court;
+    }
+
+    // Chuyển hướng sang trang đặt sân với thông tin sân đã chọn theo ID
+    function selectCourtAndBookById(maSan) {
+      let court = findCourtById(maSan);
+      if (!court && allFlatCourts.length > 0) {
+        court = allFlatCourts.find(c => c.maSan == maSan);
+      }
+      if (court) {
+        sessionStorage.setItem('selectedCourt', JSON.stringify(court));
+        sessionStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+        localStorage.setItem('selectedCourt', JSON.stringify(court));
+        localStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+      }
+      const locParam = court && court.maDiaDiem ? `&maDiaDiem=${court.maDiaDiem}` : '';
+      window.location.href = `/pages/user/booking.html?maSan=${maSan}${locParam}`;
     }
 
     function selectCourtAndBook(court) {
-      // Lưu thông tin sân vào sessionStorage trước để khi chuyển hướng luôn có sân
-      sessionStorage.setItem('selectedCourt', JSON.stringify({
-        maSan: court.maSan,
-        tenSan: court.tenSan,
-        maDiaDiem: court.maDiaDiem,
-        tenDiaDiem: court.tenDiaDiem,
-        tinhTrang: court.tinhTrang,
-        gioMo: court.gioMo,
-        gioDong: court.gioDong,
-        hinhAnh: court.hinhAnh,
-        mapLink: court.mapLink
-      }));
-
-      const token = getAuthToken();
-      if (!token) {
-        window.location.href = '/pages/auth/login.html?redirect=/pages/user/booking.html';
-        return;
-      }
-      window.location.href = '/pages/user/booking.html';
+      if (!court) return;
+      sessionStorage.setItem('selectedCourt', JSON.stringify(court));
+      sessionStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+      localStorage.setItem('selectedCourt', JSON.stringify(court));
+      localStorage.setItem('selectedCourtForBooking', JSON.stringify(court));
+      const locParam = court.maDiaDiem ? `&maDiaDiem=${court.maDiaDiem}` : '';
+      window.location.href = `/pages/user/booking.html?maSan=${court.maSan}${locParam}`;
     }
 
+    function openCourtDetailModalById(maSan) {
+      const court = findCourtById(maSan);
+      if (court) openCourtDetailModal(court);
+    }
+
+    // Mở Modal xem chi tiết sân
     function openCourtDetailModal(court) {
       const modal = document.getElementById('modal-court-detail');
-      const titleEl = document.getElementById('modal-court-title');
-      const bodyEl = document.getElementById('modal-court-body');
+      const title = document.getElementById('modal-court-title');
+      const body = document.getElementById('modal-court-body');
+      if (!modal || !body) return;
+
       const token = getAuthToken();
+      const fallbackImg = '/assets/images/courts.jpg';
+      const courtImg = (court.hinhAnh && court.hinhAnh.startsWith('http')) ? court.hinhAnh : fallbackImg;
+      const isVip = (court.loaiSan || '').toLowerCase().includes('vip') || (court.loaiSan || '').toLowerCase().includes('thi đấu');
 
-      if (!modal || !bodyEl) return;
+      if (title) title.textContent = `Thông tin chi tiết: ${court.tenSan}`;
 
-      titleEl.textContent = `${court.tenSan} — ${court.tenDiaDiem}`;
+      body.innerHTML = `
+        <div style="border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1.25rem; aspect-ratio: 16/9; max-height: 240px; background: #e2e8f0;">
+          <img src="${courtImg}" alt="${court.tenSan}" onerror="this.src='${fallbackImg}'" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
 
-      const fallbackImg = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop&q=60';
-      const courtImg = court.hinhAnh && court.hinhAnh.startsWith('http') ? court.hinhAnh : fallbackImg;
+        <div class="modal-section-box">
+          <div class="modal-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            Thông số kỹ thuật sân
+          </div>
+          <div class="modal-kv-grid">
+            <div><strong>Tên sân:</strong> ${court.tenSan}</div>
+            <div><strong>Mã định danh:</strong> #${court.maSan}</div>
+            <div><strong>Phân loại:</strong> <span class="badge ${isVip ? 'badge-primary' : 'badge-secondary'}">${court.loaiSan || 'Tiêu chuẩn'}</span></div>
+            <div><strong>Trạng thái:</strong> ${badgeTrangThai(court.tinhTrang)}</div>
+            <div><strong>Cơ sở:</strong> ${court.tenDiaDiem}</div>
+            <div><strong>Khung giờ:</strong> ${formatGio(court.gioMo) || '05:00'} - ${formatGio(court.gioDong) || '23:00'}</div>
+          </div>
+          <div style="margin-top: 0.65rem; font-size: 0.85rem; color: var(--text-muted);">
+            <strong>Địa chỉ cơ sở:</strong> ${court.diaChi}
+          </div>
+        </div>
 
-      bodyEl.innerHTML = `
-        <img src="${courtImg}" alt="${court.tenSan}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 1rem;" onerror="this.src='${fallbackImg}'">
-        
-        ${court.tinhTrang !== 'HoatDong' ? `
-          <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.65rem;">
-            <svg width="20" height="20" fill="none" stroke="#d97706" viewBox="0 0 24 24" style="flex-shrink:0; margin-top:2px;">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
+        <div class="modal-section-box">
+          <div class="modal-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Bảng giá & Đơn vị tính
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
             <div>
-              <strong style="color: #92400e; font-size: 0.88rem; display: block;">
-                ${court.tinhTrang === 'BaoTri' ? 'Sân đang bảo trì kỹ thuật' : 'Sân đang tạm ngưng phục vụ'}
-              </strong>
-              <span style="font-size: 0.82rem; color: #b45309; line-height: 1.45; display: block; margin-top: 2px;">
-                Sân hiện đang được bảo dưỡng nâng cấp cơ sở vật chất và không nhận lịch đặt mới. Quý khách vui lòng chọn các sân khả dụng khác tại cơ sở.
-              </span>
+              <span style="font-size: 1.25rem; font-weight: 800; color: var(--primary-dark);">50.000 đ</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);"> / slot 30 phút</span>
+              <span style="margin: 0 0.5rem; color: var(--border);">|</span>
+              <span style="font-size: 0.95rem; font-weight: 700; color: var(--dark);">100.000 đ</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);"> / giờ</span>
             </div>
+            <div style="font-size: 0.8rem; color: var(--text-sub);">
+              * Áp dụng đồng giá tất cả các khung giờ trong ngày
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section-box">
+          <div class="modal-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Tiện ích đạt chuẩn thi đấu
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.85rem; color: var(--text-main);">
+            <div>✓ Thảm sân PVC vân cát chống trượt BWF</div>
+            <div>✓ Đèn LED rọi gián tiếp chống chói mắt</div>
+            <div>✓ Phòng thay đồ & Tắm nước nóng lạnh</div>
+            <div>✓ Wi-Fi tốc độ cao & Điều hòa thông gió</div>
+            <div>✓ Ghế nghỉ ngơi vận động viên tại sân</div>
+            <div>✓ Nước uống & Quầy dịch vụ vợt/cầu</div>
+          </div>
+        </div>
+
+        ${court.ghiChu ? `
+          <div style="margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted); background: #fafafa; padding: 0.75rem; border-radius: 6px; border-left: 3px solid var(--primary);">
+            <strong>Ghi chú:</strong> ${court.ghiChu}
           </div>
         ` : ''}
 
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Tên sân:</span>
-          <span class="modal-detail-value">${court.tenSan}</span>
-        </div>
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Địa điểm cơ sở:</span>
-          <span class="modal-detail-value">
-            ${court.tenDiaDiem}
-            ${court.mapLink ? `<br><a href="${court.mapLink}" target="_blank" style="display:inline-flex; align-items:center; gap:0.25rem; color: var(--primary); font-size: 0.85rem; text-decoration: underline; margin-top: 0.25rem;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Xem vị trí trên Google Maps ↗</a>` : ''}
-          </span>
-        </div>
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Mã định danh:</span>
-          <span class="modal-detail-value">#${court.maSan}</span>
-        </div>
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Giờ hoạt động:</span>
-          <span class="modal-detail-value">${formatGio(court.gioMo)} - ${formatGio(court.gioDong)}</span>
-        </div>
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Trạng thái hiện tại:</span>
-          <span class="modal-detail-value">
-            ${court.tinhTrang === 'BaoTri'
-              ? '<span class="badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; font-weight:700;">Đang bảo trì</span>'
-              : (court.tinhTrang === 'TamNgung'
-                ? '<span class="badge" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; font-weight:700;">Tạm ngưng phục vụ</span>'
-                : badgeTrangThai(court.tinhTrang)
-              )
-            }
-          </span>
-        </div>
-        <div class="modal-detail-row">
-          <span class="modal-detail-label">Bảng giá tham khảo:</span>
-          <span class="modal-detail-value" style="color: var(--primary-dark);">100.000 đ - 150.000 đ / giờ</span>
-        </div>
-        <div class="modal-detail-row" style="flex-direction: column; gap: 0.35rem;">
-          <span class="modal-detail-label">Tiện ích:</span>
-          <span style="font-size: 0.85rem; color: var(--text-main);">
-            • Sân thảm chuyên dụng chống trơn trượt<br>
-            • Hệ thống điều hòa / thông gió & đèn LED cao cấp<br>
-            • Nước uống, phòng thay đồ, wifi miễn phí
-          </span>
-        </div>
-
-        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.65rem;">
           <button type="button" class="btn btn-outline" onclick="closeCourtDetailModal()">Đóng</button>
           ${court.tinhTrang === 'HoatDong'
             ? (token
-                ? `<button type="button" class="btn btn-primary" onclick='selectCourtAndBook(${JSON.stringify(court)})'>Đặt sân này</button>`
-                : `<a href="/pages/auth/login.html?redirect=/pages/user/booking.html" class="btn btn-primary">Đăng nhập để đặt</a>`
+                ? `<button type="button" class="btn btn-primary" onclick="selectCourtAndBookById(${court.maSan})">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Đặt sân này ngay
+                   </button>`
+                : `<a href="/pages/auth/login.html?redirect=${encodeURIComponent(`/pages/user/booking.html?maSan=${court.maSan}`)}" class="btn btn-primary">Đăng nhập để đặt</a>`
               )
-            : `<button type="button" class="btn" disabled style="background-color: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; cursor: not-allowed; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                ${court.tinhTrang === 'BaoTri' ? 'Sân đang bảo trì (Tạm khóa)' : 'Sân tạm ngưng (Tạm khóa)'}
-              </button>`
+            : `<button type="button" class="btn" disabled style="background-color: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; cursor: not-allowed; font-weight: 700;">
+                ${court.tinhTrang === 'BaoTri' ? 'Sân đang bảo trì' : 'Sân tạm ngưng'}
+               </button>`
           }
         </div>
       `;
@@ -475,9 +817,9 @@
     }
 
     function closeCourtDetailModal() {
-      document.getElementById('modal-court-detail').classList.add('hidden');
+      const modal = document.getElementById('modal-court-detail');
+      if (modal) modal.classList.add('hidden');
     }
   </script>
 </body>
 </html>
-

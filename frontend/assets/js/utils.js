@@ -9,6 +9,12 @@ function formatTien(amount) {
 
 function formatNgay(dateStr) {
   if (!dateStr) return '';
+  if (typeof dateStr === 'string' && (dateStr.includes('T') || dateStr.includes(':'))) {
+    return formatNgayGio(dateStr);
+  }
+  if (Array.isArray(dateStr)) {
+    return formatNgayGio(dateStr);
+  }
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -17,6 +23,51 @@ function formatNgay(dateStr) {
 }
 
 const formatDate = formatNgay;
+
+function formatNgayGio(val) {
+  if (!val) return '--';
+  try {
+    if (Array.isArray(val)) {
+      const y = val[0];
+      const m = String(val[1]).padStart(2, '0');
+      const d = String(val[2]).padStart(2, '0');
+      const hh = String(val[3] !== undefined ? val[3] : 0).padStart(2, '0');
+      const mm = String(val[4] !== undefined ? val[4] : 0).padStart(2, '0');
+      return `${d}/${m}/${y} ${hh}:${mm}`;
+    }
+
+    let d = null;
+    if (val instanceof Date) {
+      d = val;
+    } else if (typeof val === 'number') {
+      d = new Date(val);
+    } else if (typeof val === 'string') {
+      const match = val.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s](\d{1,2}):(\d{1,2}))?/);
+      if (match) {
+        const [, year, month, day, hours, minutes] = match;
+        const dStr = day.padStart(2, '0');
+        const mStr = month.padStart(2, '0');
+        if (hours !== undefined && minutes !== undefined) {
+          return `${dStr}/${mStr}/${year} ${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+        }
+        return `${dStr}/${mStr}/${year}`;
+      }
+      d = new Date(val.replace(' ', 'T'));
+    }
+
+    if (d && !isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hour = String(d.getHours()).padStart(2, '0');
+      const minute = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hour}:${minute}`;
+    }
+  } catch (e) {
+    console.warn('formatNgayGio error:', e);
+  }
+  return String(val);
+}
 
 function formatGio(timeStr) {
   if (!timeStr) return '';
@@ -180,7 +231,52 @@ function getAuthMaKH() {
   return sessionStorage.getItem('maKH') || localStorage.getItem('maKH');
 }
 
+function getAuthUsername() {
+  const stored = sessionStorage.getItem('tenDangNhap') || localStorage.getItem('tenDangNhap');
+  if (stored) return stored;
+  const token = getAuthToken();
+  if (token && token.includes('.')) {
+    try {
+      const parts = token.split('.');
+      if (parts.length >= 2) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.sub) return payload.sub;
+      }
+    } catch (e) {}
+  }
+  return '';
+}
+
+function getUser() {
+  try {
+    const raw = sessionStorage.getItem('user') || localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch (e) {}
+
+  const token = getAuthToken();
+  const role = getAuthRole();
+  const hoTen = sessionStorage.getItem('hoTen') || localStorage.getItem('hoTen') || '';
+  const tenDangNhap = getAuthUsername();
+  const maKH = getAuthMaKH();
+
+  if (!token && !role && !hoTen) return null;
+
+  return {
+    tenDangNhap: tenDangNhap || '',
+    hoTen: hoTen || '',
+    role: role || '',
+    maKH: maKH ? parseInt(maKH) : null
+  };
+}
+
 function clearAuthSession() {
+  sessionStorage.removeItem('tenDangNhap');
+  sessionStorage.removeItem('user');
+  localStorage.removeItem('tenDangNhap');
+  localStorage.removeItem('user');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('role');
   sessionStorage.removeItem('hoTen');
@@ -298,3 +394,150 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+
+/**
+ * Footer Policy & Guide Modal Handlers
+ */
+const FOOTER_POLICY_CONTENT = {
+  'guide-booking': {
+    title: 'Hướng dẫn đặt sân trực tuyến',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p><strong>Bước 1:</strong> Chọn cơ sở sân cầu lông bạn muốn chơi từ danh sách địa điểm.</p>
+        <p><strong>Bước 2:</strong> Xem thông tin chi tiết sân, chọn ngày chơi và khung giờ còn trống (mỗi slot 30 phút hoặc 60 phút).</p>
+        <p><strong>Bước 3:</strong> Chọn phương thức thanh toán (chuyển khoản VNPay tức thì hoặc thanh toán tiền mặt tại quầy).</p>
+        <p><strong>Bước 4:</strong> Xác nhận đặt sân. Hệ thống sẽ giữ chỗ 10 phút để bạn hoàn tất thanh toán (đối với phương thức online).</p>
+        <p><strong>Bước 5:</strong> Đến sân đúng giờ, mở mã đặt sân tại mục <em>Lịch sử đặt sân</em> để nhận sân và bắt đầu trận đấu.</p>
+      </div>
+    `
+  },
+  'guide-payment': {
+    title: 'Hướng dẫn thanh toán',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p>Hệ thống hiện hỗ trợ 2 hình thức thanh toán chính:</p>
+        <ul style="padding-left: 1.25rem;">
+          <li><strong>Thanh toán trực tuyến (VNPay QR / Thẻ ngân hàng):</strong> Quét mã QR thanh toán nhanh chóng. Đơn đặt sẽ được tự động kích hoạt và xác nhận tức thì mà không cần chờ nhân viên duyệt.</li>
+          <li><strong>Thanh toán tại quầy (Tiền mặt / Chuyển khoản trực tiếp):</strong> Bạn có thể thanh toán khi đến nhận sân trước giờ chơi tối thiểu 15 phút.</li>
+        </ul>
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 0.75rem; color: #065f46; font-size: 0.85rem;">
+          💡 <em>Mẹo:</em> Thanh toán qua VNPay giúp bạn giữ sân chắc chắn 100%, không lo bị hủy slot khi giờ cao điểm.
+        </div>
+      </div>
+    `
+  },
+  'policy-cancel': {
+    title: 'Chính sách hủy sân',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p>Để đảm bảo quyền lợi cho cả khách hàng và ban quản lý sân, quy định hủy đặt sân được áp dụng như sau:</p>
+        <ul style="padding-left: 1.25rem;">
+          <li><strong>Hủy trước giờ chơi ≥ 24 giờ:</strong> Được hoàn tiền <strong>100%</strong> giá trị đơn đặt.</li>
+          <li><strong>Hủy trước giờ chơi từ 12 - 24 giờ:</strong> Được hoàn tiền <strong>50%</strong> giá trị đơn đặt.</li>
+          <li><strong>Hủy trước giờ chơi < 12 giờ:</strong> Không được hoàn tiền.</li>
+          <li><strong>Cơ sở hủy do sự cố / bảo trì đột xuất:</strong> Hoàn tiền <strong>100%</strong> bất kể thời điểm.</li>
+        </ul>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          * Để yêu cầu hủy đơn, bạn vào mục <em>Lịch sử đặt sân</em>, nhấn vào đơn cần hủy và chọn <em>Yêu cầu hủy</em>.
+        </p>
+      </div>
+    `
+  },
+  'policy-refund': {
+    title: 'Chính sách hoàn tiền',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p>Quy trình hoàn tiền cho các đơn hủy hợp lệ:</p>
+        <ul style="padding-left: 1.25rem;">
+          <li>Tiền hoàn được chuyển trực tiếp về tài khoản ngân hàng / ví điện tử ban đầu bạn đã thanh toán.</li>
+          <li>Thời gian xử lý: Từ <strong>1 đến 3 ngày làm việc</strong> sau khi đơn hủy được phê duyệt.</li>
+          <li>Khách hàng có thể theo dõi tiến trình hoàn tiền chi tiết tại mục <em>Thông báo</em> và <em>Lịch sử đặt sân</em>.</li>
+        </ul>
+        <p>Nếu quá thời gian quy định chưa nhận được tiền, vui lòng liên hệ hotline <strong>1900 6868</strong> để được hỗ trợ kiểm tra đối soát giao dịch.</p>
+      </div>
+    `
+  },
+  'faq': {
+    title: 'Câu hỏi thường gặp (FAQ)',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <div>
+          <strong>1. Tôi có cần mang theo vợt và cầu lông không?</strong>
+          <p style="color: var(--text-muted); margin-top: 0.2rem;">Sân có dịch vụ cho thuê vợt chuẩn chất lượng và bán các loại cầu lông thi đấu chính hãng ngay tại quầy phục vụ.</p>
+        </div>
+        <div>
+          <strong>2. Đến sân trễ thì có được bù giờ không?</strong>
+          <p style="color: var(--text-muted); margin-top: 0.2rem;">Khung giờ chơi được tính chính xác theo thời gian đã đặt trên hệ thống. Nếu bạn đến trễ, thời gian kết thúc vẫn giữ nguyên theo lịch để không ảnh hưởng đến lượt chơi kế tiếp.</p>
+        </div>
+        <div>
+          <strong>3. Tôi có thể đổi sang sân khác hoặc đổi giờ không?</strong>
+          <p style="color: var(--text-muted); margin-top: 0.2rem;">Bạn có thể hủy đơn hiện tại theo quy định và đặt lại khung giờ mới, hoặc liên hệ trực tiếp lễ tân cơ sở để được hỗ trợ sắp xếp nếu sân còn trống.</p>
+        </div>
+      </div>
+    `
+  },
+  'terms': {
+    title: 'Điều khoản sử dụng',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p>Khi sử dụng dịch vụ của hệ thống Sân Cầu Lông, quý khách vui lòng tuân thủ các quy tắc:</p>
+        <ul style="padding-left: 1.25rem;">
+          <li>Mang giày thể thao có đế chuyên dụng cho sân cầu lông (đế kếp, không mang giày gót nhọn hoặc giày đế đinh).</li>
+          <li>Giữ gìn vệ sinh chung, bỏ rác đúng nơi quy định, không hút thuốc hoặc mang đồ uống có cồn vào khu vực thi đấu.</li>
+          <li>Bảo vệ tài sản và trang thiết bị sân (lưới, cột, thảm, ghế ngồi). Trường hợp làm hư hại do cố ý sẽ phải bồi thường theo giá trị niêm yết.</li>
+          <li>Tôn trọng đồng đội và các vận động viên khác đang thi đấu trên sân.</li>
+        </ul>
+      </div>
+    `
+  },
+  'privacy': {
+    title: 'Chính sách bảo mật',
+    html: `
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        <p>Chúng tôi cam kết bảo vệ tuyệt đối thông tin riêng tư của khách hàng:</p>
+        <ul style="padding-left: 1.25rem;">
+          <li>Thông tin cá nhân (họ tên, số điện thoại, email) chỉ dùng cho mục đích xác thực đặt sân và thông báo giao dịch.</li>
+          <li>Không chia sẻ hoặc bán dữ liệu người dùng cho bất kỳ bên thứ ba nào vì mục đích thương mại.</li>
+          <li>Giao dịch thanh toán được bảo mật qua cổng thanh toán đạt tiêu chuẩn an toàn quốc tế PCI DSS.</li>
+        </ul>
+      </div>
+    `
+  }
+};
+
+function openFooterPolicyModal(key) {
+  let modal = document.getElementById('modal-footer-policy');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-footer-policy';
+    modal.className = 'modal-backdrop hidden';
+    modal.onclick = (e) => { if (e.target === modal) closeFooterPolicyModal(); };
+    modal.innerHTML = `
+      <div class="modal-dialog" style="max-width: 600px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3 id="footer-modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">Hỗ trợ khách hàng</h3>
+          <button type="button" class="modal-close-btn" onclick="closeFooterPolicyModal()">✕</button>
+        </div>
+        <div id="footer-modal-content" class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main); padding: 1.25rem;"></div>
+        <div class="modal-footer" style="padding: 1rem 1.25rem; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-primary" onclick="closeFooterPolicyModal()">Đã hiểu</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const titleEl = document.getElementById('footer-modal-title');
+  const bodyEl = document.getElementById('footer-modal-content');
+  const item = FOOTER_POLICY_CONTENT[key] || { title: 'Thông tin quy định', html: '<p>Nội dung đang được cập nhật.</p>' };
+
+  if (titleEl) titleEl.textContent = item.title;
+  if (bodyEl) bodyEl.innerHTML = item.html;
+  modal.classList.remove('hidden');
+}
+
+function closeFooterPolicyModal() {
+  const modal = document.getElementById('modal-footer-policy');
+  if (modal) modal.classList.add('hidden');
+}

@@ -42,10 +42,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex) {
-        log.error("Lỗi hệ thống", ex);
+        log.error("Lỗi hệ thống: ", ex);
         ApiErrorResponse error = new ApiErrorResponse();
         error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.setMessage("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
+        String msg = ex.getMessage();
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            msg = ex.getCause().getMessage();
+        }
+        error.setMessage(msg != null && !msg.isBlank() ? msg : "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
         error.setTimestamp(LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

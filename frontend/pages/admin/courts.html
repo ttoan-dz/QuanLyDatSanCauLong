@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Quản Lý Sân & Địa Điểm — Admin Portal</title>
   <link rel="icon" type="image/png" href="/assets/images/logo.png">
-  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=4.2">
 </head>
 <body data-require-role="ADMIN">
 
@@ -28,7 +31,7 @@
 
       <!-- Navigation Menus -->
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Tổng quan</div>
+        <div class="nav-section-title">TỔNG QUAN</div>
         <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/dashboard.html">
@@ -42,7 +45,7 @@
           </li>
         </ul>
 
-        <div class="nav-section-title">Vận hành sân bãi</div>
+        <div class="nav-section-title">VẬN HÀNH</div>
         <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/bookings.html">
@@ -74,10 +77,6 @@
               <span>Danh sách sân & bảo trì</span>
             </a>
           </li>
-        </ul>
-
-        <div class="nav-section-title">Cơ sở & Dịch vụ</div>
-        <ul class="nav-menu">
           <li class="nav-menu-item">
             <a href="/pages/admin/services.html">
               <span class="nav-icon">
@@ -90,16 +89,26 @@
           </li>
         </ul>
 
-        <div class="nav-section-title">Hệ thống</div>
+        <div class="nav-section-title">HỆ THỐNG</div>
         <ul class="nav-menu">
-          <li class="nav-menu-item">
+          <li class="nav-menu-item" id="sidebar-nav-users">
             <a href="/pages/admin/users.html">
               <span class="nav-icon">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
               </span>
-              <span>Quản lý người dùng</span>
+              <span>Tài khoản & Phân quyền</span>
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="/pages/admin/profile.html">
+              <span class="nav-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </span>
+              <span>Tài khoản của tôi</span>
             </a>
           </li>
         </ul>
@@ -107,13 +116,13 @@
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="admin-user-profile">
+        <a href="/pages/admin/profile.html" class="admin-user-profile" title="Xem hồ sơ quản trị cá nhân" style="text-decoration: none;">
           <div class="user-avatar-badge" id="admin-avatar-initials">AD</div>
           <div class="user-meta-info">
             <span class="user-meta-name" id="admin-display-name">Quản trị viên</span>
-            <span class="user-meta-role">Hệ thống Quản trị</span>
+            <span class="user-meta-role" id="admin-display-role">Hệ thống Quản trị</span>
           </div>
-        </div>
+        </a>
         <div class="sidebar-actions-row">
           <a href="/pages/user/courts.html" class="sidebar-action-btn view-site" title="Xem giao diện người dùng">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +134,7 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
-            Thoát
+            Đăng xuất
           </button>
         </div>
       </div>
@@ -220,19 +229,31 @@
             <label for="create-soSanNho">Số lượng sân con khởi tạo (*):</label>
             <input type="number" id="create-soSanNho" class="form-control" min="1" max="50" value="4" required>
           </div>
-          <div class="form-group">
-            <label for="create-hinhAnh">Hình ảnh sân mặc định:</label>
-            <select id="create-hinhAnh" class="form-control">
-              <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
-              <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
-              <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
-              <option value="/assets/images/index3.jpg">/assets/images/index3.jpg</option>
-              <option value="/images/san-cau-giay-1.jpg">/images/san-cau-giay-1.jpg</option>
-              <option value="/images/san-cau-giay-2.jpg">/images/san-cau-giay-2.jpg</option>
-              <option value="/images/san-cau-giay-3.jpg">/images/san-cau-giay-3.jpg</option>
-              <option value="/images/san-thanh-xuan-1.jpg">/images/san-thanh-xuan-1.jpg</option>
-              <option value="/images/san-thanh-xuan-2.jpg">/images/san-thanh-xuan-2.jpg</option>
-            </select>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Hình ảnh sân đại diện:</label>
+            <div class="court-upload-container">
+              <input type="file" id="create-court-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="handleCourtFileSelect(event, 'create')">
+              <input type="hidden" id="create-hinhAnh" value="/assets/images/courts.jpg">
+              
+              <div class="court-upload-dropzone" id="create-court-dropzone" onclick="document.getElementById('create-court-file-input').click()">
+                <div class="court-upload-icon">
+                  <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <div class="court-upload-text">Kéo thả ảnh vào đây hoặc <span style="color: var(--primary); text-decoration: underline;">chọn từ máy tính</span></div>
+                <div class="court-upload-subtext">Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB)</div>
+              </div>
+
+              <div class="court-upload-preview" id="create-court-preview-box" style="display: none;">
+                <img src="" id="create-court-preview-thumb" class="court-preview-thumb" alt="Preview">
+                <div class="court-preview-info">
+                  <div class="court-preview-name" id="create-court-preview-name">image.jpg</div>
+                  <div class="court-preview-size" id="create-court-preview-size">0 KB</div>
+                </div>
+                <button type="button" class="court-preview-remove" onclick="removeSelectedCourtFile('create')">Xóa ảnh</button>
+              </div>
+            </div>
           </div>
           <div class="form-group" style="grid-column: 1 / -1;">
             <label for="create-mapLink">Link Google Maps (tuỳ chọn):</label>
@@ -295,18 +316,39 @@
           <small style="color: var(--text-muted); font-size: 0.8rem;">Nếu giảm số sân, hệ thống sẽ kiểm tra xem sân có lịch đặt chưa trước khi cho phép giảm.</small>
         </div>
         <div class="form-group">
-          <label for="edit-hinhAnh">Hình ảnh sân mặc định:</label>
-          <select id="edit-hinhAnh" class="form-control">
-            <option value="/assets/images/courts.jpg">/assets/images/courts.jpg</option>
-            <option value="/assets/images/index1.webp">/assets/images/index1.webp</option>
-            <option value="/assets/images/index2.webp">/assets/images/index2.webp</option>
-            <option value="/assets/images/index3.jpg">/assets/images/index3.jpg</option>
-            <option value="/images/san-cau-giay-1.jpg">/images/san-cau-giay-1.jpg</option>
-            <option value="/images/san-cau-giay-2.jpg">/images/san-cau-giay-2.jpg</option>
-            <option value="/images/san-cau-giay-3.jpg">/images/san-cau-giay-3.jpg</option>
-            <option value="/images/san-thanh-xuan-1.jpg">/images/san-thanh-xuan-1.jpg</option>
-            <option value="/images/san-thanh-xuan-2.jpg">/images/san-thanh-xuan-2.jpg</option>
-          </select>
+          <label>Hình ảnh sân đại diện:</label>
+          <div class="court-upload-container">
+            <input type="file" id="edit-court-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="handleCourtFileSelect(event, 'edit')">
+            <input type="hidden" id="edit-hinhAnh" value="">
+
+            <!-- Hiển thị ảnh hiện tại của sân -->
+            <div id="edit-court-current-box" style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+              <img id="edit-court-current-thumb" src="/assets/images/courts.jpg" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;" alt="Current Court">
+              <div>
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Ảnh hiện tại</span>
+                <div id="edit-court-current-path" style="font-size: 0.8rem; color: var(--text-secondary); word-break: break-all;">/assets/images/courts.jpg</div>
+              </div>
+            </div>
+            
+            <div class="court-upload-dropzone" id="edit-court-dropzone" onclick="document.getElementById('edit-court-file-input').click()">
+              <div class="court-upload-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div class="court-upload-text">Kéo thả ảnh mới vào đây hoặc <span style="color: var(--primary); text-decoration: underline;">chọn từ máy tính</span></div>
+              <div class="court-upload-subtext">Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB - Để trống nếu không muốn đổi ảnh)</div>
+            </div>
+
+            <div class="court-upload-preview" id="edit-court-preview-box" style="display: none;">
+              <img src="" id="edit-court-preview-thumb" class="court-preview-thumb" alt="New Preview">
+              <div class="court-preview-info">
+                <div class="court-preview-name" id="edit-court-preview-name">new-image.jpg</div>
+                <div class="court-preview-size" id="edit-court-preview-size">0 KB</div>
+              </div>
+              <button type="button" class="court-preview-remove" onclick="removeSelectedCourtFile('edit')">Hủy ảnh mới</button>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="edit-mapLink">Link Google Maps:</label>
@@ -348,9 +390,27 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="photo-modal-court-id">
-        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-          Nhấp vào một trong các hình ảnh sân thực tế dưới đây để gán ảnh đại diện cho sân này:
-        </p>
+
+        <!-- Tab upload ảnh trực tiếp từ máy -->
+        <div style="margin-bottom: 1.25rem;">
+          <input type="file" id="modal-court-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="handleModalCourtPhotoUpload(event)">
+          <div class="court-upload-dropzone" id="modal-court-dropzone" onclick="document.getElementById('modal-court-file-input').click()" style="padding: 1rem;">
+            <div class="court-upload-icon" style="width: 32px; height: 32px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+            </div>
+            <div class="court-upload-text" style="font-size: 0.85rem;">Tải ảnh mới từ máy tính lên sân này</div>
+            <div class="court-upload-subtext">JPG, PNG, WEBP (Tối đa 5MB)</div>
+          </div>
+          <div id="modal-court-upload-status" style="font-size: 0.8rem; text-align: center; margin-top: 0.35rem; display: none;"></div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Hoặc chọn từ bộ sưu tập có sẵn:</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+
         <div class="court-photo-gallery-grid" id="court-photo-gallery-grid">
           <!-- Dynamically populated -->
         </div>
@@ -421,9 +481,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/assets/js/api.js?v=2.8"></script>
-  <script src="/assets/js/utils.js?v=2.8"></script>
-  <script src="/assets/js/admin.js?v=2.8"></script>
+  <script src="/assets/js/api.js?v=4.2"></script>
+  <script src="/assets/js/utils.js?v=4.2"></script>
+  <script src="/assets/js/admin.js?v=4.2"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof initAdminLayout === 'function') initAdminLayout();

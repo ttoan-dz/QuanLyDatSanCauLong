@@ -456,14 +456,26 @@ async function handleLogin(event) {
     });
 
     // Lưu token và thông tin user vào cả sessionStorage và localStorage để duy trì phiên ổn định
+    const actualUsername = data.tenDangNhap || tenDangNhap;
+    const userObj = {
+      tenDangNhap: actualUsername,
+      hoTen: data.hoTen || actualUsername,
+      role: data.role,
+      maKH: data.maKH || null
+    };
+
     sessionStorage.setItem('token', data.token);
     sessionStorage.setItem('role', data.role);
-    sessionStorage.setItem('hoTen', data.hoTen || tenDangNhap);
+    sessionStorage.setItem('hoTen', data.hoTen || actualUsername);
+    sessionStorage.setItem('tenDangNhap', actualUsername);
+    sessionStorage.setItem('user', JSON.stringify(userObj));
     if (data.maKH) sessionStorage.setItem('maKH', data.maKH);
 
     localStorage.setItem('token', data.token);
     localStorage.setItem('role', data.role);
-    localStorage.setItem('hoTen', data.hoTen || tenDangNhap);
+    localStorage.setItem('hoTen', data.hoTen || actualUsername);
+    localStorage.setItem('tenDangNhap', actualUsername);
+    localStorage.setItem('user', JSON.stringify(userObj));
     if (data.maKH) localStorage.setItem('maKH', data.maKH);
 
     showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');

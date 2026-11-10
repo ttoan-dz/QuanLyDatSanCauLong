@@ -6,6 +6,7 @@ import com.quanlydatsan.dto.response.ProfileResponse;
 import com.quanlydatsan.entity.KhachHang;
 import com.quanlydatsan.entity.TaiKhoan;
 import com.quanlydatsan.repository.KhachHangRepository;
+import com.quanlydatsan.repository.NhanVienRepository;
 import com.quanlydatsan.repository.TaiKhoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserService {
 
     private final KhachHangRepository khachHangRepository;
+    private final NhanVienRepository nhanVienRepository;
     private final TaiKhoanRepository taiKhoanRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -40,13 +42,13 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin khách hàng"));
 
         String sdtMoi = req.getSdt().trim();
-        if (khachHangRepository.existsBySdtAndMaKHNot(sdtMoi, maKH)) {
+        if (khachHangRepository.existsBySdtAndMaKHNot(sdtMoi, maKH) || nhanVienRepository.existsBySdt(sdtMoi)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã được sử dụng bởi tài khoản khác");
         }
 
         if (req.getEmail() != null && !req.getEmail().trim().isEmpty()) {
             String emailMoi = req.getEmail().trim();
-            if (khachHangRepository.existsByEmailAndMaKHNot(emailMoi, maKH)) {
+            if (khachHangRepository.existsByEmailAndMaKHNot(emailMoi, maKH) || nhanVienRepository.existsByEmail(emailMoi)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng bởi tài khoản khác");
             }
         }
