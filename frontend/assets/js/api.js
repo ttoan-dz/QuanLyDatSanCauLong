@@ -5,7 +5,7 @@
 // - Mặc định tự động nhận diện nếu Frontend và Backend đặt tên theo quy chuẩn Render:
 //   Ví dụ: Frontend 'quanlydatsan-frontend' -> Backend 'quanlydatsan-backend'
 // - Nếu đặt tên service Backend khác trên Render Dashboard, chỉ cần cập nhật DUY NHẤT URL này:
-const DEFAULT_PRODUCTION_BACKEND_URL = 'https://quanlydatsan-backend.onrender.com';
+const DEFAULT_PRODUCTION_BACKEND_URL = 'https://quanlydatsancaulong-backend.onrender.com';
 
 const isLocalhost = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1' || 
