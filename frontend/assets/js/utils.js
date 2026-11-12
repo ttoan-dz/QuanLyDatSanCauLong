@@ -514,13 +514,13 @@ function openFooterPolicyModal(key) {
     modal.className = 'modal-backdrop hidden';
     modal.onclick = (e) => { if (e.target === modal) closeFooterPolicyModal(); };
     modal.innerHTML = `
-      <div class="modal-dialog" style="max-width: 600px;" onclick="event.stopPropagation()">
+      <div class="modal-dialog modal-content" style="max-width: 600px;" onclick="event.stopPropagation()">
         <div class="modal-header">
           <h3 id="footer-modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">Hỗ trợ khách hàng</h3>
-          <button type="button" class="modal-close-btn" onclick="closeFooterPolicyModal()">✕</button>
+          <button type="button" class="modal-close-btn modal-close" onclick="closeFooterPolicyModal()">✕</button>
         </div>
-        <div id="footer-modal-content" class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main); padding: 1.25rem;"></div>
-        <div class="modal-footer" style="padding: 1rem 1.25rem; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end;">
+        <div id="footer-modal-content" class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);"></div>
+        <div class="modal-footer" style="padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; margin-top: 1rem;">
           <button type="button" class="btn btn-primary" onclick="closeFooterPolicyModal()">Đã hiểu</button>
         </div>
       </div>

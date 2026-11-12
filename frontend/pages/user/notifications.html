@@ -118,14 +118,14 @@
 
   <!-- Modal Chi Tiết Đơn Đặt Sân -->
   <div id="modal-booking-detail" class="modal-backdrop hidden" onclick="if(event.target===this) closeBookingDetailModal()">
-    <div class="modal-dialog" style="max-width: 640px;" onclick="event.stopPropagation()">
+    <div class="modal-dialog modal-content" style="max-width: 640px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 id="modal-booking-title" class="modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--dark);">
           Chi tiết đơn đặt sân
         </h3>
-        <button type="button" class="modal-close-btn" onclick="closeBookingDetailModal()">✕</button>
+        <button type="button" class="modal-close-btn modal-close" onclick="closeBookingDetailModal()">✕</button>
       </div>
-      <div id="modal-booking-body" class="modal-body" style="padding: 1.25rem;">
+      <div id="modal-booking-body" class="modal-body">
         <!-- Dynamic content inserted by notifications.js -->
       </div>
     </div>
