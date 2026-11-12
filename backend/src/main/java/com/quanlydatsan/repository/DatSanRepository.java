@@ -145,10 +145,11 @@ public interface DatSanRepository extends JpaRepository<DatSan, Integer> {
     List<DatSan> findDonXungDotKhiBaoTri(@Param("maSan") Integer maSan, @Param("today") LocalDate today);
 
     /**
-     * Tìm các đơn chờ thanh toán đã quá hạn giữ chỗ 10 phút.
+     * Tìm các đơn chờ thanh toán trực tuyến đã quá hạn giữ chỗ 10 phút (loại trừ Tiền mặt).
      */
     @Query("SELECT d FROM DatSan d " +
            "WHERE d.trangThaiDat = 'ChoXacNhan' " +
+           "AND d.phuongThucThanhToan <> 'TienMat' " +
            "AND ((d.hanThanhToan IS NOT NULL AND d.hanThanhToan < :now) " +
            "  OR (d.hanThanhToan IS NULL AND d.ngayTao < :thoiDiemHetHan))")
     List<DatSan> findDonHetHanGiuCho(@Param("now") LocalDateTime now, @Param("thoiDiemHetHan") LocalDateTime thoiDiemHetHan);
