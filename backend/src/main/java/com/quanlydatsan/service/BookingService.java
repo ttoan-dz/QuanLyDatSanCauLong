@@ -226,7 +226,11 @@ public class BookingService {
         ds.setTienTraTruoc(BigDecimal.ZERO);
         ds.setGhiChu(req.getGhiChu());
         ds.setNgayTao(now);
-        ds.setHanThanhToan(now.plusMinutes(10));
+        if ("TienMat".equals(pttt)) {
+            ds.setHanThanhToan(null);
+        } else {
+            ds.setHanThanhToan(now.plusMinutes(10));
+        }
         datSanRepository.save(ds);
 
         ChiTietDatSan ct = new ChiTietDatSan();
@@ -239,7 +243,7 @@ public class BookingService {
         chiTietDatSanRepository.save(ct);
 
         String noiDung = "TienMat".equals(pttt)
-                ? "Sân đã được giữ chỗ trong 10 phút. Vui lòng thanh toán tại sân và chờ nhân viên xác nhận."
+                ? "Sân đã được giữ chỗ thành công. Vui lòng thanh toán trực tiếp tại quầy khi đến nhận sân."
                 : "Vui lòng hoàn tất thanh toán trước 100% trong vòng 10 phút để xác nhận đơn đặt sân.";
         taoThongBao(kh, "Đặt sân thành công", noiDung, "DatSan");
 
