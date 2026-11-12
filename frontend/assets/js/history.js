@@ -266,7 +266,8 @@ function renderHistoryTable() {
   // HTML Bảng Desktop
   const tableRowsHtml = pageItems.map(b => {
     const canCancel = b.trangThaiDat === 'ChoXacNhan' || b.trangThaiDat === 'DaXacNhan';
-    const canPayQR = b.trangThaiDat === 'ChoXacNhan' && b.phuongThucThanhToan === 'QR' && b.trangThaiThanhToan === 'ChuaThanhToan';
+    const isOnlinePay = (b.phuongThucThanhToan === 'QR' || b.phuongThucThanhToan === 'VietQR' || b.phuongThucThanhToan === 'VNPay' || b.phuongThucThanhToan === 'MoMo');
+    const canPayQR = b.trangThaiDat === 'ChoXacNhan' && isOnlinePay && b.trangThaiThanhToan === 'ChuaThanhToan';
     const isMaintenanceRefund = (b.trangThaiDat === 'DaHuy' && (b.lyDoHuy === 'BaoTriHoacTamNgung' || (b.ghiChu && b.ghiChu.includes('100%'))));
 
     const paymentBadge = isMaintenanceRefund
@@ -302,10 +303,7 @@ function renderHistoryTable() {
         </td>
         <td style="padding: 1rem 1.15rem;">
           <div style="font-size: 0.82rem; font-weight: 600; color: var(--dark); display: flex; align-items: center; gap: 4px; margin-bottom: 3px;">
-            ${b.phuongThucThanhToan === 'QR' 
-              ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> VNPay QR`
-              : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg> Tiền mặt`
-            }
+            ${formatPhuongThucThanhToan(b.phuongThucThanhToan, true)}
           </div>
           <div>${paymentBadge}</div>
         </td>
@@ -331,7 +329,12 @@ function renderHistoryTable() {
   // HTML Mobile Cards
   const mobileCardsHtml = pageItems.map(b => {
     const canCancel = b.trangThaiDat === 'ChoXacNhan' || b.trangThaiDat === 'DaXacNhan';
-    const canPayQR = b.trangThaiDat === 'ChoXacNhan' && b.phuongThucThanhToan === 'QR' && b.trangThaiThanhToan === 'ChuaThanhToan';
+    const isOnlinePay = (b.phuongThucThanhToan === 'QR' || b.phuongThucThanhToan === 'VietQR' || b.phuongThucThanhToan === 'VNPay' || b.phuongThucThanhToan === 'MoMo');
+    const canPayQR = b.trangThaiDat === 'ChoXacNhan' && isOnlinePay && b.trangThaiThanhToan === 'ChuaThanhToan';
+    const isMaintenanceRefund = (b.trangThaiDat === 'DaHuy' && (b.lyDoHuy === 'BaoTriHoacTamNgung' || (b.ghiChu && b.ghiChu.includes('100%'))));
+    const paymentBadge = isMaintenanceRefund
+      ? '<span class="badge" style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:700;">Đã hoàn tiền 100%</span>'
+      : badgeTrangThai(b.trangThaiThanhToan);
 
     return `
       <div class="history-card-item">
@@ -352,8 +355,12 @@ function renderHistoryTable() {
           <span class="history-card-value" style="color: var(--primary-dark); font-weight: 800;">${formatTien(b.soTien)}</span>
         </div>
         <div class="history-card-row">
+          <span class="history-card-label">Phương thức:</span>
+          <span class="history-card-value" style="display: flex; align-items: center; gap: 4px;">${formatPhuongThucThanhToan(b.phuongThucThanhToan, true)}</span>
+        </div>
+        <div class="history-card-row">
           <span class="history-card-label">Thanh toán:</span>
-          <div>${badgeTrangThai(b.trangThaiThanhToan)}</div>
+          <div>${paymentBadge}</div>
         </div>
         <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light);">
           <button type="button" class="btn btn-sm btn-outline" onclick="openBookingDetailModal(${b.maDatSan})">Chi tiết</button>
@@ -693,7 +700,7 @@ function openBookingDetailModal(maDatSan) {
         3. Thanh toán & Chi phí
       </div>
       <div class="modal-kv-grid">
-        <div><strong>Phương thức:</strong> ${b.phuongThucThanhToan === 'QR' ? 'Chuyển khoản VNPay QR' : 'Tiền mặt tại quầy'}</div>
+        <div><strong>Phương thức:</strong> ${formatPhuongThucThanhToan(b.phuongThucThanhToan, false)}</div>
         <div><strong>Tổng tiền đơn:</strong> <span style="font-weight: 800; color: var(--primary-dark); font-size: 1.05rem;">${formatTien(b.soTien)}</span></div>
       </div>
       ${hdRows}

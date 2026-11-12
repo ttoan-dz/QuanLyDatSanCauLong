@@ -136,8 +136,6 @@ public class AdminService {
         }
     }
 
-    // ======================== 1. ĐƠN ĐẶT SÂN & NGHIỆP VỤ TẠI QUẦY (KỊCH BẢN 2) ========================
-
     @Transactional(readOnly = true)
     public List<DatSanResponse> danhSachDatSan(String status, String keyword) {
         List<DatSan> list;
@@ -206,9 +204,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Kịch bản 2 - Bước 3: Nhân viên check-in cho khách
-     */
     @Transactional
     public DatSanResponse checkIn(Integer maDatSan, String username) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -219,7 +214,6 @@ public class AdminService {
                     "Chỉ có thể check-in cho đơn ở trạng thái Đã xác nhận (hoặc Chờ xác nhận)");
         }
 
-        // Nếu đơn tiền mặt chưa thanh toán thì tự động ghi nhận thanh toán trả trước
         if ("ChoXacNhan".equals(ds.getTrangThaiDat())) {
             ds.setTrangThaiThanhToan("DaThanhToan");
             ds.setTienTraTruoc(ds.getTienSan().compareTo(BigDecimal.ZERO) > 0 ? ds.getTienSan() : BigDecimal.valueOf(ds.getSoTien()));
@@ -229,7 +223,6 @@ public class AdminService {
         ds.setTrangThaiDat("DangChoi");
         ds.setGioCheckIn(now);
 
-        // Gắn nhân viên check-in nếu có
         if (username != null) {
             taiKhoanRepository.findByTenDangNhap(username).ifPresent(tk -> {
                 nhanVienRepository.findByTaiKhoan_MaTK(tk.getMaTK()).ifPresent(ds::setNhanVien);
@@ -237,7 +230,6 @@ public class AdminService {
         }
         datSanRepository.save(ds);
 
-        // Cập nhật ChiTietDatSan
         chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
             ct.setTrangThai("DangChoi");
             ct.setGioCheckIn(now);
@@ -255,9 +247,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Kịch bản 2 - Bước 4: Thêm dịch vụ (nước uống, thuê vợt) vào đơn của khách
-     */
     @Transactional
     public DatSanResponse themDichVu(Integer maDatSan, ThemDichVuRequest req) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -274,7 +263,6 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dịch vụ hiện đang tạm ngưng phục vụ");
         }
 
-        // Kiểm tra cơ sở: Dịch vụ phải thuộc cùng địa điểm với sân đang đặt
         if (dv.getDiaDiem() != null && ds.getSan() != null && ds.getSan().getDiaDiem() != null) {
             if (!dv.getDiaDiem().getMaDiaDiem().equals(ds.getSan().getDiaDiem().getMaDiaDiem())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -293,11 +281,9 @@ public class AdminService {
                     "Số lượng tồn kho không đủ (chỉ còn " + dv.getSoLuongTon() + " " + dv.getTenDV() + ")");
         }
 
-        // Trừ tồn kho
         dv.setSoLuongTon(dv.getSoLuongTon() - req.getSoLuong());
         dichVuRepository.save(dv);
 
-        // Thêm chi tiết dịch vụ
         ChiTietDichVu ctdv = new ChiTietDichVu();
         ctdv.setDatSan(ds);
         ctdv.setDichVu(dv);
@@ -310,9 +296,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Xóa dòng dịch vụ đã gọi (hoàn lại tồn kho)
-     */
     @Transactional
     public DatSanResponse xoaDichVuKhoiDon(Integer maDatSan, Integer maCTDV) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -325,7 +308,6 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dịch vụ không thuộc đơn này");
         }
 
-        // Hoàn tồn kho
         DichVu dv = ctdv.getDichVu();
         dv.setSoLuongTon(dv.getSoLuongTon() + ctdv.getSoLuong());
         dichVuRepository.save(dv);
@@ -335,9 +317,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Kịch bản 2 - Bước 5: Check-out và Lập Hóa Đơn
-     */
     @Transactional
     public DatSanResponse checkOut(Integer maDatSan, CheckOutRequest req) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -346,7 +325,6 @@ public class AdminService {
         LocalDateTime now = LocalDateTime.now();
         ds.setGioCheckOut(now);
 
-        // Xử lý chơi quá giờ (Overtime theo block 15 phút)
         int blocks = (req != null && req.getSoBlockQuaGio() != null) ? Math.max(0, req.getSoBlockQuaGio()) : 0;
         BigDecimal tienQuaGio = BigDecimal.ZERO;
         if (blocks > 0) {
@@ -360,7 +338,6 @@ public class AdminService {
         ds.setSoBlockQuaGio(blocks);
         ds.setTienQuaGio(tienQuaGio);
 
-        // Tính tổng tiền dịch vụ
         List<ChiTietDichVu> dsDV = chiTietDichVuRepository.findByDatSan_MaDatSan(maDatSan);
         BigDecimal tongTienDV = dsDV.stream()
                 .map(dv -> dv.getDonGia().multiply(BigDecimal.valueOf(dv.getSoLuong())))
@@ -370,13 +347,11 @@ public class AdminService {
         BigDecimal tienTraTruoc = ds.getTienTraTruoc();
         BigDecimal tienHoanDuyet = BigDecimal.ZERO;
 
-        // Công thức Báo cáo (Lớp HoaDon): ThanhTien = TongTienSan + TongTienDV + TienQuaGio - TienTraTruoc + TienHoanDuyet
         BigDecimal thanhTien = tongTienSan.add(tongTienDV).add(tienQuaGio).subtract(tienTraTruoc).add(tienHoanDuyet);
         if (thanhTien.compareTo(BigDecimal.ZERO) < 0) {
             thanhTien = BigDecimal.ZERO;
         }
 
-        // Tạo hoặc cập nhật HoaDon
         HoaDon hd = hoaDonRepository.findByDatSan_MaDatSan(maDatSan).orElse(new HoaDon());
         hd.setDatSan(ds);
         hd.setNgayLap(now);
@@ -391,7 +366,6 @@ public class AdminService {
 
         datSanRepository.save(ds);
 
-        // Cập nhật ChiTietDatSan
         final BigDecimal finalTienQuaGio = tienQuaGio;
         chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
             ct.setGioCheckOut(now);
@@ -403,9 +377,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Kịch bản 2 - Bước 6: Hoàn thành đơn (Khách thanh toán khoản phát sinh và nhân viên bấm Hoàn thành)
-     */
     @Transactional
     public DatSanResponse hoanThanhDon(Integer maDatSan, String phuongThucThanhToan) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -417,7 +388,6 @@ public class AdminService {
         String pttt = (phuongThucThanhToan != null && !phuongThucThanhToan.trim().isEmpty())
                 ? phuongThucThanhToan.trim() : "TienMat";
 
-        // Ghi nhận thanh toán phát sinh nếu có số tiền cần thanh toán
         if (hd.getThanhTien().compareTo(BigDecimal.ZERO) > 0) {
             ThanhToan tt = new ThanhToan();
             tt.setDatSan(ds);
@@ -451,9 +421,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Kịch bản 2 - Ngoại lệ 1: Khách không đến nhận sân (No-Show quá 30 phút)
-     */
     @Transactional
     public DatSanResponse huyNoShow(Integer maDatSan) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -464,13 +431,11 @@ public class AdminService {
         ds.setLyDoHuy("KhongDenNhan");
         datSanRepository.save(ds);
 
-        // Chi tiết trạng thái: KhongDen
         chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
             ct.setTrangThai("KhongDen");
             chiTietDatSanRepository.save(ct);
         });
 
-        // Ghi nhận HoanTien với tỷ lệ 0% (không hoàn lại tiền sân theo báo cáo)
         HoanTien ht = new HoanTien();
         ht.setDatSan(ds);
         ht.setNgayYeuCau(now);
@@ -481,7 +446,6 @@ public class AdminService {
         ht.setTrangThai("KhongHoan");
         hoanTienRepository.save(ht);
 
-        // Tăng số lần No-Show của khách
         KhachHang kh = ds.getKhachHang();
         kh.setSoLanNoShow(kh.getSoLanNoShow() + 1);
         khachHangRepository.save(kh);
@@ -527,12 +491,11 @@ public class AdminService {
             chiTietDatSanRepository.save(ct);
         });
 
-        // Nếu cơ sở / admin chủ động hủy: Hoàn 100% theo báo cáo (Ràng buộc 7: "Cơ sở hủy trước sử dụng hoàn 100%")
         BigDecimal tienGoc = ds.getTienSan().compareTo(BigDecimal.ZERO) > 0 ? ds.getTienSan() : BigDecimal.valueOf(ds.getSoTien());
         HoanTien ht = new HoanTien();
         ht.setDatSan(ds);
         ht.setNgayYeuCau(now);
-        ht.setLyDo(req != null && req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty() 
+        ht.setLyDo(req != null && req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty()
                 ? req.getGhiChu().trim() : "Cơ sở hủy đơn");
         ht.setLoaiHuy("CoSoHuy");
         ht.setTyLeHoan(100);
@@ -566,13 +529,11 @@ public class AdminService {
             ds.setTrangThaiDat("DaHuy");
             datSanRepository.save(ds);
 
-            // Khi duyệt đồng ý hủy: lúc này slot sân mới chính thức được giải phóng
             chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
                 ct.setTrangThai("DaHuy");
                 chiTietDatSanRepository.save(ct);
             });
 
-            // Lấy hoặc tạo bản ghi HoanTien và chuyển sang DaHoan
             HoanTien ht = hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(maDatSan)
                     .orElseGet(() -> {
                         LocalDateTime gioBatDau = LocalDateTime.of(ds.getNgayChoi(), ds.getGioBatDau());
@@ -594,14 +555,11 @@ public class AdminService {
             ht.setTrangThai(ht.getTyLeHoan() > 0 ? "DaHoan" : "KhongHoan");
             hoanTienRepository.save(ht);
 
-            // Nếu hoàn 100%: chuyển sang ChuaThanhToan để khấu trừ hoàn toàn khỏi doanh thu
-            // Nếu hoàn 0% hoặc 50%: giữ DaThanhToan để ghi nhận phần doanh thu giữ lại theo quy định
             if (ht.getTyLeHoan() == 100) {
                 ds.setTrangThaiThanhToan("ChuaThanhToan");
                 datSanRepository.save(ds);
             }
 
-            // Đồng bộ hóa đơn (nếu có)
             hoaDonRepository.findByDatSan_MaDatSan(maDatSan).ifPresent(hd -> {
                 hd.setTienHoanDuyet(ht.getSoTienHoan());
                 if (ht.getTyLeHoan() == 100) {
@@ -616,7 +574,7 @@ public class AdminService {
                             maDatSan, ht.getTyLeHoan(), ht.getSoTienHoan()),
                     "DuyetHuy");
         } else {
-            // Khi từ chối: phục hồi lại DaXacNhan và giữ nguyên slot sân
+
             ds.setTrangThaiDat("DaXacNhan");
             datSanRepository.save(ds);
 
@@ -625,7 +583,6 @@ public class AdminService {
                 chiTietDatSanRepository.save(ct);
             });
 
-            // Cập nhật bản ghi HoanTien thành 'TuChoi'
             hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(maDatSan).ifPresent(ht -> {
                 ht.setTrangThai("TuChoi");
                 if (req.getGhiChu() != null && !req.getGhiChu().trim().isEmpty()) {
@@ -646,8 +603,6 @@ public class AdminService {
 
         return bookingService.toDatSanResponse(ds);
     }
-
-    // ======================== 2. QUẢN LÝ DỊCH VỤ ========================
 
     @Transactional(readOnly = true)
     public List<DichVuResponse> danhSachDichVu(Integer maDiaDiem) {
@@ -703,8 +658,6 @@ public class AdminService {
         dv.setTrangThai("HoatDong".equals(dv.getTrangThai()) ? "TamNgung" : "HoatDong");
         dichVuRepository.save(dv);
     }
-
-    // ======================== 3. QUẢN LÝ SÂN & ĐỊA ĐIỂM ========================
 
     @Transactional
     public void taoSan(TaoSanRequest req) {
@@ -843,10 +796,6 @@ public class AdminService {
         return sr;
     }
 
-    /**
-     * Lấy danh sách các đơn đặt sân trong tương lai bị ảnh hưởng khi đưa sân vào bảo trì,
-     * kèm danh sách các sân trống khả dụng cùng cơ sở để điều phối chuyển sân.
-     */
     @Transactional(readOnly = true)
     public List<DonXungDotBaoTriResponse> layDanhSachDonXungDotKhiBaoTri(Integer maSan) {
         San san = sanRepository.findById(maSan)
@@ -879,9 +828,6 @@ public class AdminService {
         return results;
     }
 
-    /**
-     * Điều phối chuyển đơn đặt sân sang sân khác cùng cơ sở khi sân cũ bảo trì.
-     */
     @Transactional
     public DatSanResponse doiSanChoDon(Integer maDatSan, DoiSanRequest req) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -930,9 +876,6 @@ public class AdminService {
         return bookingService.toDatSanResponse(ds);
     }
 
-    /**
-     * Hủy đơn do sân bảo trì kỹ thuật hoặc tạm ngưng đột xuất và tự động hoàn tiền 100% cọc cho khách.
-     */
     @Transactional
     public DatSanResponse huyDonDoBaoTri(Integer maDatSan) {
         return huyDonDoBaoTriHoacTamNgung(maDatSan, "bảo trì kỹ thuật");
@@ -953,18 +896,15 @@ public class AdminService {
         req.setGhiChu("Sân " + reasonText + " đột xuất. Hoàn tiền 100%.");
         DatSanResponse resp = huyDatSan(maDatSan, req);
 
-        // 1. Cập nhật trạng thái thanh toán là ChuaThanhToan để loại hoàn toàn khỏi doanh thu (tuân thủ CHECK constraint DB)
         ds.setTrangThaiThanhToan("ChuaThanhToan");
         datSanRepository.save(ds);
 
-        // 2. Đồng bộ hóa đơn (nếu có)
         hoaDonRepository.findByDatSan_MaDatSan(maDatSan).ifPresent(hd -> {
             hd.setTienHoanDuyet(BigDecimal.valueOf(ds.getSoTien()));
             hd.setTrangThai("ChuaThanhToan");
             hoaDonRepository.save(hd);
         });
 
-        // 3. Đồng thời gửi thông báo chi tiết và trang trọng đến khách hàng (nếu có tài khoản)
         if (ds.getKhachHang() != null) {
             String tenSan = ds.getSan() != null ? ds.getSan().getTenSan() : "Sân";
             String tenDiaDiem = (ds.getSan() != null && ds.getSan().getDiaDiem() != null)
@@ -980,17 +920,11 @@ public class AdminService {
         return resp;
     }
 
-    /**
-     * Chuyển sân sang trạng thái Bảo trì, đồng thời tự động hủy và hoàn tiền 100% toàn bộ đơn xung đột.
-     */
     @Transactional
     public SanResponse chuyenBaoTriKemHuyTatCa(Integer maSan) {
         return chuyenTrangThaiKemHuyTatCa(maSan, "BaoTri");
     }
 
-    /**
-     * Chuyển sân sang Bảo trì hoặc Tạm ngưng, đồng thời tự động hủy và hoàn tiền 100% toàn bộ đơn xung đột.
-     */
     @Transactional
     public SanResponse chuyenTrangThaiKemHuyTatCa(Integer maSan, String tinhTrangMoi) {
         San san = sanRepository.findById(maSan)
@@ -1062,8 +996,6 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    // ======================== 4. KHÁCH HÀNG & NHÂN VIÊN ========================
-
     public List<KhachHangResponse> danhSachKhachHang() {
         return khachHangRepository.findAll().stream()
                 .map(kh -> {
@@ -1086,12 +1018,11 @@ public class AdminService {
 
     @Transactional
     public void doiTrangThaiTaiKhoan(Integer maTK) {
-        // Tìm chính xác tài khoản theo MaTK (khóa chính bảng TaiKhoan)
+
         TaiKhoan tk = taiKhoanRepository.findById(maTK)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Không tìm thấy tài khoản người dùng"));
 
-        // Bảo vệ tuyệt đối tài khoản Quản trị viên (Admin)
         if (tk.getRole() != null && "Admin".equalsIgnoreCase(tk.getRole().getTenRole())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Không thể khóa tài khoản Quản trị viên hệ thống!");
@@ -1101,7 +1032,6 @@ public class AdminService {
                     "Không thể khóa tài khoản Quản trị viên hệ thống!");
         }
 
-        // Đảo trạng thái tài khoản người dùng
         tk.setTrangThai("HoatDong".equals(tk.getTrangThai()) ? "Khoa" : "HoatDong");
         taiKhoanRepository.save(tk);
     }
@@ -1118,7 +1048,6 @@ public class AdminService {
         kh.setEmail(req.getEmail());
         khachHangRepository.save(kh);
 
-        // Đổi mật khẩu tài khoản nếu Admin có nhập mật khẩu mới
         if (req.getMatKhau() != null && !req.getMatKhau().trim().isEmpty()) {
             String newPassword = req.getMatKhau().trim();
             if (newPassword.length() < 6) {
@@ -1150,8 +1079,6 @@ public class AdminService {
         return res;
     }
 
-    // ======================== 5. THỐNG KÊ DOANH THU ========================
-
     public ThongKeDoanhThuResponse thongKeDoanhThuTheoThang(int nam, int thang) {
         ThongKeDoanhThuResponse res = new ThongKeDoanhThuResponse();
         res.setNam(nam);
@@ -1169,7 +1096,6 @@ public class AdminService {
         BigDecimal dvMonth = chiTietDichVuRepository.tinhDoanhThuDichVuTheoThang(nam, thang);
         Long doanhThuDichVu = (dvMonth != null) ? dvMonth.longValue() : 0L;
 
-        // Doanh thu sân = Tiền cọc sân gốc + Tiền cọc giữ lại từ đơn hủy (0%, 50%) + Tiền phụ phí quá giờ thực tế
         Long doanhThuSanTong = doanhThuSanGoc + doanhThuPhatHuy + doanhThuQuaGio;
 
         res.setDoanhThuSan(doanhThuSanTong);
@@ -1198,7 +1124,6 @@ public class AdminService {
         BigDecimal dvYear = chiTietDichVuRepository.tinhDoanhThuDichVuTheoNam(nam);
         Long doanhThuDichVu = (dvYear != null) ? dvYear.longValue() : 0L;
 
-        // Doanh thu sân = Tiền cọc sân gốc + Tiền cọc giữ lại từ đơn hủy (0%, 50%) + Tiền phụ phí quá giờ thực tế
         Long doanhThuSanTong = doanhThuSanGoc + doanhThuPhatHuy + doanhThuQuaGio;
 
         res.setDoanhThuSan(doanhThuSanTong);
@@ -1210,9 +1135,6 @@ public class AdminService {
         return res;
     }
 
-    /**
-     * Báo cáo Doanh thu theo từng Cơ sở (đáp ứng mục 1.3)
-     */
     public List<DoanhThuCoSoResponse> thongKeDoanhThuTheoCoSo(int nam, Integer thang) {
         List<DiaDiem> diaDiems = diaDiemRepository.findAll();
         List<DoanhThuCoSoResponse> results = new ArrayList<>();
@@ -1279,8 +1201,6 @@ public class AdminService {
         results.sort((a, b) -> Long.compare(b.getTongDoanhThu(), a.getTongDoanhThu()));
         return results;
     }
-
-    // ======================== 6. QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (MỤC 3) ========================
 
     @Transactional(readOnly = true)
     public List<TaiKhoanResponse> danhSachTaiKhoan() {
@@ -1418,14 +1338,12 @@ public class AdminService {
         boolean isTargetAdmin = "Admin".equalsIgnoreCase(targetRoleName);
         boolean isTargetStaff = "Staff".equalsIgnoreCase(targetRoleName) || "NhanVien".equalsIgnoreCase(targetRoleName);
 
-        // RBAC Check: Staff không được sửa tài khoản Admin hoặc Staff khác
         if ("STAFF".equalsIgnoreCase(currentUserRole)) {
             if (isTargetAdmin || (isTargetStaff && !tk.getTenDangNhap().equalsIgnoreCase(currentUsername))) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nhân viên không có quyền chỉnh sửa tài khoản Quản trị hoặc Nhân viên khác");
             }
         }
 
-        // Cập nhật mật khẩu nếu có nhập
         if (req.getMatKhau() != null && !req.getMatKhau().trim().isEmpty()) {
             if (req.getMatKhau().trim().length() < 6) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải từ 6 ký tự trở lên");
@@ -1438,7 +1356,6 @@ public class AdminService {
         String hoTenMoi = req.getHoTen() != null ? req.getHoTen().trim() : "";
         String emailMoi = (req.getEmail() != null && !req.getEmail().trim().isEmpty()) ? req.getEmail().trim() : null;
 
-        // Cập nhật thông tin thực thể gắn liền
         if (tk.getKhachHang() != null) {
             KhachHang kh = tk.getKhachHang();
             if (khachHangRepository.existsBySdtAndMaKHNot(sdtMoi, kh.getMaKH()) || nhanVienRepository.existsBySdt(sdtMoi)) {
@@ -1487,13 +1404,12 @@ public class AdminService {
             nv.setSdt(sdtMoi);
             nv.setEmail(emailMoi);
 
-            // Admin được phân công cơ sở cho nhân viên
             if ("ADMIN".equalsIgnoreCase(currentUserRole)) {
                 if (req.getMaDiaDiem() != null && req.getMaDiaDiem() > 0) {
                     DiaDiem dd = diaDiemRepository.findById(req.getMaDiaDiem()).orElse(null);
                     nv.setDiaDiem(dd);
                 } else if (req.getMaDiaDiem() == null) {
-                    // Nếu gửi null thì xóa phân công (chưa phân công)
+
                     nv.setDiaDiem(null);
                 }
             }
@@ -1516,17 +1432,14 @@ public class AdminService {
         boolean isTargetAdmin = "Admin".equalsIgnoreCase(targetRole);
         boolean isTargetStaff = "Staff".equalsIgnoreCase(targetRole) || "NhanVien".equalsIgnoreCase(targetRole);
 
-        // 1. Không tự khóa chính mình
         if (tk.getTenDangNhap().equalsIgnoreCase(currentUsername)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể tự khóa tài khoản đang đăng nhập của chính bạn!");
         }
 
-        // 2. Không được khóa tài khoản Admin
         if (isTargetAdmin) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không thể khóa tài khoản Quản trị viên (ADMIN)!");
         }
 
-        // 3. Nhân viên (STAFF) chỉ được khóa CUSTOMER
         if ("STAFF".equalsIgnoreCase(currentUserRole)) {
             if (isTargetStaff || isTargetAdmin) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nhân viên không có quyền khóa tài khoản Quản trị hoặc Nhân viên khác!");
@@ -1543,8 +1456,6 @@ public class AdminService {
                 "Tài khoản: " + tk.getTenDangNhap(),
                 "Thành công", detailText);
     }
-
-    // ======================== 7. TÀI KHOẢN CỦA TÔI (ADMIN / STAFF PROFILE) ========================
 
     @Transactional(readOnly = true)
     public AdminProfileResponse layProfileAdmin(String username) {
@@ -1646,14 +1557,12 @@ public class AdminService {
                 "DoiMatKhau", "Tài khoản cá nhân", "Thành công", "Đổi mật khẩu thành công");
     }
 
-    // ======================== 8. UPLOAD ẢNH SÂN & NHẬT KÝ HOẠT ĐỘNG ========================
-
     public UploadResponse uploadCourtImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn file hình ảnh hợp lệ");
         }
 
-        long maxSizeBytes = 5 * 1024 * 1024; // 5MB
+        long maxSizeBytes = 5 * 1024 * 1024;
         if (file.getSize() > maxSizeBytes) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dung lượng ảnh vượt quá giới hạn cho phép (Tối đa 5MB)");
         }
@@ -1748,8 +1657,6 @@ public class AdminService {
         } catch (Exception ignored) {
         }
     }
-
-    // ======================== HELPER ========================
 
     private void taoThongBao(KhachHang kh, String tieuDe, String noiDung, String loai) {
         if (kh == null) {

@@ -899,7 +899,7 @@ async function loadBookings() {
 }
 
 function renderPaymentBadge(pttt) {
-  if (pttt === 'QR') return '<span class="badge badge-info">VietQR</span>';
+  if (pttt === 'QR' || pttt === 'VietQR') return '<span class="badge badge-info">VietQR</span>';
   if (pttt === 'VNPay') return '<span class="badge badge-primary">VNPay</span>';
   if (pttt === 'MoMo') return '<span class="badge badge-orange">MoMo</span>';
   return '<span class="badge badge-secondary">Tiền mặt</span>';

@@ -130,6 +130,43 @@ function formatLyDoHuy(reason) {
   return map[clean.toLowerCase()] || clean;
 }
 
+function formatPhuongThucThanhToan(pttt, withIcon = true) {
+  const code = (pttt || '').trim();
+  const map = {
+    'MoMo': {
+      text: 'MoMo',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M7 15h0M12 15h0M17 15h0"/></svg>',
+      badgeClass: 'badge-orange'
+    },
+    'VNPay': {
+      text: 'VNPay',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+      badgeClass: 'badge-primary'
+    },
+    'QR': {
+      text: 'VietQR',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+      badgeClass: 'badge-info'
+    },
+    'VietQR': {
+      text: 'VietQR',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+      badgeClass: 'badge-info'
+    },
+    'TienMat': {
+      text: 'Tiền mặt',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>',
+      badgeClass: 'badge-secondary'
+    }
+  };
+  const item = map[code] || {
+    text: code || 'Tiền mặt',
+    icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>',
+    badgeClass: 'badge-secondary'
+  };
+  return withIcon ? `${item.icon} <span>${item.text}</span>` : item.text;
+}
+
 function showAlert(message, type = 'success', containerId = 'alert-container') {
   // Nếu có modal đang mở, ưu tiên hiển thị toast nổi toàn cục để không bị che khuất
   const openModal = document.querySelector('.modal-backdrop:not(.hidden)');
