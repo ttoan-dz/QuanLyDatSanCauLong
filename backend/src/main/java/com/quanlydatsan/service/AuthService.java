@@ -94,18 +94,6 @@ public class AuthService {
                     "Tên đăng nhập hoặc mật khẩu không chính xác");
         }
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            tk.getTenDangNhap(), req.getMatKhau()));
-        } catch (org.springframework.security.authentication.DisabledException | org.springframework.security.authentication.LockedException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ ban quản trị để được hỗ trợ!");
-        } catch (AuthenticationException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Tên đăng nhập hoặc mật khẩu không chính xác");
-        }
-
         String tenRole = tk.getRole() != null ? tk.getRole().getTenRole() : "";
         String roleMapped;
         if ("Admin".equalsIgnoreCase(tenRole)) {

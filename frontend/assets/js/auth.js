@@ -447,7 +447,11 @@ async function handleLogin(event) {
     return;
   }
 
-  if (btnSubmit) btnSubmit.disabled = true;
+  const originalBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<span class="spinner-sm" style="display:inline-block; margin-right:6px; vertical-align:middle;"></span> Đang đăng nhập...`;
+  }
 
   try {
     const data = await api.post('/auth/login', {
@@ -491,7 +495,7 @@ async function handleLogin(event) {
       } else {
         window.location.href = '/pages/user/courts.html';
       }
-    }, 1000);
+    }, 300);
   } catch (error) {
     const errorMsg = error.message || 'Tên đăng nhập hoặc mật khẩu không chính xác';
     const isLocked = errorMsg.toLowerCase().includes('khóa') || errorMsg.toLowerCase().includes('khoa');
@@ -506,7 +510,10 @@ async function handleLogin(event) {
       setFieldError('matKhau', 'Vui lòng kiểm tra lại mật khẩu');
     }
 
-    if (btnSubmit) btnSubmit.disabled = false;
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = originalBtnHtml;
+    }
   }
 }
 
@@ -546,7 +553,11 @@ async function handleRegister(event) {
     return;
   }
 
-  if (btnSubmit) btnSubmit.disabled = true;
+  const originalBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<span class="spinner-sm" style="display:inline-block; margin-right:6px; vertical-align:middle;"></span> Đang tạo tài khoản...`;
+  }
 
   try {
     const res = await api.post('/auth/register', {
@@ -560,7 +571,7 @@ async function handleRegister(event) {
     showAlert(res?.message || 'Đăng ký tài khoản thành công! Đang chuyển hướng đến trang đăng nhập...', 'success');
     setTimeout(() => {
       window.location.href = '/pages/auth/login.html';
-    }, 1500);
+    }, 800);
   } catch (error) {
     const errMsg = error.message || '';
     showAlert(`Đăng ký thất bại: ${errMsg}`, 'danger');
@@ -571,7 +582,10 @@ async function handleRegister(event) {
       setFieldError('tenDangNhap', 'Tên đăng nhập này đã tồn tại');
       if (inputUser) inputUser.focus();
     }
-    if (btnSubmit) btnSubmit.disabled = false;
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = originalBtnHtml;
+    }
   }
 }
 

@@ -103,7 +103,7 @@ public class AuthEmailLoginTest {
         assertEquals("Nguyen Van An", response.getHoTen());
         assertEquals(10, response.getMaKH());
 
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(passwordEncoder).matches("123456", "encoded_password");
     }
 
     @Test
@@ -124,7 +124,7 @@ public class AuthEmailLoginTest {
         assertEquals("CUSTOMER", response.getRole());
         assertEquals("Nguyen Van An", response.getHoTen());
 
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(passwordEncoder).matches("123456", "encoded_password");
     }
 }
 

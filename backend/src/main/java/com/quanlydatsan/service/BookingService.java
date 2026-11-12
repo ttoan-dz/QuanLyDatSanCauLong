@@ -5,7 +5,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -85,6 +87,10 @@ public class BookingService {
                 .map(ds -> ds.getSan().getMaSan())
                 .collect(Collectors.toSet());
 
+        Map<Integer, List<San>> sanByDiaDiem = sanRepository.findAll().stream()
+                .filter(s -> s.getDiaDiem() != null)
+                .collect(Collectors.groupingBy(s -> s.getDiaDiem().getMaDiaDiem()));
+
         return diaDiemRepository.findAll().stream()
                 .map(dd -> {
                     DiaDiemResponse res = new DiaDiemResponse();
@@ -95,7 +101,7 @@ public class BookingService {
                     res.setTrangThai(dd.getTrangThai());
                     res.setMapLink(dd.getMapLink());
 
-                    List<San> dsSan = sanRepository.findByDiaDiem_MaDiaDiem(dd.getMaDiaDiem());
+                    List<San> dsSan = sanByDiaDiem.getOrDefault(dd.getMaDiaDiem(), Collections.emptyList());
                     List<SanResponse> sanResponses = dsSan.stream()
                             .map(s -> {
                                 SanResponse sr = toSanResponse(s);
