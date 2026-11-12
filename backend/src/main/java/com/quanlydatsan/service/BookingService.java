@@ -69,7 +69,6 @@ public class BookingService {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        // Lấy tất cả đơn có trạng thái active (ChoXacNhan, DaXacNhan, DangChoi, ChoHuy)
         List<DatSan> activeBookings = datSanRepository.findByTrangThaiDatIn(
                 List.of("ChoXacNhan", "DaXacNhan", "DangChoi", "ChoHuy"));
 
@@ -79,7 +78,7 @@ public class BookingService {
                 .collect(Collectors.toSet());
 
         Set<Integer> playingCourtIds = activeBookings.stream()
-                .filter(ds -> "DangChoi".equals(ds.getTrangThaiDat()) || 
+                .filter(ds -> "DangChoi".equals(ds.getTrangThaiDat()) ||
                              (today.equals(ds.getNgayChoi()) && !now.isBefore(ds.getGioBatDau()) && now.isBefore(ds.getGioKetThuc())))
                 .filter(ds -> ds.getSan() != null)
                 .map(ds -> ds.getSan().getMaSan())
@@ -129,9 +128,6 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Lấy danh sách các khung giờ đã được đặt của sân trong một ngày cụ thể
-     */
     @Transactional(readOnly = true)
     public List<KhungGioDaDatResponse> layDanhSachKhungGioDaDat(Integer maSan, LocalDate ngay) {
         List<DatSan> activeBookings = datSanRepository.findBySan_MaSanAndNgayChoiAndTrangThaiDatIn(
@@ -145,7 +141,7 @@ public class BookingService {
 
     @Transactional
     public DatSanResponse datSan(DatSanRequest req, Integer maKH) {
-        // 1. San tồn tại, active, DiaDiem active
+
         San san = sanRepository.findById(req.getMaSan())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Không tìm thấy sân"));
@@ -159,26 +155,22 @@ public class BookingService {
                     "Địa điểm đang tạm ngưng hoạt động");
         }
 
-        // 2. gioKetThuc > gioBatDau
         if (!req.getGioKetThuc().isAfter(req.getGioBatDau())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Giờ kết thúc phải sau giờ bắt đầu");
         }
 
-        // 3. Không đặt quá khứ
         LocalDateTime thoiDiemBatDau = LocalDateTime.of(req.getNgayChoi(), req.getGioBatDau());
         if (thoiDiemBatDau.isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Không thể đặt sân trong quá khứ");
         }
 
-        // 4. Giờ theo mốc 30 phút
         if (!isMoc30Phut(req.getGioBatDau()) || !isMoc30Phut(req.getGioKetThuc())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Giờ phải theo mốc 30 phút (phút = 00 hoặc 30)");
         }
 
-        // 5. Nằm trong khoảng GioMo–GioDong
         if (req.getGioBatDau().isBefore(diaDiem.getGioMo())
                 || req.getGioKetThuc().isAfter(diaDiem.getGioDong())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -186,14 +178,12 @@ public class BookingService {
                             + diaDiem.getGioMo() + " – " + diaDiem.getGioDong() + ")");
         }
 
-        // 6. Không trùng lịch (Ngoại lệ 1 trong báo cáo)
         if (datSanRepository.existsTrungLich(san.getMaSan(), req.getNgayChoi(),
                 req.getGioBatDau(), req.getGioKetThuc())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Khung giờ đã được đặt, vui lòng chọn giờ khác");
         }
 
-        // 7. Không hết sân toàn địa điểm
         long tongSanActive = sanRepository
                 .findByDiaDiem_MaDiaDiemAndTinhTrang(diaDiem.getMaDiaDiem(), "HoatDong").size();
         long soSanDaDat = datSanRepository.demSoSanDaDat(diaDiem.getMaDiaDiem(),
@@ -203,14 +193,12 @@ public class BookingService {
                     "Đã hết sân tại địa điểm này trong khung giờ đã chọn");
         }
 
-        // 8. Tính giá
         BangGia bangGia = bangGiaRepository.findFirstByDangApDungTrueOrderByMaBangGiaDesc()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Chưa có bảng giá áp dụng"));
         long soPhut = Duration.between(req.getGioBatDau(), req.getGioKetThuc()).toMinutes();
         int soTien = (int) (soPhut / 30) * bangGia.getGiaMoi30Phut();
 
-        // 9. Phương thức thanh toán (Hỗ trợ QR, VNPay, MoMo, TienMat theo báo cáo)
         String pttt = req.getPhuongThucThanhToan();
         if (pttt == null || pttt.trim().isEmpty()) {
             pttt = "QR";
@@ -219,7 +207,6 @@ public class BookingService {
             pttt = "QR";
         }
 
-        // Tạo DatSan với hạn thanh toán 10 phút (HanThanhToan)
         KhachHang kh = khachHangRepository.findById(maKH)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Không tìm thấy khách hàng"));
@@ -239,10 +226,9 @@ public class BookingService {
         ds.setTienTraTruoc(BigDecimal.ZERO);
         ds.setGhiChu(req.getGhiChu());
         ds.setNgayTao(now);
-        ds.setHanThanhToan(now.plusMinutes(10)); // Giữ chỗ đúng 10 phút theo báo cáo
+        ds.setHanThanhToan(now.plusMinutes(10));
         datSanRepository.save(ds);
 
-        // Tạo ChiTietDatSan tương ứng
         ChiTietDatSan ct = new ChiTietDatSan();
         ct.setDatSan(ds);
         ct.setSan(san);
@@ -252,7 +238,6 @@ public class BookingService {
         ct.setTrangThai("GiuCho");
         chiTietDatSanRepository.save(ct);
 
-        // 10. Tạo ThongBao
         String noiDung = "TienMat".equals(pttt)
                 ? "Sân đã được giữ chỗ trong 10 phút. Vui lòng thanh toán tại sân và chờ nhân viên xác nhận."
                 : "Vui lòng hoàn tất thanh toán trước 100% trong vòng 10 phút để xác nhận đơn đặt sân.";
@@ -270,7 +255,6 @@ public class BookingService {
                     "Đơn không ở trạng thái chờ xác nhận");
         }
 
-        // Kiểm tra quá hạn 10 phút
         if (ds.getHanThanhToan() != null && LocalDateTime.now().isAfter(ds.getHanThanhToan())) {
             ds.setTrangThaiDat("HetHan");
             datSanRepository.save(ds);
@@ -278,19 +262,16 @@ public class BookingService {
                     "Đơn đặt sân đã hết hạn giữ chỗ (10 phút), vui lòng đặt lại");
         }
 
-        // Cập nhật trạng thái sang DaXacNhan và đã thanh toán trả trước 100%
         ds.setTrangThaiThanhToan("DaThanhToan");
         ds.setTrangThaiDat("DaXacNhan");
         ds.setTienTraTruoc(ds.getTienSan());
         datSanRepository.save(ds);
 
-        // Cập nhật chi tiết đặt sân
         chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
             ct.setTrangThai("DaXacNhan");
             chiTietDatSanRepository.save(ct);
         });
 
-        // Tạo giao dịch thanh toán trả trước
         ThanhToan tt = new ThanhToan();
         tt.setDatSan(ds);
         tt.setSoTien(ds.getSoTien());
@@ -314,7 +295,7 @@ public class BookingService {
         DatSan ds = getDatSanBelongingTo(maDatSan, maKH);
 
         if ("ChoXacNhan".equals(ds.getTrangThaiDat())) {
-            // Khách hủy đơn chưa thanh toán: Hủy ngay, giải phóng sân
+
             ds.setTrangThaiDat("DaHuy");
             ds.setLyDoHuy("NguoiDungHuy");
             datSanRepository.save(ds);
@@ -329,8 +310,7 @@ public class BookingService {
                     "Bạn đã hủy đơn đặt sân thành công.",
                     "Huy");
         } else if ("DaXacNhan".equals(ds.getTrangThaiDat())) {
-            // Khách hủy đơn đã thanh toán: Tính tỷ lệ hoàn tiền theo chính sách báo cáo
-            // Chính sách: >=24h: hoàn 100%; 12h đến <24h: hoàn 50%; <12h: hoàn 0%
+
             LocalDateTime gioBatDau = LocalDateTime.of(ds.getNgayChoi(), ds.getGioBatDau());
             LocalDateTime now = LocalDateTime.now();
 
@@ -352,20 +332,17 @@ public class BookingService {
             BigDecimal tienGoc = ds.getTienSan().compareTo(BigDecimal.ZERO) > 0 ? ds.getTienSan() : BigDecimal.valueOf(ds.getSoTien());
             BigDecimal soTienHoan = tienGoc.multiply(BigDecimal.valueOf(tyLeHoan)).divide(BigDecimal.valueOf(100));
 
-            // Chuyển trạng thái đơn sang 'ChoHuy' (chờ quản trị viên xem xét & duyệt)
             ds.setTrangThaiDat("ChoHuy");
-            String lyDo = req != null && req.getLyDoHuy() != null && !req.getLyDoHuy().trim().isEmpty() 
+            String lyDo = req != null && req.getLyDoHuy() != null && !req.getLyDoHuy().trim().isEmpty()
                     ? req.getLyDoHuy().trim() : "Khách yêu cầu hủy đơn";
             ds.setLyDoHuy(lyDo);
             datSanRepository.save(ds);
 
-            // Giữ nguyên khung giờ ở trạng thái 'ChoHuy' (chưa giải phóng slot cho đến khi Admin duyệt)
             chiTietDatSanRepository.findFirstByDatSan_MaDatSan(maDatSan).ifPresent(ct -> {
                 ct.setTrangThai("ChoHuy");
                 chiTietDatSanRepository.save(ct);
             });
 
-            // Ghi nhận bản ghi HoanTien ở trạng thái 'ChoDuyet'
             HoanTien ht = hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(maDatSan)
                     .orElse(new HoanTien());
             ht.setDatSan(ds);
@@ -394,8 +371,6 @@ public class BookingService {
                 .map(this::toDatSanResponse)
                 .collect(Collectors.toList());
     }
-
-    // ======================== HELPER ========================
 
     private DatSan getDatSanBelongingTo(Integer maDatSan, Integer maKH) {
         DatSan ds = datSanRepository.findById(maDatSan)
@@ -457,7 +432,6 @@ public class BookingService {
         res.setHanThanhToan(ds.getHanThanhToan());
         res.setNgayTao(ds.getNgayTao());
 
-        // Lấy thông tin hóa đơn nếu có
         hoaDonRepository.findByDatSan_MaDatSan(ds.getMaDatSan()).ifPresent(hd -> {
             HoaDonResponse hdr = new HoaDonResponse();
             hdr.setMaHoaDon(hd.getMaHoaDon());
@@ -473,7 +447,6 @@ public class BookingService {
             res.setHoaDon(hdr);
         });
 
-        // Lấy danh sách dịch vụ đã dùng
         List<ChiTietDichVu> dsDichVu = chiTietDichVuRepository.findByDatSan_MaDatSan(ds.getMaDatSan());
         if (!dsDichVu.isEmpty()) {
             res.setDanhSachDichVu(dsDichVu.stream().map(dv -> {
@@ -491,7 +464,6 @@ public class BookingService {
             }).collect(Collectors.toList()));
         }
 
-        // Lấy thông tin hoàn tiền nếu có
         hoanTienRepository.findFirstByDatSan_MaDatSanOrderByNgayYeuCauDesc(ds.getMaDatSan()).ifPresent(ht -> {
             HoanTienResponse htr = new HoanTienResponse();
             htr.setMaHoanTien(ht.getMaHoanTien());

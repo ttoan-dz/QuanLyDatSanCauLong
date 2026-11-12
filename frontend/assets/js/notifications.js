@@ -453,7 +453,7 @@ function renderProgressList() {
             <button type="button" class="btn btn-outline btn-sm" onclick="openBookingDetailModal(${originalIndex})">
               Xem chi tiết
             </button>
-            ${b.trangThaiDat === 'ChoXacNhan' && b.phuongThucThanhToan === 'QR' && b.trangThaiThanhToan === 'ChuaThanhToan' ? `
+            ${b.trangThaiDat === 'ChoXacNhan' && (b.phuongThucThanhToan === 'QR' || b.phuongThucThanhToan === 'VietQR' || b.phuongThucThanhToan === 'VNPay' || b.phuongThucThanhToan === 'MoMo') && b.trangThaiThanhToan === 'ChuaThanhToan' ? `
               <a href="/pages/user/history.html?pay=${b.maDatSan}" class="btn btn-primary btn-sm" style="font-weight: 700;">Thanh toán QR</a>
             ` : ''}
           </div>
@@ -617,7 +617,7 @@ function openBookingDetailModal(index) {
         Thanh toán & Hóa đơn
       </div>
       <div class="modal-kv-grid">
-        <div><strong>Phương thức:</strong> ${booking.phuongThucThanhToan === 'QR' ? 'Chuyển khoản VNPay QR' : 'Tiền mặt tại quầy'}</div>
+        <div><strong>Phương thức:</strong> ${formatPhuongThucThanhToan(booking.phuongThucThanhToan, false)}</div>
         <div><strong>Tổng chi phí:</strong> <span style="font-weight: 800; color: var(--primary-dark); font-size: 1.05rem;">${formatTien(booking.soTien)}</span></div>
       </div>
     </div>
@@ -637,7 +637,7 @@ function openBookingDetailModal(index) {
 
     <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
       <button type="button" class="btn btn-outline" onclick="closeBookingDetailModal()">Đóng</button>
-      ${booking.trangThaiDat === 'ChoXacNhan' && booking.phuongThucThanhToan === 'QR' && booking.trangThaiThanhToan === 'ChuaThanhToan' ? `
+      ${booking.trangThaiDat === 'ChoXacNhan' && (booking.phuongThucThanhToan === 'QR' || booking.phuongThucThanhToan === 'VietQR' || booking.phuongThucThanhToan === 'VNPay' || booking.phuongThucThanhToan === 'MoMo') && booking.trangThaiThanhToan === 'ChuaThanhToan' ? `
         <a href="/pages/user/history.html?pay=${booking.maDatSan}" class="btn btn-primary">Thanh toán QR ngay</a>
       ` : ''}
     </div>
