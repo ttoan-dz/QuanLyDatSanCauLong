@@ -43,3 +43,11 @@ replay_pid*
 .agents/
 
 backend/src/main/resources/application-local.yml
+
+# Uploads
+backend/uploads/**
+!backend/uploads/.gitkeep
+uploads/**
+
+# Docs & Binaries
+*.docx

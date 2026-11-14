@@ -40,6 +40,38 @@ function resolveApiBaseUrl() {
 
 const API_BASE_URL = resolveApiBaseUrl();
 
+function getBackendOrigin() {
+  if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) {
+    return API_BASE_URL.replace(/\/api\/?$/, '');
+  }
+  return resolveApiBaseUrl().replace(/\/api\/?$/, '');
+}
+
+function resolveCourtImageUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return '/assets/images/courts.jpg';
+  }
+  const clean = url.trim();
+  if (!clean) {
+    return '/assets/images/courts.jpg';
+  }
+  // URL tuyệt đối (http://, https://) hoặc data URI (data:image/...)
+  if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+    return clean;
+  }
+  // File upload từ backend (/uploads/...)
+  if (clean.startsWith('/uploads/') || clean.startsWith('uploads/')) {
+    const path = clean.startsWith('/') ? clean : '/' + clean;
+    const origin = getBackendOrigin();
+    return origin ? `${origin}${path}` : path;
+  }
+  // Static asset của frontend
+  return clean;
+}
+
+window.getBackendOrigin = getBackendOrigin;
+window.resolveCourtImageUrl = resolveCourtImageUrl;
+
 const api = {
   async request(endpoint, options = {}) {
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');

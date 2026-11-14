@@ -595,7 +595,7 @@
 
       grid.innerHTML = filtered.map(c => {
         const fallbackImg = '/assets/images/courts.jpg';
-        const courtImg = (c.hinhAnh && c.hinhAnh.startsWith('http')) ? c.hinhAnh : fallbackImg;
+        const courtImg = resolveCourtImageUrl(c.hinhAnh);
         const isVip = (c.loaiSan || '').toLowerCase().includes('vip') || (c.loaiSan || '').toLowerCase().includes('thi đấu');
 
         let primaryBtn = '';
@@ -728,7 +728,7 @@
 
       const token = getAuthToken();
       const fallbackImg = '/assets/images/courts.jpg';
-      const courtImg = (court.hinhAnh && court.hinhAnh.startsWith('http')) ? court.hinhAnh : fallbackImg;
+      const courtImg = resolveCourtImageUrl(court.hinhAnh);
       const isVip = (court.loaiSan || '').toLowerCase().includes('vip') || (court.loaiSan || '').toLowerCase().includes('thi đấu');
 
       if (title) title.textContent = `Thông tin chi tiết: ${court.tenSan}`;

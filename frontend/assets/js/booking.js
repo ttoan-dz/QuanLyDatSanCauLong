@@ -225,7 +225,7 @@ function renderCourtInfoSidebar() {
   if (!container || !selectedCourt) return;
 
   const fallbackImg = '/assets/images/courts.jpg';
-  const courtImg = selectedCourt.hinhAnh && selectedCourt.hinhAnh.startsWith('http') ? selectedCourt.hinhAnh : fallbackImg;
+  const courtImg = resolveCourtImageUrl(selectedCourt.hinhAnh);
   const isVip = (selectedCourt.loaiSan || '').toLowerCase().includes('vip') || (selectedCourt.loaiSan || '').toLowerCase().includes('thi đấu');
 
   container.innerHTML = `
