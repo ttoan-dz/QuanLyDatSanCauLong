@@ -578,3 +578,18 @@ function closeFooterPolicyModal() {
   const modal = document.getElementById('modal-footer-policy');
   if (modal) modal.classList.add('hidden');
 }
+
+if (typeof window.resolveCourtImageUrl !== 'function') {
+  window.resolveCourtImageUrl = function(url) {
+    if (!url || typeof url !== 'string') return '/assets/images/courts.jpg';
+    const clean = url.trim();
+    if (!clean) return '/assets/images/courts.jpg';
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) return clean;
+    if (clean.startsWith('/uploads/') || clean.startsWith('uploads/')) {
+      const path = clean.startsWith('/') ? clean : '/' + clean;
+      const origin = (typeof window.getBackendOrigin === 'function') ? window.getBackendOrigin() : '';
+      return origin ? `${origin}${path}` : path;
+    }
+    return clean;
+  };
+}

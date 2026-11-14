@@ -1938,7 +1938,7 @@ async function loadCourts() {
         return `
           <div class="court-tile">
             <div class="court-tile-media">
-              <img src="${s.hinhAnh || '/assets/images/courts.jpg'}" alt="${s.tenSan}" class="court-tile-img" onerror="this.src='/assets/images/courts.jpg'">
+              <img src="${resolveCourtImageUrl(s.hinhAnh)}" alt="${s.tenSan}" class="court-tile-img" onerror="this.src='/assets/images/courts.jpg'">
               
               <div class="court-tile-badge">
                 ${badgeTrangThai(s.tinhTrang)}
@@ -2070,11 +2070,15 @@ function renderCourtPhotoGallery() {
   const galleryEl = document.getElementById('court-photo-gallery-grid');
   if (!galleryEl) return;
 
-  galleryEl.innerHTML = availableCourtImages.map(img => {
+  const listToRender = (selectedCourtPhotoUrl && !availableCourtImages.includes(selectedCourtPhotoUrl))
+    ? [selectedCourtPhotoUrl, ...availableCourtImages]
+    : availableCourtImages;
+
+  galleryEl.innerHTML = listToRender.map(img => {
     const isSelected = (selectedCourtPhotoUrl === img);
     return `
       <div class="photo-choice-item ${isSelected ? 'selected' : ''}" onclick="selectCourtPhoto('${img}')">
-        <img src="${img}" alt="Ảnh sân" onerror="this.src='/assets/images/courts.jpg'">
+        <img src="${resolveCourtImageUrl(img)}" alt="Ảnh sân" onerror="this.src='/assets/images/courts.jpg'">
         ${isSelected ? `
           <div class="photo-choice-check">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2123,7 +2127,10 @@ function openEditCourtModal(diaDiem) {
   document.getElementById('edit-hinhAnh').value = currentImg;
 
   const currentThumb = document.getElementById('edit-court-current-thumb');
-  if (currentThumb) currentThumb.src = currentImg;
+  if (currentThumb) {
+    currentThumb.src = resolveCourtImageUrl(currentImg);
+    currentThumb.onerror = () => { currentThumb.src = '/assets/images/courts.jpg'; };
+  }
   const currentPath = document.getElementById('edit-court-current-path');
   if (currentPath) currentPath.textContent = currentImg;
 
